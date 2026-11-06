@@ -178,7 +178,7 @@
   - _Depends: 4.3, 5.1_
   - _Requirements: 12.1, 12.2, 12.3_
 
-- [ ] 5.4 Verify both targets and the grammar documentation
+- [x] 5.4 Verify both targets and the grammar documentation
   - Crate-level documentation describing the accepted grammar per document type and listing the finding codes, with a doc test asserting the documented code list equals the catalogue and a crate-root doc test that compiles a workspace load, a resolution and a render using only the re-exported names
   - Native test run, `wasm32-wasip2` build, and the wasm test run when the runner is installed; clippy with warnings denied and fmt check
   - Observable: `cargo test` (including the crate-root doc tests), `cargo build --target wasm32-wasip2`, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` all succeed from the repository root
