@@ -1,0 +1,6 @@
+/target
+/plugins/kiro/dist
+/plugins/kiro/target
+/.openidea/
+*.wasm
+
