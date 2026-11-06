@@ -4,3 +4,5 @@
 /.openidea/
 *.wasm
 
+.opencode/open-ultracode/state/
+
