@@ -61,9 +61,7 @@ pub struct Rendered {
     pub omitted_edges: usize,
 }
 
-/// The cap application result (crate-internal; consumed by the Mermaid and
-/// text backends in tasks 3.2/3.3).
-#[allow(dead_code)]
+/// The cap application result, consumed by the Mermaid and text backends.
 pub(crate) struct Capped<'a> {
     pub nodes: &'a [Node],
     pub edges: Vec<&'a Edge>,
@@ -122,8 +120,7 @@ impl IdMap {
 
 /// First `max_nodes` nodes in input order; edges kept in input order when
 /// both ends are kept, up to `max_edges` (crate-internal; consumed by the
-/// backends in tasks 3.2/3.3).
-#[allow(dead_code)]
+/// Mermaid and text backends).
 pub(crate) fn apply_caps<'a>(graph: &'a Graph, caps: &Caps) -> Capped<'a> {
     let kept = graph.nodes.len().min(caps.max_nodes);
     let nodes = graph.nodes.get(..kept).unwrap_or(&[]);

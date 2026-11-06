@@ -110,7 +110,7 @@
   - _Boundary: MermaidRenderer_
   - _Requirements: 11.1, 11.2, 11.3, 11.8_
 
-- [ ] 3.3 (P) Implement the text backend
+- [x] 3.3 (P) Implement the text backend
   - Graph as one line per node followed by indented outgoing edges under the same caps, with the omitted-counts trailer
   - Findings as `path:line: SEVERITY CODE message` lines in the finding sort order (file, line, code, message), line omitted when absent
   - Markdown table with escaped pipes and padded short rows
