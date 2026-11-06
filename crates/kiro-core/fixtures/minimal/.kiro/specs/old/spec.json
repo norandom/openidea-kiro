@@ -1,0 +1,15 @@
+{
+  "feature_name": "old",
+  "language": "en",
+  "phase": "superseded",
+  "approvals": {
+    "requirements": { "generated": true, "approved": true },
+    "design": { "generated": false, "approved": false },
+    "tasks": { "generated": false, "approved": false }
+  },
+  "ready_for_implementation": false,
+  "topics": [],
+  "notes": "Superseded by demo; the ownership query moved there.",
+  "created_at": "2025-12-01T00:00:00Z",
+  "updated_at": "2026-01-02T00:00:00Z"
+}

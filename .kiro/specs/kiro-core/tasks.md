@@ -29,7 +29,7 @@
   - _Boundary: MarkdownScanner_
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 12.3_
 
-- [ ] 1.4 (P) Create the fixture trees, grammar matrix and self fixtures
+- [x] 1.4 (P) Create the fixture trees, grammar matrix and self fixtures
   - Minimal tree: roadmap with two entries and a dependency; `demo` feature in tasks-generated phase with topics, canonical requirements with annotations, table-shape design plan with two components (at least one mapped to a source-file path such as `src/demo.rs`) and a Mermaid block, tasks using `(P)`, `[x]`, `[ ]*` and all three annotations where every `_Boundary:_` value names one of the two demo components and every `_Requirements:_` entry names an existing demo criterion; `old` feature superseded with notes naming `demo`; no `initialized`-phase feature is included (tests synthesise one in memory)
   - Grammar matrix adapted from the prior-art conformance inputs: canonical, dotted, R-style, amendment, empty, fenced example, malformed (duplicate ids, non-numeric heading, unclosed fence)
   - Task variants fixture (`[X]`, optional marker, `(P)` on a major, depth-3 id, duplicate id, invalid requirement reference) and design plan fixtures (table with multi-path cells, bullet shape, no plan, and `tree-plan.md`: the template tree with comments plus a table row naming some of the tree files, so that some tree files are assigned to a component and the rest stay unassigned)
