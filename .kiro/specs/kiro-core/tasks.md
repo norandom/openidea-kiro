@@ -39,7 +39,7 @@
   - _Requirements: 4.1, 4.3, 4.4, 4.5, 4.12, 5.1, 5.2, 5.3, 6.2, 6.3, 6.4, 6.8, 7.2, 8.7_
 
 - [ ] 2. Core: document parsers
-- [ ] 2.1 (P) Implement the spec metadata parser
+- [x] 2.1 (P) Implement the spec metadata parser
   - Parse `spec.json` field by field through a generic JSON value so unknown or wrongly typed fields degrade individually; expose name, language, phase with raw string, approvals, ready flag, topics, notes and timestamps
   - Phase classification for the six recognised phases (case-insensitive, trimmed) with unknown and missing phase findings; invalid JSON yields defaults plus the error finding
   - The document-kind enumeration, the phase-label helper (`phase_raw` trimmed when non-empty, else `"missing"`), the required-document table per phase, and successor-name extraction from notes (whole-word, longest-first, deduplicated); the workspace and frontends consume these
