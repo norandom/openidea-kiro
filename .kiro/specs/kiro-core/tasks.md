@@ -20,7 +20,7 @@
   - _Boundary: Finding_
   - _Requirements: 10.1, 10.2, 10.3_
 
-- [ ] 1.3 Implement the shared Markdown line scanner
+- [x] 1.3 Implement the shared Markdown line scanner
   - Single forward pass producing typed lines (blank, heading, list item with optional bullet/checkbox/numbered label, annotation, table row, fence open/close/fenced, text) with 1-based line numbers identical for LF and CRLF and a tolerated leading byte-order mark
   - Heading outline, fenced blocks with info string, span and body; fence rules per design (three or more backticks or tildes, closed by the same character at least as long)
   - The owned annotation value (key, value, line) that the requirements and tasks parsers both reuse
