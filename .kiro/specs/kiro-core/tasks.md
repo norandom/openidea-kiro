@@ -95,7 +95,7 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
 - [ ] 3. Core: renderers
-- [ ] 3.1 (P) Implement the graph model, caps, safe identifiers and line clipping
+- [x] 3.1 (P) Implement the graph model, caps, safe identifiers and line clipping
   - Graph with direction, nodes (id, label, optional class) and edges (from, to, optional label); caps with defaults; rendered result carrying truncation flag and omitted counts
   - Identifier map producing letters, digits and underscores only, prefixing when needed and suffixing on collisions, stable for a given insertion order
   - Cap application keeping the first nodes and the edges whose ends survive, in input order; line clipping at a newline below the byte limit with an omitted-lines trailer (`"… N more lines"` when no hint is given, or `"… N more lines — <hint>"` when an optional trailer hint is supplied; crate-internal helpers may carry a temporary `#[allow(dead_code)]` until 3.2/3.3 call them, so clippy stays clean per task)
