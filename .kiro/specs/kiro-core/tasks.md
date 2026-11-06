@@ -58,7 +58,7 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 4.12_
 
-- [ ] 2.3 (P) Implement the tasks parser
+- [x] 2.3 (P) Implement the tasks parser
   - Task items from checkbox list lines with one- or two-group ids, checked/optional/parallel flags, description with the parallel marker removed, detail lines until the next task or heading
   - Two-level nesting in document order; hierarchy finding for depth over two or a sub-task without its major (kept at top level); duplicate id finding (first wins)
   - Interpretation of the requirements, depends and boundary annotations (comma split, trimmed, empties dropped), recording the line of each so the join can place its findings, with the invalid-reference finding; other annotations stored as the scanner's owned annotation value

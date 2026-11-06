@@ -305,7 +305,7 @@ fn list_item(t: &str) -> Option<LineKind<'_>> {
     let mut checkbox = None;
     if let Some((cb, after)) = checkbox_of(rest) {
         checkbox = Some(cb);
-        rest = after;
+        rest = after.trim_start_matches(' ');
     }
     let mut marker = None;
     if let Some((m, after)) = numbered_of(rest) {
