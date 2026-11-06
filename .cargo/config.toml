@@ -1,5 +1,11 @@
 # Test runner for the wasm32-wasip2 target (task 5.4 runs the wasm test suite
 # through it when wasmtime is on PATH; the wasm *build* needs no runner).
-# The `gate` alias is added in task 5.5.
+# The `gate` alias runs the native parallel test suite; the full multi-step
+# gate sequence (fmt --check, clippy with warnings denied, nextest, doc
+# tests, deny, wasm build) lives in .github/workflows/ci.yml. cli-gate task
+# 7.4 extends the gate flow once kiro-cli exists.
 [target.wasm32-wasip2]
 runner = "wasmtime"
+
+[alias]
+gate = "nextest run"

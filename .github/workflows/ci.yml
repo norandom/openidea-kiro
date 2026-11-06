@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: rustup target add wasm32-wasip2
+
+      # The gate tooling the workflow steps below need (cli-gate task 7.4
+      # appends the plugins/kiro build and the kiro-cli check step once
+      # those crates exist).
+      - run: cargo install cargo-nextest cargo-deny --locked
+
+      - run: cargo fmt --check
+
+      - run: cargo clippy --all-targets -- -D warnings
+
+      # Requirement 12.7: process-per-test parallel native suite plus the
+      # doc tests.
+      - run: cargo nextest run
+
+      - run: cargo test --doc
+
+      # Keeps getrandom/rand and filesystem-dependent crates out of the
+      # wasm32-wasip2 graph automatically (see deny.toml).
+      - run: cargo deny check
+
+      - run: cargo build -p kiro-core --target wasm32-wasip2

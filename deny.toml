@@ -1,0 +1,83 @@
+# cargo-deny configuration for the engine's wasm graph.
+#
+# The graph is evaluated for wasm32-wasip2 only: the plugin sandbox target.
+# `getrandom`/`rand` and filesystem-dependent crates are banned on that
+# graph so nothing non-deterministic or I/O-bound can creep into the
+# sandbox. `rand` stays permitted when wrapped solely by
+# `biodivine-lib-bdd` (whose random sampling paths are dead-code-eliminated
+# by the linker when spec-constraints lands), and `getrandom` when wrapped
+# solely by `rand` (amendment 2026-11-04, gap-analysis arbitration).
+
+[graph]
+targets = [
+    { triple = "wasm32-wasip2" },
+]
+# Dev-dependencies (insta and its tempfile -> getrandom chain) never link
+# into the wasm cdylib (design line 48); excluded from the graph so the
+# bans below guard the shipped wasm tree, not test tooling.
+exclude-dev = true
+
+[advisories]
+yanked = "warn"
+
+[bans]
+multiple-versions = "warn"
+
+[[bans.deny]]
+name = "getrandom"
+wrappers = ["rand"]
+
+[[bans.deny]]
+name = "rand"
+wrappers = ["biodivine-lib-bdd"]
+
+# Filesystem-dependent crates are banned on the wasm graph: the sandbox
+# forbids file I/O (design line 299 / steering product.md). None are in the
+# current graph; the list guards future dependency additions.
+[[bans.deny]]
+name = "tempfile"
+
+[[bans.deny]]
+name = "remove_dir_all"
+
+[[bans.deny]]
+name = "fs_extra"
+
+[[bans.deny]]
+name = "fs2"
+
+[[bans.deny]]
+name = "walkdir"
+
+[[bans.deny]]
+name = "dirs"
+
+[[bans.deny]]
+name = "dirs-sys"
+
+[[bans.deny]]
+name = "same-file"
+
+[[bans.deny]]
+name = "filetime"
+
+[[bans.deny]]
+name = "notify"
+
+[licenses]
+# The workspace's own crate is internal (not published), so its missing
+# license expression is ignored; the check guards external dependencies.
+private = { ignore = true }
+unused-allowed-license = "allow"
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Unicode-3.0",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+]
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
