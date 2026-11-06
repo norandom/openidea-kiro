@@ -159,7 +159,7 @@
   - _Depends: 3.2, 3.3, 4.3_
   - _Requirements: 1.5, 11.2, 11.3, 11.4, 11.5, 11.8_
 
-- [ ] 5.2 (P) Write the grammar matrix and workspace integration tests
+- [x] 5.2 (P) Write the grammar matrix and workspace integration tests
   - Owns only the grammar and workspace test files; reads the shared helper from 5.1 without changing it
   - Grammar test iterating every grammar fixture against expected criterion ids and finding codes
   - Workspace tests over the minimal tree: clean load of `demo`, missing-document severities for tasks-generated (from the fixture) versus initialized (an `initialized` feature synthesised in the in-memory source, since the fixture has none), single read per path, superseded `old` resolving to `demo` with a terminating chain, owners of a demo source file, resolution from an absolute Windows-style active path
