@@ -68,7 +68,7 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 5.12, 5.13_
 
-- [ ] 2.4 (P) Implement the design parser: regions, table and bullet shapes, components, Mermaid blocks
+- [x] 2.4 (P) Implement the design parser: regions, table and bullet shapes, components, Mermaid blocks
   - File Structure Plan and Components regions by heading text up to the next heading of equal or higher level
   - Table shape with component and file/files/path columns (multi-path cells split, responsibility column optional) and bold-component bullets with backticked paths
   - Component discovery from level-4 headings in the Components region and from any table's component column; findings for components without files, unassigned files and a missing plan; Mermaid blocks with spans; design path normalisation
