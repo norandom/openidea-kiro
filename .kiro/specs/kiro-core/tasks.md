@@ -48,7 +48,7 @@
   - _Depends: 1.2_
   - _Requirements: 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 8.7_
 
-- [ ] 2.2 (P) Implement the requirements parser
+- [x] 2.2 (P) Implement the requirements parser
   - State machine over scanned lines recognising canonical, dotted, R-style and amendment headings; criterion opening by self-identifying dotted markers anywhere and by bare numbered markers under an Acceptance Criteria heading or inside an amendment
   - Continuation joining, blank-line closing, objective capture, annotations (the scanner's owned annotation value) attached to the requirement or the open criterion, extends list on amendments
   - Findings for requirements without criteria, duplicate ids (first wins) and non-numeric headings (block skipped); empty document yields no findings
