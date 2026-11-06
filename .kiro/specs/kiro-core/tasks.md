@@ -141,7 +141,7 @@
   - _Depends: 2.1, 2.6, 4.1_
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 8.8, 10.4_
 
-- [ ] 4.3 Implement path normalisation, current-spec resolution and the successor chain
+- [x] 4.3 Implement path normalisation, current-spec resolution and the successor chain
   - Relative normalisation (separators, leading `./`, repeated and trailing slashes); absolute-to-relative conversion against the workspace root with case-insensitive prefix comparison for Windows-style paths and an explicit outside result; feature extraction from `.kiro/specs/<feature>/…`
   - Resolution order: explicit name, active-file feature, single known feature, otherwise unresolved with sorted candidates and the normalised active path
   - Successor chain over the workspace following the first successor, loading as needed, terminating at a non-superseded feature or reporting a cycle with its finding; re-export of the metadata parser's successor extraction
