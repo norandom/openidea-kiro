@@ -6,6 +6,8 @@
 //! reference validation and duplicate/hierarchy findings, plus document and
 //! per-major counts.
 
+use std::collections::{HashMap, HashSet};
+
 use crate::finding::{Finding, codes};
 use crate::md::{Annotation, Fence, Heading, LineKind, ScannedLine, scan};
 
@@ -88,13 +90,17 @@ pub fn parse(text: &str, file: &str) -> TasksDoc {
         counts: Counts::default(),
         findings: scanned.findings,
     };
-    let mut seen_ids: Vec<String> = Vec::new();
+    let mut seen_ids: HashSet<String> = HashSet::new();
+    // Major number -> index into `doc.tasks`; keeps duplicate, hierarchy
+    // and attach decisions O(1) per task (requirement 12.3: per-line work
+    // bounded by the line length, 16 MiB documents within 2 s).
+    let mut top_level: HashMap<u32, usize> = HashMap::new();
     // Details of a dropped duplicate are ignored until the next task line.
     let mut dropped = false;
 
     for line in &scanned.lines {
         if let Some(task) = task_item(line) {
-            dropped = !place_task(&mut doc, &mut seen_ids, task, line.line);
+            dropped = !place_task(&mut doc, &mut seen_ids, &mut top_level, task, line.line);
             continue;
         }
         if !dropped {
@@ -166,14 +172,16 @@ fn task_item(line: &ScannedLine<'_>) -> Option<Task> {
 }
 
 /// Place a freshly read task into the tree, handling duplicates and
-/// hierarchy findings. Returns false when the task was dropped.
+/// hierarchy findings. Returns false when the task was dropped. The set
+/// and map keep every decision O(1) per task (requirement 12.3).
 fn place_task(
     doc: &mut TasksDoc,
-    seen_ids: &mut Vec<String>,
+    seen_ids: &mut HashSet<String>,
+    top_level: &mut HashMap<u32, usize>,
     mut task: Task,
     line_no: usize,
 ) -> bool {
-    if seen_ids.contains(&task.id) {
+    if !seen_ids.insert(task.id.clone()) {
         doc.findings.push(
             Finding::new(
                 codes::TASK_DUPLICATE_ID,
@@ -187,11 +195,10 @@ fn place_task(
         );
         return false; // dropped, its details with it
     }
-    seen_ids.push(task.id.clone());
 
     let groups = task.id.split('.').count();
     let is_sub = task.sub.is_some();
-    let major_seen = doc.tasks.iter().any(|t| t.id == task.major.to_string());
+    let major_seen = top_level.contains_key(&task.major);
     if groups > 2 || (is_sub && !major_seen) {
         let reason = if groups > 2 {
             format!("task id {} has more than two numeric components", task.id)
@@ -208,12 +215,18 @@ fn place_task(
         return true;
     }
 
-    if is_sub {
-        let major_id = task.major.to_string();
-        if let Some(m) = doc.tasks.iter_mut().rev().find(|t| t.id == major_id) {
-            m.subtasks.push(task);
+    if is_sub
+        && let Some(index) = top_level.get(&task.major)
+        && let Some(major) = doc.tasks.get_mut(*index)
+    {
+        major.subtasks.push(task);
+    } else if !is_sub {
+        // Only canonical labels (`id == major.to_string()`) can satisfy a
+        // sub's major lookup; non-canonical dotless labels ("01", an id
+        // overflowing `major`) must not, matching the id-string semantics.
+        if task.id == task.major.to_string() {
+            top_level.insert(task.major, doc.tasks.len());
         }
-    } else {
         doc.tasks.push(task);
     }
     true
@@ -588,6 +601,49 @@ mod tests {
             doc.findings.first(),
             Some(f) if f.code == codes::TASK_DUPLICATE_ID && f.line == Some(3)
         ));
+    }
+
+    #[test]
+    fn non_canonical_major_labels_do_not_adopt_subs() {
+        // "01" is dotless but not the canonical decimal of major 1, so a
+        // later 1.1 is NOT its sub (id-string semantics, pinned for the
+        // O(1) major index).
+        let doc = parse("- [ ] 01. Zero-padded\n- [ ] 1.1 Sub\n", F);
+        assert_eq!(
+            doc.findings
+                .iter()
+                .filter(|f| f.code == codes::TASK_HIERARCHY)
+                .count(),
+            1,
+            "1.1 appears before its (canonical) major 1"
+        );
+        assert_eq!(doc.tasks.len(), 2, "both stay at top level");
+        assert!(
+            doc.tasks.iter().all(|t| t.subtasks.is_empty()),
+            "no adoption by the zero-padded label"
+        );
+    }
+
+    #[test]
+    fn canonical_major_wins_over_later_non_canonical_label() {
+        let doc = parse("- [ ] 1. One\n- [ ] 01. Zero-padded\n- [ ] 1.1 Sub\n", F);
+        assert!(
+            doc.findings.is_empty(),
+            "1.1 has its canonical major: {:?}",
+            doc.findings
+        );
+        let one = doc
+            .tasks
+            .first()
+            .cloned()
+            .unwrap_or_else(|| panic!("major 1"));
+        assert_eq!(one.subtasks.len(), 1, "1.1 attaches under 1, not 01");
+        let zero = doc
+            .tasks
+            .get(1)
+            .cloned()
+            .unwrap_or_else(|| panic!("major 01"));
+        assert!(zero.subtasks.is_empty());
     }
 
     #[test]

@@ -169,7 +169,7 @@
   - _Depends: 4.3, 5.1_
   - _Requirements: 1.3, 1.4, 4.1, 4.2, 4.3, 4.4, 4.5, 8.2, 8.5, 8.7, 8.8, 8.9, 9.1, 9.6, 10.4, 12.5_
 
-- [ ] 5.3 (P) Write the no-panic and performance tests
+- [x] 5.3 (P) Write the no-panic and performance tests
   - Owns only the no-panic and performance test files; reads the shared helper from 5.1 without changing it
   - Every parser and the scanner fed with empty text, a lone byte-order mark, ten thousand nested headings, ten thousand unclosed fences, one-megabyte lines and 256 documents from a fixed-seed generator over the marker alphabet; each call returns a document with partial data where recognisable
   - Synthetic 16 MiB tasks-shaped document timed through the scanner and parser, asserted under two seconds only in release builds
@@ -203,3 +203,4 @@
 - Workspace lints deny `unwrap`/`expect`/indexing even in `cfg(test)` modules; `panic!` remains usable in tests only.
 - Returning a cached `&Feature` via `if let Some(f) = map.get(k) { return f; }` hits the NLL conditional-return borrow limitation (E0502) when followed by `&mut self` work; `entry().or_insert(built)` after unconditional cache reads avoids it (source.rs `load`).
 - Tasks fixtures need a major task (`- [ ] 1. …`) before sub-task `1.1`, or the parser records `TASK_HIERARCHY`.
+- The tasks parser's original `Vec::contains`/linear-scan dedup was O(N²) — a 16 MiB corpus exceeded 15 minutes even in release; replaced by `HashSet` + a `HashMap<u32, usize>` major index guarded by `task.id == task.major.to_string()` so only canonical labels adopt sub-tasks (zero-padded/overflow ids keep the original string-match semantics, pinned by two unit tests). ATX headings are level 1-6 only.
