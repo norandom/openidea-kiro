@@ -86,7 +86,7 @@
   - _Boundary: DesignParser_
   - _Requirements: 6.4, 6.7, 6.10_
 
-- [ ] 2.6 (P) Implement the roadmap parser
+- [x] 2.6 (P) Implement the roadmap parser
   - Specs region by heading text; entries from checkbox list lines split into name, description and dependencies with `--` and em dash separators, backticks stripped, `none` as empty
   - Unknown-dependency finding after all entries are read; missing-section finding with an empty list; names in document order deduplicated
   - Observable: the minimal roadmap fixture and the self roadmap fixture parse to the expected entries, and unit tests cover each separator, `none`, a missing section and an unknown dependency
