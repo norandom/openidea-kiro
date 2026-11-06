@@ -1,0 +1,8 @@
+graph LR
+    start["Start #quot;here#quot;"]
+    class start entry
+    check["#lt;check#gt;"]
+    done["Done"]
+    class done terminal
+    start -->|"fast path"| check
+    check --> done

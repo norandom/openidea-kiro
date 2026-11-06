@@ -1,0 +1,3 @@
+.kiro/specs/demo/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/demo/design.md' is missing
+.kiro/specs/demo/design.md:3: INFO MD_FENCE_UNCLOSED fence left open
+.kiro/specs/demo/tasks.md:12: WARNING TASK_REQ_UNKNOWN reference '9.9' names no criterion

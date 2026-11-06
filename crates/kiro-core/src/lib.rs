@@ -8,9 +8,10 @@
 //! thread operations: content enters through the `source` module's read
 //! port, so the same code runs natively and under `wasm32-wasip2`.
 //!
-//! Placeholder crate-level documentation: the accepted grammar per document
+//! Crate-root re-exports of the public model, workspace, resolution, join,
+//! finding and render types (task 5.1). The accepted grammar per document
 //! type and the finding-code catalogue with their doc tests are written in
-//! task 5.4, and the public re-exports in task 5.1.
+//! task 5.4.
 //!
 //! # Modules
 //!
@@ -43,3 +44,24 @@ pub mod roadmap;
 pub mod source;
 pub mod spec;
 pub mod tasks;
+
+// Crate-root re-exports as listed in the design's CrateScaffold contract.
+pub use design::{Component, DesignDoc, DesignFile, MermaidBlock, normalize_design_path};
+pub use finding::{CODES, CodeInfo, Finding, Severity, codes, sort_findings};
+pub use join::{
+    ComponentCoverage, Coverage, Owners, TaskRef, coverage, link, names_equal, owners_of,
+    path_matches,
+};
+pub use md::Annotation;
+pub use render::mermaid::mermaid;
+pub use render::text::{findings_text, graph_text, table};
+pub use render::{Caps, DEFAULT_CAPS, Direction, Edge, Graph, IdMap, Node, Rendered, clip_lines};
+pub use requirements::{Criterion, ReqKind, Requirement, RequirementsDoc};
+pub use resolve::{
+    ProjectPath, Resolution, ResolveInput, ResolvedVia, SuccessorChain, feature_of_path,
+    normalize_relative, resolve_current, to_project_relative,
+};
+pub use roadmap::{RoadmapDoc, RoadmapEntry};
+pub use source::{Feature, MemorySource, Source, Workspace};
+pub use spec::{Approval, Approvals, Doc, Phase, SpecMeta, phase_label, required_docs, successors};
+pub use tasks::{Counts, Task, TasksDoc};

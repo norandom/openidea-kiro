@@ -1,0 +1,5 @@
+Start "here" [start]
+  -> <check>: fast path
+<check> [check]
+  -> Done
+Done [done]

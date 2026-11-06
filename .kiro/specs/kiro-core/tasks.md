@@ -150,7 +150,7 @@
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9_
 
 - [ ] 5. Validation
-- [ ] 5.1 Create the crate-root re-exports, the shared test harness, golden fixtures and golden renderer tests
+- [x] 5.1 Create the crate-root re-exports, the shared test harness, golden fixtures and golden renderer tests
   - Public re-exports of the model, workspace, resolution, join, finding and render types from the crate root as listed in the design's module map (every module is already `pub mod` since 1.1; this is the only edit to the crate root until 5.4 adds the crate-level docs and doc tests)
   - Test helper building an in-memory source from embedded fixture text so no test touches the file system; harness and tests import through the crate-root re-exports
   - Golden graph (labels with quotes and angle brackets, classes, labelled edges), golden text rendering, truncated Mermaid under small caps, and golden findings text, each stored as a fixture file
