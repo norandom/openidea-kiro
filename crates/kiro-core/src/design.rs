@@ -209,6 +209,15 @@ pub fn parse(text: &str, file: &str) -> DesignDoc {
                 }
             }
         }
+
+        // Fenced directory trees inside the plan (task 2.5), merged into the
+        // mappings by path regardless of document order.
+        let fences = doc.fences.clone();
+        for fence in &fences {
+            if fence.start >= start && fence.end <= end {
+                parse_tree(&mut doc, fence);
+            }
+        }
     } else {
         doc.findings.push(Finding::new(
             codes::DESIGN_NO_FILE_PLAN,
@@ -402,8 +411,86 @@ fn bullet_mapping(text: &str) -> Option<(String, Vec<String>)> {
     Some((name.trim().to_owned(), paths))
 }
 
-/// Backticked segments of a cell; a cell without backticks is taken whole
-/// when non-empty.
+/// Parses one fenced directory tree inside the plan region and merges its
+/// files into the existing mappings by path (task 2.5): a tree file already
+/// named by a mapping only gains a responsibility when the mapping has none;
+/// the remaining tree files are appended unassigned.
+fn parse_tree(doc: &mut DesignDoc, fence: &Fence) {
+    let body_lines: Vec<&str> = fence.body.lines().collect();
+    let has_glyphs = fence
+        .body
+        .chars()
+        .any(|c| matches!(c, '│' | '├' | '└' | '─'));
+    // Unit of depth: 4 columns with tree glyphs, else the smallest non-zero
+    // name column in the block.
+    let name_cols: Vec<usize> = body_lines.iter().map(|l| name_column(l)).collect();
+    let unit = if has_glyphs {
+        4
+    } else {
+        name_cols
+            .iter()
+            .copied()
+            .filter(|c| *c > 0)
+            .min()
+            .unwrap_or(1)
+    };
+    let mut dirs: Vec<(usize, String)> = Vec::new();
+    for (idx, raw_line) in body_lines.iter().enumerate() {
+        let line_no = fence.start + 1 + idx;
+        let name_col = name_cols.get(idx).copied().unwrap_or(0);
+        let depth = name_col / unit.max(1);
+        let entry: String = raw_line.chars().skip(name_col).collect();
+        let entry = entry.trim();
+        if entry.is_empty() {
+            continue;
+        }
+        let (name, comment) = match entry.split_once('#') {
+            Some((n, c)) => (n.trim(), Some(c.trim().to_owned())),
+            None => (entry, None),
+        };
+        if name.is_empty() {
+            continue;
+        }
+        // Keep the directory stack consistent with this depth.
+        while dirs.last().is_some_and(|(d, _)| *d >= depth) {
+            dirs.pop();
+        }
+        if let Some(dir_name) = name.strip_suffix('/') {
+            if !dir_name.is_empty() {
+                dirs.push((depth, dir_name.to_owned()));
+            }
+            continue;
+        }
+        let mut path = String::new();
+        for (_, segment) in &dirs {
+            path.push_str(segment);
+            path.push('/');
+        }
+        path.push_str(name);
+        let path = normalize_design_path(&path);
+        // Merge with an existing mapping of the same path, else append.
+        if let Some(existing) = doc.files.iter_mut().find(|f| f.path == path) {
+            if existing.responsibility.is_none() {
+                existing.responsibility = comment;
+            }
+        } else {
+            doc.files.push(DesignFile {
+                path,
+                component: None,
+                responsibility: comment,
+                line: line_no,
+            });
+        }
+    }
+}
+
+/// The char column of the first character that is neither a space nor a tree
+/// glyph.
+fn name_column(line: &str) -> usize {
+    line.chars()
+        .take_while(|c| *c == ' ' || matches!(c, '│' | '├' | '└' | '─'))
+        .count()
+}
 fn backticked_or_whole(cell: &str) -> Vec<String> {
     let ticks = backticked(cell);
     if ticks.is_empty() {
@@ -443,6 +530,7 @@ mod tests {
     const TABLE_PLAN: &str = include_str!("../fixtures/design/table-plan.md");
     const BULLET_PLAN: &str = include_str!("../fixtures/design/bullet-plan.md");
     const NO_PLAN: &str = include_str!("../fixtures/design/no-plan.md");
+    const TREE_PLAN: &str = include_str!("../fixtures/design/tree-plan.md");
     const DEMO: &str = include_str!("../fixtures/minimal/.kiro/specs/demo/design.md");
     const SELF: &str = include_str!("../fixtures/self/design.md");
 
@@ -632,5 +720,118 @@ mod tests {
         assert!(doc.component("Beta").is_some_and(|c| !c.files.is_empty()));
         assert!(doc.component("Gamma").is_some());
         assert!(doc.component("Gamma").is_some_and(|c| c.files.is_empty()));
+    }
+
+    // ----- Task 2.5: fenced directory-tree shape and merge -----
+
+    #[test]
+    fn tree_fixture_paths_responsibilities_and_partial_merge() {
+        let doc = parse(TREE_PLAN, F);
+        // Tree files with full paths; `src/main.rs` merges into the table's
+        // Entry component without a duplicate; the rest stay unassigned.
+        let paths: Vec<(String, Option<String>, Option<String>)> = doc
+            .files
+            .iter()
+            .map(|f| {
+                (
+                    f.path.clone(),
+                    f.component.clone(),
+                    f.responsibility.clone(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            paths,
+            vec![
+                (
+                    "demo/src/main.rs".into(),
+                    Some("Entry".into()),
+                    Some("entry point, assigned below".into())
+                ),
+                ("demo/src/lib.rs".into(), None, Some("not assigned".into())),
+                (
+                    "demo/tests/basic.rs".into(),
+                    None,
+                    Some("not assigned".into())
+                ),
+            ]
+        );
+        let unassigned: Vec<&str> = doc.unassigned_files().map(|f| f.path.as_str()).collect();
+        assert_eq!(unassigned, ["demo/src/lib.rs", "demo/tests/basic.rs"]);
+        let findings: Vec<usize> = doc
+            .findings
+            .iter()
+            .filter(|f| f.code == codes::DESIGN_FILE_UNASSIGNED)
+            .map(|f| f.line.unwrap_or(0))
+            .collect();
+        assert_eq!(findings.len(), 2, "{:?}", doc.findings);
+        assert!(
+            doc.component("Entry")
+                .is_some_and(|c| c.files == ["demo/src/main.rs"])
+        );
+    }
+
+    #[test]
+    fn tree_without_glyphs_uses_smallest_indent_as_unit() {
+        let text =
+            "# D\n\n## File Structure Plan\n\n```\nroot/\n  alpha.rs\n  sub/\n    beta.rs\n```\n";
+        let doc = parse(text, F);
+        let paths: Vec<&str> = doc.files.iter().map(|f| f.path.as_str()).collect();
+        assert_eq!(paths, ["root/alpha.rs", "root/sub/beta.rs"]);
+    }
+
+    #[test]
+    fn merge_works_in_both_orders_and_keeps_mapping_responsibility() {
+        // Tree first, mapping after.
+        let tree_first = "# D\n\n## File Structure Plan\n\n```\nsrc/\n  a.rs # tree comment\n```\n\n| Component | File | Responsibility |\n|---|---|---|\n| Alpha | `src/a.rs` | Mapping owns it |\n";
+        let doc = parse(tree_first, F);
+        assert_eq!(doc.files.len(), 1, "merged into one entry");
+        let f = doc.files.first().cloned().unwrap_or_else(|| panic!("file"));
+        assert_eq!(
+            (f.path.as_str(), f.component.as_deref()),
+            ("src/a.rs", Some("Alpha"))
+        );
+        assert_eq!(
+            f.responsibility.as_deref(),
+            Some("Mapping owns it"),
+            "mapping responsibility wins"
+        );
+
+        // Mapping first, tree after (the tree-plan fixture order): the tree
+        // comment fills a missing responsibility.
+        let mapping_first = "# D\n\n## File Structure Plan\n\n| Component | File |\n|---|---|\n| Alpha | `src/a.rs` |\n\n```\nsrc/\n  a.rs # tree comment\n```\n";
+        let doc = parse(mapping_first, F);
+        assert_eq!(doc.files.len(), 1);
+        let f = doc.files.first().cloned().unwrap_or_else(|| panic!("file"));
+        assert_eq!(
+            (f.component.as_deref(), f.responsibility.as_deref()),
+            (Some("Alpha"), Some("tree comment"))
+        );
+    }
+
+    #[test]
+    fn directories_are_skipped_as_files_and_comments_become_responsibilities() {
+        let text = "# D\n\n## File Structure Plan\n\n```text\nproj/\n├── src/          # sources\n│   └── mod.rs    # the module\n└── README.md\n```\n";
+        let doc = parse(text, F);
+        let paths: Vec<(String, Option<String>)> = doc
+            .files
+            .iter()
+            .map(|f| (f.path.clone(), f.responsibility.clone()))
+            .collect();
+        assert_eq!(
+            paths,
+            vec![
+                ("proj/src/mod.rs".into(), Some("the module".into())),
+                ("proj/README.md".into(), None),
+            ]
+        );
+    }
+
+    #[test]
+    fn trees_outside_the_plan_region_are_ignored() {
+        let text = "# D\n\n## File Structure Plan\n\n| Component | File |\n|---|---|\n| Alpha | `src/a.rs` |\n\n## Diagrams\n\n```\nother/\n  tree.rs\n```\n";
+        let doc = parse(text, F);
+        assert_eq!(doc.files.len(), 1);
+        assert_eq!(doc.unassigned_files().count(), 0);
     }
 }

@@ -79,7 +79,7 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 6.1, 6.2, 6.3, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10_
 
-- [ ] 2.5 Implement the design parser: fenced directory-tree shape and merge
+- [x] 2.5 Implement the design parser: fenced directory-tree shape and merge
   - Tree entries from fenced blocks inside the plan region with depth from the name column (unit 4 when tree glyphs are present, else the smallest indent), directory entries pushed on a stack and skipped as files, trailing comments kept as responsibility, full paths joined from ancestors
   - Tree files also named by a table or bullet mapping are merged regardless of which appears first in the document (component filled in, responsibility kept when the mapping has none); remaining tree files stay unassigned with their finding
   - Observable: the tree design fixture (`tree-plan.md` from 1.4, tree plus a table row naming some tree files) parses to the expected full paths and responsibilities, the table-named tree files are merged into their component without duplicate entries, and the remaining tree files carry the unassigned-file finding

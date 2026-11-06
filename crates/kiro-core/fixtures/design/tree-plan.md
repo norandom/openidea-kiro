@@ -13,4 +13,4 @@ demo/
 
 | Component | File |
 |-----------|------|
-| Entry | `src/main.rs` |
+| Entry | `demo/src/main.rs` |
