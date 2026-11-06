@@ -120,7 +120,7 @@
   - _Requirements: 11.4, 11.5, 11.6, 11.8_
 
 - [ ] 4. Integration: join, workspace and resolution
-- [ ] 4.1 Implement the file, component and task join
+- [x] 4.1 Implement the file, component and task join
   - Path matching by normalised equality or suffix at a segment boundary in either direction, normalising with the design parser's path normalisation (the join must not import the resolver — dependency direction)
   - Owners of a queried path: matching components in design order, tasks whose boundary names them in document order, criteria from those tasks' requirement references sorted and deduplicated, and a covered flag
   - Coverage listing of components with files and bound tasks, unscoped tasks, unassigned files, and unknown-boundary tasks (every task whose `_Boundary:_` contains one or more names matching no design component paired with those unmatched names as written, or all boundary names when the design document is absent)

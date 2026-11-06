@@ -315,8 +315,10 @@ fn push_detail(doc: &mut TasksDoc, detail: &str, line: usize) {
     });
 }
 
-/// Requirement references: `N`, `N.M` or `A<K>.M`.
-fn valid_requirement_ref(entry: &str) -> bool {
+/// Requirement references: `N`, `N.M` or `A<K>.M`. Crate-visible because
+/// the join needs the same shape rule to skip already-invalid references
+/// (their finding belongs to the tasks parser).
+pub(crate) fn valid_requirement_ref(entry: &str) -> bool {
     let digits = |s: &str| !s.is_empty() && s.chars().all(|c| c.is_ascii_digit());
     if digits(entry) {
         return true;
