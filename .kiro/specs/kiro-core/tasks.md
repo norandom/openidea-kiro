@@ -104,7 +104,7 @@
   - _Depends: 1.1_
   - _Requirements: 11.1, 11.3, 11.7, 11.8_
 
-- [ ] 3.2 Implement the Mermaid backend
+- [x] 3.2 Implement the Mermaid backend
   - Graph header by direction, quoted node labels with escaping of double quotes and angle brackets, class lines, edges with optional quoted labels, ellipsis node stating omitted counts when truncated, single trailing newline
   - Observable: unit tests prove no raw `<`, `>` or unescaped quote appears inside labels and that the truncated output contains exactly one ellipsis node
   - _Boundary: MermaidRenderer_

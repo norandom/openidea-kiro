@@ -5,6 +5,9 @@
 //! omitted counts, and line clipping under a byte limit with an omitted-lines
 //! trailer (optionally carrying a hint naming the full-output path).
 
+pub mod mermaid;
+pub mod text;
+
 /// Graph direction, mapping to `graph TD` / `graph LR`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Direction {
