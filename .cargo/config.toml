@@ -1,0 +1,5 @@
+# Test runner for the wasm32-wasip2 target (task 5.4 runs the wasm test suite
+# through it when wasmtime is on PATH; the wasm *build* needs no runner).
+# The `gate` alias is added in task 5.5.
+[target.wasm32-wasip2]
+runner = "wasmtime"

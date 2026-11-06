@@ -1,7 +1,7 @@
 # Implementation Plan
 
 - [ ] 1. Foundation: workspace scaffold, finding model, Markdown scanner, fixtures
-- [ ] 1.1 Create the root Cargo workspace and the engine crate skeleton
+- [x] 1.1 Create the root Cargo workspace and the engine crate skeleton
   - Prerequisite: `rustup target add wasm32-wasip2` (required for the wasm build observable here and in 5.4); `wasmtime` on PATH is optional and only enables the wasm *test* run in 5.4
   - Root workspace manifest listing the engine crate with resolver 3; engine package on edition 2024 with serde (derive) and serde_json as the only runtime dependencies and insta as a dev-dependency
   - Lint table forbidding unsafe code and denying unwrap, expect, panic, indexing/slicing, todo and unimplemented in library code
