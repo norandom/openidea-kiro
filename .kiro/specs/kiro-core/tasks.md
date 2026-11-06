@@ -130,7 +130,7 @@
   - _Depends: 2.2, 2.3, 2.5_
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10_
 
-- [ ] 4.2 Implement the read port, in-memory source and workspace
+- [x] 4.2 Implement the read port, in-memory source and workspace
   - Read trait keyed by project-relative path; in-memory source with exact key lookup (no path normalisation in this module) for tests and frontends
   - Workspace owning its source, known feature names (sorted, extendable), a read cache that also remembers absent paths, loaded features and the roadmap; document paths built by joining the fixed directory and file names only
   - Loading a feature reads its four documents once each, parses them, runs the join's link findings when tasks exist, records the missing-document finding with severity from the phase table (an absent `spec.json` is always a warning), and records the dangling-successor finding for superseded features using the metadata parser's successor extraction; loading adds the feature to the known names
@@ -195,3 +195,11 @@
   - _Boundary: CrateScaffold_
   - _Depends: 5.4_
   - _Requirements: 12.7_
+
+## Implementation Notes
+
+- Clippy/wasm results can be served from cargo's cache: inspect stdout for warning lines, not just exit codes; force a fresh compile (`cargo clean -p kiro-core`) when a gate claim must be proven.
+- PowerShell wraps cargo's stderr as errors and reports misleading exit codes: redirect to `$null` and read `$LASTEXITCODE` for the true status.
+- Workspace lints deny `unwrap`/`expect`/indexing even in `cfg(test)` modules; `panic!` remains usable in tests only.
+- Returning a cached `&Feature` via `if let Some(f) = map.get(k) { return f; }` hits the NLL conditional-return borrow limitation (E0502) when followed by `&mut self` work; `entry().or_insert(built)` after unconditional cache reads avoids it (source.rs `load`).
+- Tasks fixtures need a major task (`- [ ] 1. …`) before sub-task `1.1`, or the parser records `TASK_HIERARCHY`.
