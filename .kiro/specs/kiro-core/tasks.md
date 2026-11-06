@@ -11,7 +11,7 @@
   - _Boundary: CrateScaffold_
   - _Requirements: 1.1, 12.4, 12.6_
 
-- [ ] 1.2 Implement the finding model and code catalogue
+- [x] 1.2 Implement the finding model and code catalogue
   - Severity levels, the finding value with feature, project-relative file, optional 1-based line and message, and builder helpers that take the default severity from the catalogue
   - Catalogue of every code this crate emits (the 21 entries in the design's Supporting References) with default severity and description, plus string constants per code
   - Stable sort by file, then line with absent lines first, then code, then message
