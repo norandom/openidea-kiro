@@ -19,6 +19,7 @@ pub fn modules() -> Vec<Box<dyn FeatureModule>> {
     vec![
         Box::new(crate::ws::Ws),
         Box::new(crate::nav::Nav),
+        Box::new(crate::viz::Viz),
         Box::new(crate::vocab::Vocab),
     ]
 }

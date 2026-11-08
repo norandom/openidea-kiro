@@ -83,6 +83,12 @@ The static commands declared in `plugin.toml` match the registry's static list:
 | `nav.to-requirements` | `Kiro: Requirements Outline` | Yes | No | Outlines headings from the current spec's requirements document. |
 | `nav.to-design` | `Kiro: Design Outline` | Yes | No | Outlines headings from the current spec's design document. |
 | `nav.to-tasks` | `Kiro: Tasks Outline` | Yes | No | Outlines headings and task items merged in line order from the current spec's tasks document. |
+| `viz.status` | `Kiro: Spec Status` | Yes | Yes | Displays specification status, phase, approvals, task completion, and figures. |
+| `viz.status.insert` | `Kiro: Spec Status — Insert at Cursor` | Yes | Variant | Inserts the specification status overview into the active editor buffer. |
+| `viz.graph` | `Kiro: Spec Graph` | Yes | Yes | Displays requirements-to-files structure graph (Mermaid flowchart or Markdown table). |
+| `viz.graph.insert` | `Kiro: Spec Graph — Insert at Cursor` | Yes | Variant | Inserts the specification structure graph into the active editor buffer. |
+| `viz.tasks` | `Kiro: Task Graph` | Yes | Yes | Displays task dependency graph (Mermaid flowchart or Markdown table). |
+| `viz.tasks.insert` | `Kiro: Task Graph — Insert at Cursor` | Yes | Variant | Inserts the task dependency graph into the active editor buffer. |
 | `vocab.term` | `Kiro: Vocabulary Term` | Yes | No | Looks up a term within the current spec's declared topics. When invoked without arguments, displays usage guidance and the visible terms table. |
 | `vocab.list` | `Kiro: List Vocabulary Terms` | Yes | Yes | Lists all visible terms for the current spec's declared topics; optionally filtered by a declared topic argument. |
 | `vocab.list.insert` | `Kiro: List Vocabulary Terms — Insert at Cursor` | Yes | Variant | Inserts the visible terms table into the active editor buffer. |
@@ -135,6 +141,20 @@ The navigation capability provides cross-spec ownership tracing, component and t
   3. Verify that the notification balloon displays the owning spec, components, tasks and criteria.
   4. Place the editor cursor on an empty line and run **Kiro: Spec Context — Insert at Cursor**.
   5. Verify that a `kiro-spec: ...` reference line is inserted at the cursor wrapped in the appropriate comment marker (e.g. `// kiro-spec: ...`) and the notification confirms insertion.
+
+---
+
+## 5.3 Spec Visualization & Structural Views
+
+The visualization capability produces pure cross-document structural views of a specification:
+
+- **Programmatic Argument Forms**:
+  - `viz.status [spec]`: Displays specification phase, approvals table, task completion statistics with per-major progress, requirements/design figures, and successor chain. Accepts no additional options.
+  - `viz.graph [spec] [text]`: Renders the requirements → criteria → tasks → components → files dependency and containment graph. By default outputs a fenced Mermaid flowchart (`graph LR`); when the `text` option is provided, outputs the complete Markdown table.
+  - `viz.tasks [spec] [text]`: Renders the task breakdown and dependency DAG (`_Depends:_`, ordering, `(P)` parallel markers). By default outputs a fenced Mermaid flowchart (`graph TD`); when the `text` option is provided, outputs the complete Markdown table.
+- **Option Syntax & Rules**:
+  - Options follow the spec name: e.g. `viz.graph <spec> text` or `viz.tasks demo text`.
+  - Options cannot be passed from the IDE's Search Everywhere UI, which triggers commands without arguments.
 
 ---
 

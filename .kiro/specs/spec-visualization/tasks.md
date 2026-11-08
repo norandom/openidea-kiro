@@ -71,7 +71,7 @@
   - _Depends: 2.1, 2.2, 2.3_
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.4, 2.5, 2.6, 2.7, 3.4, 4.7, 5.7, 6.2, 7.5_
 
-- [ ] 3.2 Wire the module into dispatch, the manifest and the README
+- [x] 3.2 Wire the module into dispatch, the manifest and the README
   - Integration task across the plugin's dispatch and package files: one entry for the `viz` module in the dispatch module table; six manifest entries (three base commands, three insert variants) in the static-list order with the documented titles and the `Kiro` category; README rows for the three commands with their spec-addressable and insert-capable flags, the argument example `viz.graph <spec> text`, and the note that options follow the spec name and cannot be passed from the IDE's UI
   - Observable: the existing manifest consistency test passes with the six entries, the README command table equals the manifest's static list, and running `viz.status` through dispatch over the in-memory host with the minimal fixture produces a notification (smoke check only; the committed end-to-end scenarios are 3.3)
   - _Boundary: VizCommands_

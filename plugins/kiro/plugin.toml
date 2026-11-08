@@ -58,6 +58,36 @@ title = "Kiro: Tasks Outline"
 category = "Kiro"
 
 [[contributes.commands]]
+id = "viz.status"
+title = "Kiro: Spec Status"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "viz.status.insert"
+title = "Kiro: Spec Status — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "viz.graph"
+title = "Kiro: Spec Graph"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "viz.graph.insert"
+title = "Kiro: Spec Graph — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "viz.tasks"
+title = "Kiro: Task Graph"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "viz.tasks.insert"
+title = "Kiro: Task Graph — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
 id = "vocab.term"
 title = "Kiro: Vocabulary Term"
 category = "Kiro"
