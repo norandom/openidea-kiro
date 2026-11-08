@@ -16,6 +16,11 @@ Spec-driven: code changes in `crates/` and `plugins/kiro/` are made against appr
 **Purpose**: steering (`steering/*.md`, including the discovery `roadmap.md`), specs (`specs/<feature>/{brief.md, spec.json, requirements.md, design.md, tasks.md}`), project vocabulary (`vocabulary.toml`).
 **Example**: `.kiro/specs/spec-navigation/tasks.md`, `.kiro/vocabulary.toml`
 
+### User-facing documentation
+**Location**: `docs/`
+**Purpose**: Guides, format specifications, ontology mappings, and external integration procedures (e.g. `docs/vocabulary.md`).
+**Example**: `docs/vocabulary.md`
+
 ### Engine crate
 **Location**: `crates/kiro-core/`
 **Purpose**: pure library — `src/` modules per seam, `fixtures/` with cc-sdd sample trees used by tests. No `std::fs`, no network, no threads.

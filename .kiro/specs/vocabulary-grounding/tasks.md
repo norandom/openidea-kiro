@@ -85,7 +85,7 @@
   - _Depends: 1.2, 2.7_
   - _Requirements: 2.15, 9.2, 11.1, 11.2, 11.3, 11.5_
 
-- [ ] 3. (P) Write the vocabulary documentation and the import mapping
+- [x] 3. (P) Write the vocabulary documentation and the import mapping
   - File format and id convention (global ids, per-topic labels, the `<topic>-<name>` convention), the `topics` field of `spec.json` and the documented template change adding an empty list, the no-vocabulary and invalid-vocabulary behaviour of the plugin commands
   - Auto Ontology procedure separating verified facts (terms API `GET /api/terms`, API token header `x-api-key`, model export formats) from steps the maintainer confirms against the installed version, documenting both the direct JSON import path (`kiro-cli vocab import <export.json> --format auto-ontology-json --topic <t>`, supplied by cli-gate) and the SKOS Turtle path (`kiro-cli vocab import <file.ttl> --topic <t>`) with the target Turtle shape
   - The normative SKOS to TOML mapping table of the design (concept, id derivation, preferred label, definition, alternative labels, broader and inverse narrower, deprecation, replacement, topic and kind annotations, ignored subjects, empty definitions, id-sorted output), the `kiro:` namespace and its private-extension status, and the review-and-commit procedure using the loader's findings as the acceptance check
