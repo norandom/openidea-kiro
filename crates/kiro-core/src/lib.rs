@@ -87,6 +87,17 @@
 //! naming no entry warns `ROADMAP_DEP_UNKNOWN`; a missing section yields
 //! an empty list and `ROADMAP_NO_SPECS_SECTION`.
 //!
+//! ## `.kiro/vocabulary.toml`
+//!
+//! A TOML document (schema version "2"). Declares `schema_version`, optional
+//! `[topics.<id>]` tables (with optional `label` and `description`), and
+//! mandatory `[terms.<id>]` tables with `topic` (string), `label` (string),
+//! `definition` (string), `kind` ("entity", "bool", "enum" with `values`,
+//! "int" with optional `min`/`max`), optional `broader` (array of ids),
+//! `alt_labels` (array of strings), `deprecated` (bool) and `replaced_by`
+//! (string). Ids match `[a-z0-9][a-z0-9-]*`. Malformed TOML, missing `terms`
+//! table or invalid ids yield `VOCAB_INVALID` at the offending line.
+//!
 //! # Finding codes
 //!
 //! Every code the engine can produce, with its default severity (the
@@ -116,6 +127,22 @@
 //! | DESIGN_NO_FILE_PLAN | warning | No File Structure Plan section |
 //! | ROADMAP_DEP_UNKNOWN | warning | Dependency names no roadmap entry |
 //! | ROADMAP_NO_SPECS_SECTION | info | No `## Specs (dependency order)` section |
+//! | VOCAB_MISSING | info | .kiro/vocabulary.toml could not be read |
+//! | VOCAB_INVALID | error | Not valid TOML, wrong-typed field or invalid id (line of the first problem) |
+//! | VOCAB_SCHEMA_UNSUPPORTED | warning | schema_version present and not "2" |
+//! | TERM_NO_DEFINITION | warning | Empty definition |
+//! | TERM_KIND_INVALID | warning | Missing or unknown kind, enum without values, int with min > max; kind treated as entity |
+//! | TERM_DUPLICATE_LABEL | error | Two terms of one topic share a label or alt label |
+//! | TERM_BROADER_UNKNOWN | warning | broader names no term; relation ignored |
+//! | TERM_BROADER_CROSS_TOPIC | error | broader names a term of another topic; relation ignored |
+//! | TERM_BROADER_CYCLE | error | Term is transitively broader than itself |
+//! | TERM_DEPRECATED_NO_REPLACEMENT | warning | Deprecated without replaced_by |
+//! | TERM_REPLACED_BY_UNKNOWN | warning | replaced_by names no term |
+//! | TERM_REPLACED_BY_CROSS_TOPIC | warning | replaced_by names a term of another topic |
+//! | TOPIC_EMPTY | info | Declared topic without terms |
+//! | TOPICS_UNDECLARED | info | Spec declares no topics; no term resolution |
+//! | TOPIC_UNKNOWN | warning | Spec declares a topic the vocabulary does not have |
+//! | VOCAB_LABEL_CROSS_TOPIC | info | Same normalised label in two topics — a lint only; resolution never crosses topics (2.15, amendment 2026-11-04) |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -144,6 +171,22 @@
 //!     ("DESIGN_NO_FILE_PLAN", Severity::Warning, "No File Structure Plan section"),
 //!     ("ROADMAP_DEP_UNKNOWN", Severity::Warning, "Dependency names no roadmap entry"),
 //!     ("ROADMAP_NO_SPECS_SECTION", Severity::Info, "No `## Specs (dependency order)` section"),
+//!     ("VOCAB_MISSING", Severity::Info, ".kiro/vocabulary.toml could not be read"),
+//!     ("VOCAB_INVALID", Severity::Error, "Not valid TOML, wrong-typed field or invalid id (line of the first problem)"),
+//!     ("VOCAB_SCHEMA_UNSUPPORTED", Severity::Warning, "schema_version present and not \"2\""),
+//!     ("TERM_NO_DEFINITION", Severity::Warning, "Empty definition"),
+//!     ("TERM_KIND_INVALID", Severity::Warning, "Missing or unknown kind, enum without values, int with min > max; kind treated as entity"),
+//!     ("TERM_DUPLICATE_LABEL", Severity::Error, "Two terms of one topic share a label or alt label"),
+//!     ("TERM_BROADER_UNKNOWN", Severity::Warning, "broader names no term; relation ignored"),
+//!     ("TERM_BROADER_CROSS_TOPIC", Severity::Error, "broader names a term of another topic; relation ignored"),
+//!     ("TERM_BROADER_CYCLE", Severity::Error, "Term is transitively broader than itself"),
+//!     ("TERM_DEPRECATED_NO_REPLACEMENT", Severity::Warning, "Deprecated without replaced_by"),
+//!     ("TERM_REPLACED_BY_UNKNOWN", Severity::Warning, "replaced_by names no term"),
+//!     ("TERM_REPLACED_BY_CROSS_TOPIC", Severity::Warning, "replaced_by names a term of another topic"),
+//!     ("TOPIC_EMPTY", Severity::Info, "Declared topic without terms"),
+//!     ("TOPICS_UNDECLARED", Severity::Info, "Spec declares no topics; no term resolution"),
+//!     ("TOPIC_UNKNOWN", Severity::Warning, "Spec declares a topic the vocabulary does not have"),
+//!     ("VOCAB_LABEL_CROSS_TOPIC", Severity::Info, "Same normalised label in two topics — a lint only; resolution never crosses topics (2.15, amendment 2026-11-04)"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {
@@ -200,17 +243,16 @@
 //! module has content (each stub file is owned by its module's task):
 //!
 //! ```
-//! const MODULES: [&str; 11] = [
+//! const MODULES: [&str; 12] = [
 //!     "finding", "md", "spec", "requirements", "tasks", "design", "roadmap",
-//!     "join", "source", "resolve", "render",
+//!     "join", "source", "resolve", "render", "vocab",
 //! ];
-//! assert_eq!(MODULES.len(), 11);
+//! assert_eq!(MODULES.len(), 12);
 //! ```
 //!
 //! `render` groups the two renderer submodules `render::mermaid` and
-//! `render::text`. The `vocab` and `checks` seams of the steering module map
-//! belong to the vocabulary-grounding and spec-constraints specs and are
-//! deliberately absent from this crate.
+//! `render::text`. The `checks` seam of the steering module map
+//! belongs to the spec-constraints spec and is deliberately absent from this crate.
 #![forbid(unsafe_code)]
 
 pub mod design;
@@ -224,6 +266,7 @@ pub mod roadmap;
 pub mod source;
 pub mod spec;
 pub mod tasks;
+pub mod vocab;
 
 // Crate-root re-exports as listed in the design's CrateScaffold contract.
 pub use design::{Component, DesignDoc, DesignFile, MermaidBlock, normalize_design_path};

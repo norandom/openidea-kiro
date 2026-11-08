@@ -186,6 +186,86 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Info,
         description: "No `## Specs (dependency order)` section",
     },
+    CodeInfo {
+        code: "VOCAB_MISSING",
+        severity: Severity::Info,
+        description: ".kiro/vocabulary.toml could not be read",
+    },
+    CodeInfo {
+        code: "VOCAB_INVALID",
+        severity: Severity::Error,
+        description: "Not valid TOML, wrong-typed field or invalid id (line of the first problem)",
+    },
+    CodeInfo {
+        code: "VOCAB_SCHEMA_UNSUPPORTED",
+        severity: Severity::Warning,
+        description: "schema_version present and not \"2\"",
+    },
+    CodeInfo {
+        code: "TERM_NO_DEFINITION",
+        severity: Severity::Warning,
+        description: "Empty definition",
+    },
+    CodeInfo {
+        code: "TERM_KIND_INVALID",
+        severity: Severity::Warning,
+        description: "Missing or unknown kind, enum without values, int with min > max; kind treated as entity",
+    },
+    CodeInfo {
+        code: "TERM_DUPLICATE_LABEL",
+        severity: Severity::Error,
+        description: "Two terms of one topic share a label or alt label",
+    },
+    CodeInfo {
+        code: "TERM_BROADER_UNKNOWN",
+        severity: Severity::Warning,
+        description: "broader names no term; relation ignored",
+    },
+    CodeInfo {
+        code: "TERM_BROADER_CROSS_TOPIC",
+        severity: Severity::Error,
+        description: "broader names a term of another topic; relation ignored",
+    },
+    CodeInfo {
+        code: "TERM_BROADER_CYCLE",
+        severity: Severity::Error,
+        description: "Term is transitively broader than itself",
+    },
+    CodeInfo {
+        code: "TERM_DEPRECATED_NO_REPLACEMENT",
+        severity: Severity::Warning,
+        description: "Deprecated without replaced_by",
+    },
+    CodeInfo {
+        code: "TERM_REPLACED_BY_UNKNOWN",
+        severity: Severity::Warning,
+        description: "replaced_by names no term",
+    },
+    CodeInfo {
+        code: "TERM_REPLACED_BY_CROSS_TOPIC",
+        severity: Severity::Warning,
+        description: "replaced_by names a term of another topic",
+    },
+    CodeInfo {
+        code: "TOPIC_EMPTY",
+        severity: Severity::Info,
+        description: "Declared topic without terms",
+    },
+    CodeInfo {
+        code: "TOPICS_UNDECLARED",
+        severity: Severity::Info,
+        description: "Spec declares no topics; no term resolution",
+    },
+    CodeInfo {
+        code: "TOPIC_UNKNOWN",
+        severity: Severity::Warning,
+        description: "Spec declares a topic the vocabulary does not have",
+    },
+    CodeInfo {
+        code: "VOCAB_LABEL_CROSS_TOPIC",
+        severity: Severity::Info,
+        description: "Same normalised label in two topics — a lint only; resolution never crosses topics (2.15, amendment 2026-11-04)",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -211,6 +291,22 @@ pub mod codes {
     pub const DESIGN_NO_FILE_PLAN: &str = "DESIGN_NO_FILE_PLAN";
     pub const ROADMAP_DEP_UNKNOWN: &str = "ROADMAP_DEP_UNKNOWN";
     pub const ROADMAP_NO_SPECS_SECTION: &str = "ROADMAP_NO_SPECS_SECTION";
+    pub const VOCAB_MISSING: &str = "VOCAB_MISSING";
+    pub const VOCAB_INVALID: &str = "VOCAB_INVALID";
+    pub const VOCAB_SCHEMA_UNSUPPORTED: &str = "VOCAB_SCHEMA_UNSUPPORTED";
+    pub const TERM_NO_DEFINITION: &str = "TERM_NO_DEFINITION";
+    pub const TERM_KIND_INVALID: &str = "TERM_KIND_INVALID";
+    pub const TERM_DUPLICATE_LABEL: &str = "TERM_DUPLICATE_LABEL";
+    pub const TERM_BROADER_UNKNOWN: &str = "TERM_BROADER_UNKNOWN";
+    pub const TERM_BROADER_CROSS_TOPIC: &str = "TERM_BROADER_CROSS_TOPIC";
+    pub const TERM_BROADER_CYCLE: &str = "TERM_BROADER_CYCLE";
+    pub const TERM_DEPRECATED_NO_REPLACEMENT: &str = "TERM_DEPRECATED_NO_REPLACEMENT";
+    pub const TERM_REPLACED_BY_UNKNOWN: &str = "TERM_REPLACED_BY_UNKNOWN";
+    pub const TERM_REPLACED_BY_CROSS_TOPIC: &str = "TERM_REPLACED_BY_CROSS_TOPIC";
+    pub const TOPIC_EMPTY: &str = "TOPIC_EMPTY";
+    pub const TOPICS_UNDECLARED: &str = "TOPICS_UNDECLARED";
+    pub const TOPIC_UNKNOWN: &str = "TOPIC_UNKNOWN";
+    pub const VOCAB_LABEL_CROSS_TOPIC: &str = "VOCAB_LABEL_CROSS_TOPIC";
 }
 
 /// Orders by `(file, line with absent lines first, code, message)`; stable,
@@ -247,8 +343,8 @@ mod tests {
     }
 
     #[test]
-    fn catalogue_has_21_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 21);
+    fn catalogue_has_37_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 37);
         let all = [
             codes::SPEC_DOC_MISSING,
             codes::SPEC_JSON_INVALID,
@@ -271,8 +367,24 @@ mod tests {
             codes::DESIGN_NO_FILE_PLAN,
             codes::ROADMAP_DEP_UNKNOWN,
             codes::ROADMAP_NO_SPECS_SECTION,
+            codes::VOCAB_MISSING,
+            codes::VOCAB_INVALID,
+            codes::VOCAB_SCHEMA_UNSUPPORTED,
+            codes::TERM_NO_DEFINITION,
+            codes::TERM_KIND_INVALID,
+            codes::TERM_DUPLICATE_LABEL,
+            codes::TERM_BROADER_UNKNOWN,
+            codes::TERM_BROADER_CROSS_TOPIC,
+            codes::TERM_BROADER_CYCLE,
+            codes::TERM_DEPRECATED_NO_REPLACEMENT,
+            codes::TERM_REPLACED_BY_UNKNOWN,
+            codes::TERM_REPLACED_BY_CROSS_TOPIC,
+            codes::TOPIC_EMPTY,
+            codes::TOPICS_UNDECLARED,
+            codes::TOPIC_UNKNOWN,
+            codes::VOCAB_LABEL_CROSS_TOPIC,
         ];
-        assert_eq!(all.len(), 21);
+        assert_eq!(all.len(), 37);
         for c in all {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),

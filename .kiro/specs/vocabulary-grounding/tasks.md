@@ -1,7 +1,7 @@
 # Implementation Plan
 
 - [ ] 1. Foundation: engine integration points, fixtures and model
-- [ ] 1.1 Integrate the vocabulary seam into the engine crate
+- [x] 1.1 Integrate the vocabulary seam into the engine crate
   - Prerequisite: `crates/kiro-core` is implemented and builds for native and the sandbox target (kiro-core spec), and `plugins/kiro` is implemented and builds its component (plugin-core spec) so the size baseline below can be taken
   - Record the current size of the built plugin component as the baseline before the engine gains a new dependency; the figure is reported by task 5
   - Add the TOML parser as a runtime dependency with default features off and only parsing enabled; declare the vocabulary module with one documented empty stub per file of the File Structure Plan (model, parse, index, scope, loader) so later tasks own their files
