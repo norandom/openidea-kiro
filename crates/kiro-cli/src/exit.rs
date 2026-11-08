@@ -108,6 +108,7 @@ pub fn parse_severity(s: &str) -> Option<Severity> {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 mod tests {
     use super::*;
 

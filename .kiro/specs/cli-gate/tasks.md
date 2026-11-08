@@ -24,8 +24,8 @@
   - _Boundary: CliFixtures_
   - _Requirements: 13.4, 13.5_
 
-- [ ] 2. Core: filesystem adapter and command line
-- [ ] 2.1 Implement the filesystem adapter
+- [x] 2. Core: filesystem adapter and command line
+- [x] 2.1 Implement the filesystem adapter
   - Project root resolution (canonicalised, must be a directory, display form with forward slashes), the engine read port over the filesystem with the lexical guard (absolute paths, drive prefixes, leading separators and parent segments refused without touching the disk) and the host-parity limits (regular file, at most 16 MiB, valid UTF-8; any failure is "absent"), optional verbose diagnostics of refused or failed reads on standard error, spec discovery over the specs directory (direct subdirectories containing a spec or requirements document, sorted, no recursion, files and dot-directories ignored, failure when the directory is missing), operator-argument file reading as given with byte-order-mark stripping, output existence and writing, and path display normalisation
   - This is the only module that names the standard filesystem API; keep every other module free of it
   - Observable: unit tests cover the guard table, oversized, non-UTF-8 and directory reads returning nothing, discovery ordering and filtering, and the read port never panics on any path string
@@ -33,7 +33,7 @@
   - _Depends: 1.1_
   - _Requirements: 1.1, 1.2, 1.3, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 2.2 (P) Define the command line, the check configuration translation and the parser wiring
+- [x] 2.2 (P) Define the command line, the check configuration translation and the parser wiring
   - The command tree of the design's command summary with the global project and verbose options; the check options (feature list, all, report format, fail-on, check selection list, pattern reporting, suggestion disabling, the two caps, repeatable severity overrides); view arguments with the table flag; vocabulary validate and import arguments (one or more input files, required input format and topic, kind with default entity, output path, merge); this task owns the input-format value enum that the importer reuses
   - Selection resolution producing the design's usage failure when neither or both of feature and all are given, with duplicate features removed and order kept; translation of the check options into the engine's check configuration starting from its defaults, with override parsing that rejects unknown check codes, unknown levels and zero caps by name; topic validation against the vocabulary id rule
   - Explicit touch of the entry point: wire the non-exiting parser into it (help and version exit 0; any other parse error exits 2 after the parser's own message) and dispatch to a placeholder failure per command until the command tasks add their arms
