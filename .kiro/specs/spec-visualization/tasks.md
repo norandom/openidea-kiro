@@ -34,7 +34,7 @@
   - _Depends: 1.1_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.8, 6.1, 6.4, 7.1_
 
-- [ ] 2.3 (P) Build the task dependency view and its summary
+- [x] 2.3 (P) Build the task dependency view and its summary
   - Touches only the tasks view file; nothing in the shared module file
   - Every task (majors and sub-tasks) as a node in document order with the major/sub kind markers and done markers; top-down orientation
   - Edges in order: containment from each major to its sub-tasks; ordering edges between consecutive top-level entries and between consecutive sub-tasks of a major, skipped when the later task is parallel-capable (tasks the parser demoted to top level take part in the top-level chain); explicit `depends` edges from `_Depends:_` entries with unknown targets counted and a self-reference drawn as a self-loop
