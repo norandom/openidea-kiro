@@ -60,7 +60,7 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.5, 7.6, 7.7, 10.1_
 
 - [ ] 3. Integration: project context, dispatch, own commands, manifest, bindings
-- [ ] 3.1 Implement the command context: root, active file, known specs, workspace and resolution
+- [x] 3.1 Implement the command context: root, active file, known specs, workspace and resolution
   - Fails with "no project is open" when the host reports no root; normalises the reported active file against the root with the engine's path normalisation, treating absent or outside files as no active file
   - Builds a fresh engine workspace over the source adapter, reads the roadmap once and takes its names in document order (not the workspace's sorted list), records whether the roadmap is absent, has no specs section (the engine's finding code) or is present with a count, adds the active-file spec and the explicit spec, and keeps each known spec with the sources it came from, deduplicated, in roadmap order
   - Resolution through the engine (explicit, active file, only known) with the two unresolved messages (candidates plus the per-spec command hint; no spec known plus the roadmap hint); cached loading of a spec and a document-readability helper
