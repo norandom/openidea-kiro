@@ -1,0 +1,533 @@
+﻿schema_version = "2"
+
+[topics.ops]
+label = "Operations"
+description = "System operations and telemetry."
+
+[topics.pm]
+label = "Project Management"
+description = "Project planning and delivery."
+
+[topics.hr]
+label = "Human Resources"
+description = "Staffing and shifts."
+
+[topics.wide]
+label = "Wide Topic"
+description = "Topic with 65 enum terms for cap testing."
+
+[terms.mode]
+topic = "ops"
+label = "Mode"
+definition = "The operating mode of the controller."
+kind = "enum"
+values = ["normal", "safe", "maintenance"]
+
+[terms.depth]
+topic = "ops"
+label = "Depth"
+definition = "Submersible depth in meters."
+kind = "int"
+min = 0
+
+[terms.armed]
+topic = "ops"
+label = "Armed"
+definition = "Whether the mechanism is armed."
+kind = "bool"
+
+[terms.operator]
+topic = "ops"
+label = "Operator"
+definition = "The person operating the system."
+kind = "entity"
+alt_labels = ["on-call engineer"]
+
+[terms.legacy-mode]
+topic = "ops"
+label = "Legacy mode"
+definition = "Old mode setting."
+kind = "enum"
+values = ["off", "on"]
+deprecated = true
+replaced_by = "mode"
+
+[terms.level]
+topic = "ops"
+label = "Level"
+definition = "Operational level."
+kind = "int"
+
+[terms.pm-level]
+topic = "pm"
+label = "Level"
+definition = "Project management hierarchy level."
+kind = "int"
+
+[terms.sprint]
+topic = "pm"
+label = "Sprint"
+definition = "A development sprint."
+kind = "entity"
+
+[terms.shift]
+topic = "hr"
+label = "Shift"
+definition = "Work shift assignment."
+kind = "entity"
+
+[terms.w01]
+topic = "wide"
+label = "Term w01"
+definition = "Wide term w01."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w02]
+topic = "wide"
+label = "Term w02"
+definition = "Wide term w02."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w03]
+topic = "wide"
+label = "Term w03"
+definition = "Wide term w03."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w04]
+topic = "wide"
+label = "Term w04"
+definition = "Wide term w04."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w05]
+topic = "wide"
+label = "Term w05"
+definition = "Wide term w05."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w06]
+topic = "wide"
+label = "Term w06"
+definition = "Wide term w06."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w07]
+topic = "wide"
+label = "Term w07"
+definition = "Wide term w07."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w08]
+topic = "wide"
+label = "Term w08"
+definition = "Wide term w08."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w09]
+topic = "wide"
+label = "Term w09"
+definition = "Wide term w09."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w10]
+topic = "wide"
+label = "Term w10"
+definition = "Wide term w10."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w11]
+topic = "wide"
+label = "Term w11"
+definition = "Wide term w11."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w12]
+topic = "wide"
+label = "Term w12"
+definition = "Wide term w12."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w13]
+topic = "wide"
+label = "Term w13"
+definition = "Wide term w13."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w14]
+topic = "wide"
+label = "Term w14"
+definition = "Wide term w14."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w15]
+topic = "wide"
+label = "Term w15"
+definition = "Wide term w15."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w16]
+topic = "wide"
+label = "Term w16"
+definition = "Wide term w16."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w17]
+topic = "wide"
+label = "Term w17"
+definition = "Wide term w17."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w18]
+topic = "wide"
+label = "Term w18"
+definition = "Wide term w18."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w19]
+topic = "wide"
+label = "Term w19"
+definition = "Wide term w19."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w20]
+topic = "wide"
+label = "Term w20"
+definition = "Wide term w20."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w21]
+topic = "wide"
+label = "Term w21"
+definition = "Wide term w21."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w22]
+topic = "wide"
+label = "Term w22"
+definition = "Wide term w22."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w23]
+topic = "wide"
+label = "Term w23"
+definition = "Wide term w23."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w24]
+topic = "wide"
+label = "Term w24"
+definition = "Wide term w24."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w25]
+topic = "wide"
+label = "Term w25"
+definition = "Wide term w25."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w26]
+topic = "wide"
+label = "Term w26"
+definition = "Wide term w26."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w27]
+topic = "wide"
+label = "Term w27"
+definition = "Wide term w27."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w28]
+topic = "wide"
+label = "Term w28"
+definition = "Wide term w28."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w29]
+topic = "wide"
+label = "Term w29"
+definition = "Wide term w29."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w30]
+topic = "wide"
+label = "Term w30"
+definition = "Wide term w30."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w31]
+topic = "wide"
+label = "Term w31"
+definition = "Wide term w31."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w32]
+topic = "wide"
+label = "Term w32"
+definition = "Wide term w32."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w33]
+topic = "wide"
+label = "Term w33"
+definition = "Wide term w33."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w34]
+topic = "wide"
+label = "Term w34"
+definition = "Wide term w34."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w35]
+topic = "wide"
+label = "Term w35"
+definition = "Wide term w35."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w36]
+topic = "wide"
+label = "Term w36"
+definition = "Wide term w36."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w37]
+topic = "wide"
+label = "Term w37"
+definition = "Wide term w37."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w38]
+topic = "wide"
+label = "Term w38"
+definition = "Wide term w38."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w39]
+topic = "wide"
+label = "Term w39"
+definition = "Wide term w39."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w40]
+topic = "wide"
+label = "Term w40"
+definition = "Wide term w40."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w41]
+topic = "wide"
+label = "Term w41"
+definition = "Wide term w41."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w42]
+topic = "wide"
+label = "Term w42"
+definition = "Wide term w42."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w43]
+topic = "wide"
+label = "Term w43"
+definition = "Wide term w43."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w44]
+topic = "wide"
+label = "Term w44"
+definition = "Wide term w44."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w45]
+topic = "wide"
+label = "Term w45"
+definition = "Wide term w45."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w46]
+topic = "wide"
+label = "Term w46"
+definition = "Wide term w46."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w47]
+topic = "wide"
+label = "Term w47"
+definition = "Wide term w47."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w48]
+topic = "wide"
+label = "Term w48"
+definition = "Wide term w48."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w49]
+topic = "wide"
+label = "Term w49"
+definition = "Wide term w49."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w50]
+topic = "wide"
+label = "Term w50"
+definition = "Wide term w50."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w51]
+topic = "wide"
+label = "Term w51"
+definition = "Wide term w51."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w52]
+topic = "wide"
+label = "Term w52"
+definition = "Wide term w52."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w53]
+topic = "wide"
+label = "Term w53"
+definition = "Wide term w53."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w54]
+topic = "wide"
+label = "Term w54"
+definition = "Wide term w54."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w55]
+topic = "wide"
+label = "Term w55"
+definition = "Wide term w55."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w56]
+topic = "wide"
+label = "Term w56"
+definition = "Wide term w56."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w57]
+topic = "wide"
+label = "Term w57"
+definition = "Wide term w57."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w58]
+topic = "wide"
+label = "Term w58"
+definition = "Wide term w58."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w59]
+topic = "wide"
+label = "Term w59"
+definition = "Wide term w59."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w60]
+topic = "wide"
+label = "Term w60"
+definition = "Wide term w60."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w61]
+topic = "wide"
+label = "Term w61"
+definition = "Wide term w61."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w62]
+topic = "wide"
+label = "Term w62"
+definition = "Wide term w62."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w63]
+topic = "wide"
+label = "Term w63"
+definition = "Wide term w63."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w64]
+topic = "wide"
+label = "Term w64"
+definition = "Wide term w64."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+
+[terms.w65]
+topic = "wide"
+label = "Term w65"
+definition = "Wide term w65."
+kind = "enum"
+values = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+

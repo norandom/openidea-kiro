@@ -11,7 +11,7 @@
   - _Boundary: CoreIntegration_
   - _Requirements: 1.8, 8.1, 8.3_
 
-- [ ] 1.2 (P) Create the check fixtures
+- [x] 1.2 (P) Create the check fixtures
   - The known-good tree: a vocabulary for topic `ops` (enum, int with a lower bound only, bool, entity with an alternative label, a deprecated term with replacement), a roadmap, and spec `clean` declaring `ops` whose requirements document uses every EARS pattern, declares terms on requirements and on one criterion, carries disjoint guards, effects and one declared conflict, and declares every term whose label it mentions (producing zero warnings/errors and only the single `CHECK_COVERAGE` info finding under the default configuration)
   - The known-bad tree: a vocabulary with topics `ops` (plus a second "Level" label), `pm` (another "Level" label), `hr`, and `wide` (sixty-five enum terms of eight values, produced once by a small script and committed); spec `broken` (topics `ops`, `pm`) producing every code of this spec except the refusal and the unscoped finding (including `CHECK_COVERAGE`), with the two contradiction pairs and witnesses the design fixes; spec `wide` exceeding the default variable cap with one declared conflict (producing `SEARCH_REFUSED` and `CHECK_COVERAGE`); spec `none` without topics but with annotations (producing `TOPICS_UNDECLARED` and `CHECK_UNSCOPED`, with no `CHECK_COVERAGE` because neither the term nor the contradiction check runs)
   - The EARS regression document: the version-1 false positives (quoted modal, hyphenated compound, possessive apostrophe, parenthetical comma in the response, both `If` forms) that must produce no finding, and one criterion per EARS code

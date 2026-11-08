@@ -1,0 +1,7 @@
+{
+  "feature_name": "clean",
+  "phase": "requirements-generated",
+  "topics": [
+    "ops"
+  ]
+}
