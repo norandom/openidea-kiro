@@ -27,7 +27,7 @@
   - _Depends: 1.1_
   - _Requirements: 2.2, 2.10, 3.7_
 
-- [ ] 1.4 (P) Implement the guard and effect language
+- [x] 1.4 (P) Implement the guard and effect language
   - Combinator lexer and parser over `winnow` for the design's grammar: or/and/not with precedence, parentheses, bare term references, comparisons with the six operators where `=` and `==` both mean equality, integer, boolean, quoted and bare-word literals, kebab-case words, negative numbers; empty guard text means unconditional; effect lists of equality assignments; explicit nesting-depth cap (`MAX_GUARD_DEPTH = 64`) for the wasm stack; every error carries the design's leading phrase and a byte position
   - Observable: unit tests cover precedence, parentheses, both equality spellings, negative integers, quoted and bare words, effect lists, nesting depth above 64, and every error message with its position
   - _Boundary: GuardLanguage_
