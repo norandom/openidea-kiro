@@ -30,7 +30,7 @@
   - _Depends: 1.1_
   - _Requirements: 3.2, 3.3, 3.4, 8.3_
 
-- [ ] 2.2 (P) Implement the ownership report of the context command
+- [x] 2.2 (P) Implement the ownership report of the context command
   - Replaces the report half of the context file; the reference half stays a stub until 2.3, so the insert-flag path keeps returning the stub's not-implemented error until 2.3 lands
   - Active-file checks: no active file and file outside the project produce their single-line errors; an active file under a spec directory produces the spec-document notice naming the document kind and pointing to the files command
   - Spec selection: the explicitly named spec alone, otherwise every known spec in roadmap order; with no known spec the plugin's standard resolution error is returned unchanged; unexpected tokens rejected before any document is loaded
@@ -41,7 +41,7 @@
   - _Depends: 1.1_
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 7.2, 7.4, 7.6, 8.2, 8.3_
 
-- [ ] 2.3 Implement the reference line and the insert path of the context command
+- [x] 2.3 Implement the reference line and the insert path of the context command
   - Blocked by 2.1 (uses the comment styles) and 2.2 (same file, same gathered report), so not parallel with its preceding peers
   - One `kiro-spec: …; components: …; tasks: …; requirements: …` line per covering spec (`none` for empty lists) wrapped in the active file's comment style, each ending with a line break, returned as the output text when the insert flag is set so that the notification shows exactly the inserted text
   - Errors when the insert flag is set and nothing can be inserted: the file is a spec document, or no checked spec covers it (naming the file and the checked specs); all other selection and active-file rules identical to the report path
