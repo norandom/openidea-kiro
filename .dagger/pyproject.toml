@@ -1,7 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "kiro"
 version = "0.1.0"
+description = "Dagger CI module for OpenIDEA Kiro SDLC quality gate"
 requires-python = ">=3.11"
 dependencies = [
     "dagger-io",
 ]
+
+[project.entry-points."dagger.mod"]
+main_object = "kiro:Kiro"
