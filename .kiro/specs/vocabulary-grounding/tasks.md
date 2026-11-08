@@ -55,14 +55,14 @@
   - _Boundary: VocabLoader_
   - _Requirements: 2.1, 2.2, 2.3, 8.5_
 
-- [ ] 2.5 Implement scoped resolution and preferred-label lookup
+- [x] 2.5 Implement scoped resolution and preferred-label lookup
   - The single resolution operation taking the query and the topic list: unscoped on an empty list without consulting indexes; the normalised query compared with ids, labels and alternative labels of the searched topics; found with the match kind, the term's closure and the in-scope replacement; ambiguous and not-in-topic carrying only sorted topic/id hits; unknown otherwise; answers independent of topic order
   - Preferred-label lookup as the same operation restricted to ids; no public function returning a term without a topic list
   - Observable: unit tests cover every outcome variant, whitespace-padded queries matching an id, the closure inside the found outcome, in-scope-only replacement, topic-order insensitivity, that not-in-topic hits expose no definition, and that preferred label ignores labels
   - _Boundary: VocabScope_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.1, 5.2_
 
-- [ ] 2.6 Implement listings, spec topic derivation and scope findings
+- [x] 2.6 Implement listings, spec topic derivation and scope findings
   - Visible terms ordered by topic then id; available topics with labels and counts; spec topic derivation from the spec model (trimmed, non-empty, deduplicated, declaration order); scope findings for undeclared topics and unknown topics, the latter only while the vocabulary is loaded, taking owned spec name, spec.json path and topics
   - Explicit integration touch: add the query-type re-export line to the module root owned by 2.4
   - Observable: unit tests cover visible ordering, implicit topics, spec topic trimming and deduplication, and the scope findings for loaded, missing and invalid vocabularies; consumers import every public type from the one module path

@@ -17,6 +17,7 @@ use crate::vocab::parse::parse_raw;
 pub use model::{
     Hit, Kind, SCHEMA_VERSION, Term, Topic, VOCABULARY_PATH, Vocabulary, is_id, normalize_label,
 };
+pub use scope::{Lookup, MatchVia, scope_findings, spec_topics};
 
 /// Status of the loaded vocabulary.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
