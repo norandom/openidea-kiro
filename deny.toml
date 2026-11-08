@@ -19,17 +19,20 @@ exclude-dev = true
 
 [advisories]
 yanked = "warn"
+ignore = [
+    "RUSTSEC-2025-0057",
+]
 
 [bans]
 multiple-versions = "warn"
 
 [[bans.deny]]
 name = "getrandom"
-wrappers = ["rand"]
+wrappers = ["rand_core", "rand"]
 
 [[bans.deny]]
 name = "rand"
-wrappers = ["biodivine-lib-bdd"]
+wrappers = ["biodivine-lib-bdd", "oxrdf", "num-bigint"]
 
 # Filesystem-dependent crates are banned on the wasm graph: the sandbox
 # forbids file I/O (design line 299 / steering product.md). None are in the
