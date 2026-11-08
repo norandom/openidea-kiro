@@ -59,7 +59,7 @@
   - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 4.2_
 
 - [ ] 3. Contradiction search
-- [ ] 3.1 Implement finitisation: typed guards, domains and conflicts
+- [x] 3.1 Implement finitisation: typed guards, domains and conflicts
   - Per criterion with any of guard, effect or conflicts: parsing errors, undeclared references, unresolved declared terms (excluded silently), kind rules for bool, enum, int and entity terms, bare-word literals that name a declared term (literal constants only), duplicate and misplaced annotations, unknown conflict ids; criteria without annotations that are named by an accepted conflict list are prepared as unconditional
   - Domains for every term used by an accepted criterion in topic-then-id order: bool, enum values in declaration order, integer regions cut at the constants mentioned by accepted guards and effects within the declared bounds; the brute-force evaluator of a typed guard over a state, for tests
   - Observable: unit tests cover the kind table, term-versus-term rejection, regions with and without bounds, the domain order, the referenced-unconditional rule and each finding code of this task
