@@ -67,7 +67,7 @@
   - _Depends: 1.4, 1.5, 2.2_
   - _Requirements: 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 5.2, 5.6_
 
-- [ ] 3.2 Implement the decision-diagram engine
+- [x] 3.2 Implement the decision-diagram engine
   - One variable set per encoding with one-hot blocks declared contiguously in domain order; the variable cap clamped at the design's ceiling and checked before any library call; the exactly-one domain constraint, guard encoding, conjunction, satisfiability and witness decoding all through the library's limited operation with the node cap; refusals naming the cap and stage; the largest-blocks helper
   - Observable: unit tests show contiguous blocks, the domain forbidding two values of one term, variable and node refusals on tiny caps, witness decoding to term values, and a domain node count that stays linear in the number of blocks
   - _Boundary: BddEngine_
