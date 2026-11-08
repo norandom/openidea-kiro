@@ -313,7 +313,7 @@ If you use OpenIDEA Kiro in your research or engineering workflows, please cite 
 
 ```bibtex
 @software{openidea_kiro_2026,
-  author = {norandom and OpenIDEA Kiro Contributors},
+  author = {M. Ciepluch},
   title = {OpenIDEA Kiro: Spec-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification},
   version = {0.1.0-alpha},
   year = {2026},

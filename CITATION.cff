@@ -2,8 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 authors:
-  - name: "norandom and OpenIDEA Kiro Contributors"
-    website: "https://github.com/norandom/openidea-kiro"
+  - name: "M. Ciepluch"
 title: "OpenIDEA Kiro: Spec-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification"
 version: 0.1.0-alpha
 date-released: "2026-11-08"
