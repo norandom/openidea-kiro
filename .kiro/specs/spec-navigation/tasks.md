@@ -21,7 +21,7 @@
   - _Requirements: 8.4_
 
 - [ ] 2. Core: comment syntax and the three views
-- [ ] 2.1 (P) Implement comment-syntax selection and wrapping
+- [x] 2.1 (P) Implement comment-syntax selection and wrapping
   - Replaces the body of the comment-syntax file only
   - Five styles (double slash, hash, double dash, HTML, bare); the four extension tables and the extension-less basename table from the design; selection by the file name after the last slash and its last extension (a leading dot is not an extension), compared in ASCII lowercase, extension tables first, then basenames, else bare
   - Wrapping of one line per style without a trailing newline; HTML wrapping replaces every `--` inside the text with `- -`
