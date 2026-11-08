@@ -60,7 +60,7 @@
   - _Boundary: VizCoreTests_
   - _Requirements: 4.7, 7.1, 7.2, 7.4, 7.6, 8.2_
 
-- [ ] 3. Integration: plugin feature module
+- [x] 3. Integration: plugin feature module
 - [x] 3.1 (P) Implement the `viz` feature module
   - Prerequisite: `plugins/kiro` from the plugin-core spec is implemented (dispatch, context, presentation, in-memory host)
   - Three command declarations (status, graph, tasks: spec-addressable, insert-capable, first token names the spec) with the design's titles; option parsing accepting `text` for graph and tasks and nothing for status, rejecting unknown options with the documented message before any read; the labeler constructor returning the identity labeler as the single substitution point for a vocabulary-backed labeler
@@ -77,7 +77,7 @@
   - _Boundary: VizCommands_
   - _Requirements: 1.1, 8.5_
 
-- [ ] 3.3 Write the plugin end-to-end tests for the `viz` commands
+- [x] 3.3 Write the plugin end-to-end tests for the `viz` commands
   - Over the in-memory host loaded with the engine's minimal fixture tree: activation registers the six static `viz` ids with their titles; the graph command with the active design file notifies the documented title with a body starting with the graph summary and returns a text containing the Mermaid fence; afterwards the per-spec variants of all three commands exist for both fixture specs; the task-graph insert variant produces exactly one insertion equal to the returned text and one notification; the `text` option returns the node table without a fence; an unknown option fails with the documented message and no notification; `viz.graph text` without an explicit spec and `viz.graph.demo` with argument `text` fail with plugin-core's documented errors; no active file with two known specs fails with the candidates message; the superseded fixture without `tasks.md` fails with the missing-document message; its status shows `Successor chain: old -> demo (terminal)`; the `Phase:` line of the status view equals that of the plugin's current-spec report for the same spec
   - Observable: `cargo test` from the plugin package passes with the new test file
   - _Boundary: VizPluginTests_

@@ -305,7 +305,7 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(logs, vec!["kiro activated: 14 commands"]);
+        assert_eq!(logs, vec!["kiro activated: 20 commands"]);
     }
 
     #[test]
