@@ -88,8 +88,8 @@
   - _Depends: 2.3, 2.5, 2.6_
   - _Requirements: 1.1, 1.4, 8.5, 8.7_
 
-- [ ] 4. Validation: end-to-end behaviour and the sandbox build
-- [ ] 4.1 Write the end-to-end tests for activation, the context command and the insert variant
+- [x] 4. Validation: end-to-end behaviour and the sandbox build
+- [x] 4.1 Write the end-to-end tests for activation, the context command and the insert variant
   - Extends the smoke test file from 1.2
   - Activation registers the seven navigation static ids among the static list
   - Context over the shared file: title names both specs, body holds alpha's task line with its `tasks.md` line, criteria 1.1 and 1.2 with `requirements.md` lines and 9.9 marked not found, gamma under "no design", warning level, and no read event for the code file; the per-spec variant restricts to one spec
@@ -100,7 +100,7 @@
   - _Depends: 1.2, 3.1_
   - _Requirements: 1.4, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 3.1, 3.2, 3.5, 3.6, 7.3, 7.6, 8.1, 8.4_
 
-- [ ] 4.2 Write the end-to-end tests for the coverage views, the outlines and notification clipping
+- [x] 4.2 Write the end-to-end tests for the coverage views, the outlines and notification clipping
   - Blocked by 4.1 (same test file), so not parallel with its preceding peer
   - Component view for alpha (counts line, `Empty` without files, unassigned file, unscoped task, unknown boundary `Glue`), the missing-design case via gamma's variant, the missing-tasks case with beta's tasks document removed from the host, and the unresolved-spec error with no active file and three known specs
   - Task view for alpha in full, filtered by a major, filtered by a sub-task, with an unknown id, and for gamma with every boundary unknown at warning level
@@ -110,7 +110,7 @@
   - _Boundary: NavTests_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 6.1, 6.2, 6.3, 6.4, 6.5, 7.2, 7.3, 7.4, 8.1, 8.4_
 
-- [ ] 4.3 Verify the sandbox build and lints, and run the manual host check
+- [x] 4.3 Verify the sandbox build and lints, and run the manual host check
   - Release build for the sandbox target, clippy with warnings denied for the native and sandbox targets, and fmt check from the plugin package all pass with the navigation module included — these three automated checks are the completion condition
   - Manual check as documented in the README when a host is available: dev plugin reloaded in this repository, `crates/kiro-core/src/md.rs` open, the context command shows a notification naming `kiro-core` and `MarkdownScanner`; the insert variant adds a `// kiro-spec: kiro-core; …` line at the cursor; when no host is available the manual check is recorded as deferred in the completion note
   - Observable: the built component file is produced and all three automated checks exit zero; the manual check outcome (passed or deferred) is recorded in the task's completion note

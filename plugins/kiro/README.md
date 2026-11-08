@@ -182,12 +182,13 @@ The WebAssembly plugin runs in a sandboxed host environment under strict resourc
 
 ---
 
-## 9. Vocabulary commands: verification
+## 9. Verification & Binary Metrics
 
 Validation of the WebAssembly component binary and dev-plugin integration:
 
 - **Component Binary Size**:
   - **Baseline (Task 1.1)**: 13,196 bytes
   - **After Vocabulary Grounding**: 292,878 bytes (includes `toml` parser and `vocab` module)
+  - **After Spec Navigation**: 708,150 bytes (includes `nav` module, join ownership and coverage, comment wrapping)
 - **Host Integration Verification**:
-  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.
+  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/nav.rs`, `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.
