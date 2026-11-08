@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: engine integration points, fixtures and model
+- [x] 1. Foundation: engine integration points, fixtures and model
 - [x] 1.1 Integrate the vocabulary seam into the engine crate
   - Prerequisite: `crates/kiro-core` is implemented and builds for native and the sandbox target (kiro-core spec), and `plugins/kiro` is implemented and builds its component (plugin-core spec) so the size baseline below can be taken
   - Record the current size of the built plugin component as the baseline before the engine gains a new dependency; the figure is reported by task 5
@@ -19,7 +19,7 @@
   - _Boundary: VocabFixtures_
   - _Requirements: 2.15, 11.5, 11.6_
 
-- [ ] 1.3 Implement the vocabulary model types and normalisation
+- [x] 1.3 Implement the vocabulary model types and normalisation
   - Blocked by 1.1 (module stub and dependency); may run alongside 1.2 only
   - Term, topic, kind (entity, bool, enum with values, int with optional bounds), hit and vocabulary value types with the fields and privacy of the design; the vocabulary's indexes are private and only the engine constructs it
   - Label normalisation (trim, collapse internal whitespace, Unicode lower-case) and the id rule validator; the vocabulary path and schema version constants

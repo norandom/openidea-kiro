@@ -8,3 +8,7 @@ pub mod index;
 pub mod model;
 pub mod parse;
 pub mod scope;
+
+pub use model::{
+    Hit, Kind, SCHEMA_VERSION, Term, Topic, VOCABULARY_PATH, Vocabulary, is_id, normalize_label,
+};
