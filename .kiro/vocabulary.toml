@@ -1,0 +1,130 @@
+# Origin: Hand-authored in the `kiro-cli vocab import` output shape.
+# Replace by a real import when the SDD ontology exists in Auto Ontology.
+# Schema version: 2
+# Documentation: docs/vocabulary.md
+
+schema_version = "2"
+
+[topics.sdd]
+label = "Spec-driven development"
+description = "Artifacts, roles, and rules of the kiro / cc-sdd workflow."
+
+[terms.acceptance-criterion]
+topic = "sdd"
+label = "Acceptance criterion"
+definition = "One EARS-shaped, testable statement under a requirement, identified as N.M."
+kind = "entity"
+broader = ["requirement"]
+alt_labels = ["criterion", "AC"]
+
+[terms.approval]
+topic = "sdd"
+label = "Approval"
+definition = "A human sign-off recorded for a workflow phase before proceeding."
+kind = "bool"
+
+[terms.boundary]
+topic = "sdd"
+label = "Boundary"
+definition = "An explicit annotation associating a task with its owning design component."
+kind = "entity"
+alt_labels = ["boundary annotation"]
+
+[terms.brief]
+topic = "sdd"
+label = "Brief"
+definition = "An initial high-level discovery document framing an idea or project."
+kind = "entity"
+
+[terms.component]
+topic = "sdd"
+label = "Component"
+definition = "A named architectural unit responsible for a cohesive set of files."
+kind = "entity"
+
+[terms.design]
+topic = "sdd"
+label = "Design"
+definition = "An architectural specification detailing components, interfaces, and file structure plan."
+kind = "entity"
+broader = ["spec"]
+alt_labels = ["design document"]
+
+[terms.ears-pattern]
+topic = "sdd"
+label = "EARS pattern"
+definition = "An Easy Approach to Requirements Syntax pattern classifying a criterion."
+kind = "enum"
+values = ["event-driven", "state-driven", "unwanted-behavior", "optional-feature", "ubiquitous"]
+
+[terms.finding]
+topic = "sdd"
+label = "Finding"
+definition = "A diagnostic message emitted during specification validation."
+kind = "entity"
+
+[terms.phase]
+topic = "sdd"
+label = "Phase"
+definition = "The workflow state recorded in spec.json."
+kind = "enum"
+values = ["initialized", "requirements-generated", "design-generated", "tasks-generated"]
+
+[terms.requirement]
+topic = "sdd"
+label = "Requirement"
+definition = "A structured statement of system behavior identified by a numeric id."
+kind = "entity"
+broader = ["spec"]
+
+[terms.roadmap]
+topic = "sdd"
+label = "Roadmap"
+definition = "A dependency-ordered list of specifications in the project."
+kind = "entity"
+broader = ["steering"]
+
+[terms.severity]
+topic = "sdd"
+label = "Severity"
+definition = "The diagnostic level of a finding."
+kind = "enum"
+values = ["error", "warning", "info"]
+
+[terms.spec]
+topic = "sdd"
+label = "Specification"
+definition = "A formal unit of development containing requirements, design document, and tasks."
+kind = "entity"
+
+[terms.steering]
+topic = "sdd"
+label = "Steering"
+definition = "Persistent project-wide guidance governing architecture, stack, and workflow."
+kind = "entity"
+
+[terms.task]
+topic = "sdd"
+label = "Task"
+definition = "An actionable implementation step with an explicit component boundary."
+kind = "entity"
+broader = ["spec"]
+
+[terms.term]
+topic = "sdd"
+label = "Term"
+definition = "A domain concept defined with label, kind, definition, and topic."
+kind = "entity"
+broader = ["vocabulary"]
+
+[terms.topic]
+topic = "sdd"
+label = "Topic"
+definition = "A subject domain partitioning terms into scoped namespaces."
+kind = "entity"
+
+[terms.vocabulary]
+topic = "sdd"
+label = "Vocabulary"
+definition = "The committed dictionary of domain terms and topics."
+kind = "entity"

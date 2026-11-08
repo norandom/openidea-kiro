@@ -27,7 +27,7 @@
   - _Boundary: VocabModel_
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 4.9_
 
-- [ ] 2. Core engine: parse, validate, load, query
+- [x] 2. Core engine: parse, validate, load, query
 - [x] 2.1 Implement the strict vocabulary file parser
   - Private raw types with span wrappers for the schema version, topic tables and the mandatory term table; unknown keys accepted; a BOM stripped before parsing
   - Any deserialisation error (including a missing term table) or an id violating the id rule becomes one structural finding carrying the line of the first problem, computed from the byte offset
@@ -69,7 +69,7 @@
   - _Boundary: VocabScope, VocabLoader_
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 5.3, 5.4_
 
-- [ ] 2.7 (P) Author the seed vocabulary for the `sdd` topic
+- [x] 2.7 (P) Author the seed vocabulary for the `sdd` topic
   - Header comment naming the origin (hand-authored in the importer's output shape, to be replaced by a real import), the schema version and the documentation path; a `topics.sdd` entry with label and description
   - The design's seed term set with one-sentence definitions taken from steering and the kiro-core design: at least the fourteen required terms plus the listed extras, with the broader relations, alternative labels, the enum kinds for EARS pattern, phase and severity, and the bool kind for approval
   - Explicit integration touch: add only the key `"topics": ["sdd"]` to this spec's own `spec.json` (`.kiro/specs/vocabulary-grounding/spec.json`), leaving the workflow-managed fields (phase, approvals, timestamps) untouched, so the repository's first grounded spec exercises the seed and the host check of task 5 has a declared topic
@@ -77,7 +77,7 @@
   - _Boundary: SeedVocabulary_
   - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 2.8 Write the engine integration tests over the fixtures and the seed
+- [x] 2.8 Write the engine integration tests over the fixtures and the seed
   - Fixture-driven tests through an in-memory source and workspace: status and exact finding-code list per fixture with line numbers (including the single `VOCAB_LABEL_CROSS_TOPIC` info finding on `valid.toml` at `pm-task` and zero warning/error findings); every lookup outcome on the fixture tree; closure for the depth-three chain and the pointer-into-cycle term; preferred label; visible ordering; scope findings for the no-topics, unknown-topic and missing-vocabulary cases
   - The seed file embedded from the repository, asserted to load cleanly with zero findings and the required ids; two runs produce identical findings; a release-only timing test for ten thousand terms with depth ten under one second; fixed-seed garbage documents through the parser never panic
   - Observable: the test file passes natively, and the engine library still builds for the sandbox target

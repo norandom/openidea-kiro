@@ -4,6 +4,9 @@
   "updated_at": "2026-11-03T22:20:00+01:00",
   "language": "en",
   "phase": "tasks-generated",
+  "topics": [
+    "sdd"
+  ],
   "approvals": {
     "requirements": {
       "generated": true,
