@@ -19,7 +19,7 @@
   - _Boundary: HostApi_
   - _Requirements: 6.5, 8.2, 10.2_
 
-- [ ] 2. Core: registry, arguments, source adapter, presentation
+- [x] 2. Core: registry, arguments, source adapter, presentation
 - [x] 2.1 Implement command declarations, the id grammar and the static command list
   - Command groups (`ws`, `nav`, `viz`, `vocab`, `check`) and the per-command declaration (name, title, spec-addressable, insert-capable, positional policy) with derived base, insert and per-spec variant ids and titles; title rule (`Kiro:` prefix, at most 128 bytes) and category `Kiro`
   - Id grammar: parse `<group>.<name>`, `<group>.<name>.insert` and `<group>.<name>.<spec>` into base, insert flag and spec; validators for host command ids (64-byte limit), spec id segments (no dots, not `insert`) and spec names (no path separators, no `..`)
@@ -50,7 +50,7 @@
   - _Depends: 1.2_
   - _Requirements: 6.1, 6.2, 6.6_
 
-- [ ] 2.5 (P) Implement presentation: output shape, clipping budgets and delivery
+- [x] 2.5 (P) Implement presentation: output shape, clipping budgets and delivery
   - Output value with title, level and complete text; constructor from an intro plus findings rendered with the engine's findings text; level mapped explicitly from the finding severities (any error, else any warning, else info)
   - Clipping with the engine's line clipper below the host's limits: notification body under 16 KiB (with trailer `… N more lines — run <id>.insert for the full text` when clipping occurred and an insert variant id is supplied, or `… N more lines` otherwise; amendment 2026-11-04), insertion under 1 MiB, title at 256 bytes on a character boundary; error messages flattened to one line and capped at 1 KiB
   - Delivery: takes the optional insert-variant id, emits exactly one notification (clipped title and body), one insertion of the clipped full text when requested, and returns the complete text as the command message
