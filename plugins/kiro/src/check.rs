@@ -13,7 +13,7 @@ use crate::module::FeatureModule;
 use crate::present::{self, Output};
 use crate::registry::{CommandSpec, Group, Positional};
 use kiro_core::checks::ears::{EarsSummary, Pattern};
-use kiro_core::checks::{run_checks, CheckConfig, CheckKind, CheckReport, CheckStatus};
+use kiro_core::checks::{CheckConfig, CheckKind, CheckReport, CheckStatus, run_checks};
 use kiro_core::vocab::Status;
 
 pub struct Check;
@@ -73,7 +73,9 @@ impl FeatureModule for Check {
             "ears" => ears(ctx, req),
             "terms" => terms(ctx, req),
             "contradictions" => contradictions(ctx, req),
-            other => Err(present::error_line(&format!("unknown check command: {other}"))),
+            other => Err(present::error_line(&format!(
+                "unknown check command: {other}"
+            ))),
         }
     }
 }
@@ -188,7 +190,11 @@ pub fn status_line(kind: CheckKind, report: &CheckReport) -> String {
         CheckStatus::Ran { findings } => match kind {
             CheckKind::Ears => {
                 let criteria = report.ears.as_ref().map_or(0, |s| s.criteria);
-                let finding_word = if *findings == 1 { "finding" } else { "findings" };
+                let finding_word = if *findings == 1 {
+                    "finding"
+                } else {
+                    "findings"
+                };
                 format!("EARS: {criteria} criteria checked, {findings} {finding_word}")
             }
             CheckKind::Terms => {
@@ -276,16 +282,17 @@ mod tests {
     use kiro_core::checks::contradiction::SearchSummary;
     use kiro_core::checks::ears::EarsSummary;
     use kiro_core::checks::terms::TermsSummary;
-    use kiro_core::finding::{codes, Finding, Severity};
+    use kiro_core::finding::{Finding, Severity, codes};
 
-    fn make_dummy_report(findings: Vec<Finding>, topics: Vec<String>, vocab: Status) -> CheckReport {
+    fn make_dummy_report(
+        findings: Vec<Finding>,
+        topics: Vec<String>,
+        vocab: Status,
+    ) -> CheckReport {
         let mut status = BTreeMap::new();
         status.insert(CheckKind::Ears, CheckStatus::Ran { findings: 0 });
         status.insert(CheckKind::Terms, CheckStatus::Ran { findings: 0 });
-        status.insert(
-            CheckKind::Contradictions,
-            CheckStatus::Ran { findings: 0 },
-        );
+        status.insert(CheckKind::Contradictions, CheckStatus::Ran { findings: 0 });
 
         CheckReport {
             feature: "test_feat".to_string(),
@@ -415,13 +422,18 @@ mod tests {
         assert!(out_empty.text.contains("No findings."));
 
         let rep_findings = make_dummy_report(
-            vec![Finding::new(codes::CHECK_COVERAGE, "f.md", "info message")
-                .severity(Severity::Info)],
+            vec![
+                Finding::new(codes::CHECK_COVERAGE, "f.md", "info message")
+                    .severity(Severity::Info),
+            ],
             vec![],
             Status::Loaded,
         );
         let out_findings = render("demo", &rep_findings, vec!["Line1".to_string()]);
-        assert_eq!(out_findings.title, "Kiro: demo — 0 errors, 0 warnings, 1 info");
+        assert_eq!(
+            out_findings.title,
+            "Kiro: demo — 0 errors, 0 warnings, 1 info"
+        );
         assert!(out_findings.text.contains("CHECK_COVERAGE"));
     }
 }

@@ -112,7 +112,7 @@
   - _Boundary: ChecksDocs_
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 6. Plugin: the `check` feature module
+- [x] 6. Plugin: the `check` feature module
 - [x] 6.1 Implement the check feature module and the four commands
   - Prerequisite: `plugins/kiro` is implemented per the plugin-core spec (feature-module contract, command context, presentation, fake host, manifest test, build script) and the `../openidea` checkout providing the host WIT is present for the sandbox build; explicit integration touch: the crate-root module declaration
   - Command declarations (spec, ears, terms, contradictions; all spec-addressable with the spec as first argument token; spec insert-capable) and the feature-module implementation dispatching on the command name
@@ -131,7 +131,7 @@
   - _Depends: 6.1_
   - _Requirements: 6.8, 8.7_
 
-- [ ] 6.3 Write the plugin end-to-end tests for the check commands
+- [x] 6.3 Write the plugin end-to-end tests for the check commands
   - Simulated host serving the check fixture trees: the spec command on the clean spec (`0 errors, 0 warnings, 1 info` with `CHECK_COVERAGE`, info level, three status lines) and on the broken spec (error level, counts in the title, contradiction lines); the EARS command's patterns line and pattern reports; the terms command's counts and mismatch; the contradictions command's pairs line and witness; the unscoped spec's skipped lines, unscoped finding and pointer; missing and invalid vocabulary across the commands completing successfully with the expected levels; insert producing one insertion event with the full text; the unresolved-spec error identical to plugin-core's; the vocabulary path read at most once per command
   - Observable: the test file passes natively alongside the existing dispatch, vocabulary and manifest tests
   - _Boundary: PluginCheckTests_
