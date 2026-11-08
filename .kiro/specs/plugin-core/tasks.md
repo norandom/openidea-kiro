@@ -35,7 +35,7 @@
   - _Boundary: Registry_
   - _Requirements: 2.5, 5.1, 5.3, 5.4, 5.5, 8.5, 10.1_
 
-- [ ] 2.3 Implement argument parsing into a request
+- [x] 2.3 Implement argument parsing into a request
   - Blocked by 2.1: consumes the command declaration and parsed-id types, so it is not parallel with its preceding peers
   - Whitespace tokenisation; every `insert` token sets the flag; the explicit spec from the id modifier or, for commands whose first token names a spec, from the first remaining token; the remaining tokens passed through unchanged; the raw argument kept
   - Errors as single lines: spec named twice with different names, invalid spec name (no file is read for it), insertion requested on a command that is not insert-capable
