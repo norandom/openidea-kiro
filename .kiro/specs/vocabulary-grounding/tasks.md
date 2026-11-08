@@ -130,8 +130,8 @@
 - [ ] 5. Validation: both targets, lints and the host check
   - Prerequisite: the dev-plugin installation of plugin-core (junction, trust, Reload Plugins) is in place in the open project
   - Engine and plugin build for the sandbox target with the TOML parser present; clippy with warnings denied and fmt check pass for the root workspace and the plugin package
-  - Manual host check as a dev plugin: with this spec's requirements document open, the topics command reports `sdd` declared, the list command shows the seed table, and the term command without an argument shows the usage line plus the table
-  - Append a "Vocabulary commands: verification" section to the plugin README recording the component size before (baseline from 1.1) and after this spec and the host check outcome
+  - Manual host check as a dev plugin: with this spec's requirements document open, the topics command reports `sdd` declared, the list command shows the seed table, and the term command without an argument shows the usage line plus the table (when no GUI host is available, the manual check is recorded as deferred in the completion note — matching `spec-navigation` 4.3 and `spec-visualization` 4)
+  - Append a "Vocabulary commands: verification" section to the plugin README recording the component size before (baseline from 1.1) and after this spec and the host check outcome (or deferred note when no host is running)
   - Observable: all build and lint commands above succeed and the README section exists with both figures and the recorded outcome
   - _Boundary: PluginIntegration_
   - _Requirements: 11.1, 11.3, 11.6_

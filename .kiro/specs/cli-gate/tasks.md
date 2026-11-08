@@ -78,14 +78,14 @@
 
 - [ ] 5. Importer
 - [ ] 5.1 Implement the importer model, id rule, deduplication and TOML writer
-  - The imported-term model built on the engine's kind type with provenance comment lines and a source reference; the id derivation rule (CamelCase and separators to hyphens, lower-case, non-id characters to hyphens, runs collapsed, ends trimmed) satisfying the mapping's three examples and Auto Ontology name forms; first-wins deduplication with the duplicate finding naming both sources; the TOML writer producing the design's header, schema version, topic tables with optional labels, and term tables sorted by id with the fixed key order and omission rules, using a basic-string escaper; the input-format enum is reused from the command-line module
+  - The imported-term model built on the engine's kind type with provenance comment lines and a source reference; the id derivation rule (CamelCase and separators to hyphens, lower-case, non-id characters to hyphens, runs collapsed, ends trimmed) satisfying the mapping's three examples and Auto Ontology name forms; first-wins deduplication with the duplicate finding naming both sources; the TOML writer producing the design's header, schema version, topic tables with optional labels, and term tables sorted by id with the fixed key order and omission rules, using `toml_edit` / `toml` value formatting (or a basic-string escaper backed by it, since `toml_edit` is already in `Cargo.lock`); the input-format enum is reused from the command-line module
   - Observable: unit tests cover the id table, escaping, key order and omission, deduplication, and that every rendered id satisfies the id rule
   - _Boundary: Importer_
   - _Depends: 1.2, 2.2_
   - _Requirements: 9.2, 9.10, 9.11, 9.12_
 
 - [ ] 5.2 Implement the append-only merge, output validation and reader dispatch
-  - The merge that keeps the existing text unchanged, appends a merge header, only the terms whose id and labels do not resolve in the existing vocabulary through its scoped public queries, and topic tables only when the existing vocabulary has no declared table for them, reporting each dropped term as a merge conflict; output validation through the engine's vocabulary parse of the exact text to be written; the format dispatch to the two readers, created here as minimal stub modules returning an empty import so that each reader task replaces only its own file
+  - The merge that keeps the existing text unchanged, appends a merge header, only the terms whose id and labels do not resolve in the existing vocabulary through its scoped public queries, and topic tables only when the existing vocabulary has no declared table for them (using the same TOML table rendering as `render` or `toml_edit`), reporting each dropped term as a merge conflict; output validation through the engine's vocabulary parse of the exact text to be written; the format dispatch to the two readers, created here as minimal stub modules returning an empty import so that each reader task replaces only its own file
   - Observable: unit tests cover the two merge conflict rules and the topic-table rule on a constructed vocabulary, the unchanged prefix, and that a writer defect producing invalid TOML surfaces as the engine's invalid finding
   - _Boundary: Importer_
   - _Depends: 5.1_
@@ -174,9 +174,9 @@
   - _Depends: 6.2, 6.3, 6.4, 6.5, 7.1, 7.2_
   - _Requirements: 13.1, 13.3_
 
-- [ ] 7.4 Append the plugin wasm build and kiro-cli gate steps to the CI config (amendment 2026-11-04, gap-analysis arbitration)
-  - Explicit integration touches outside this crate: append `cargo run -p kiro-cli -- check --project . --all --fail-on error` to the `gate` alias in the root `.cargo/config.toml`, and append the plugin `wasm32-wasip2` build step (`cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2`) plus `cargo run -p kiro-cli -- check --project . --all --fail-on error` to the CI job in `.github/workflows/ci.yml` (both owned by kiro-core task 5.5, CrateScaffold — neither `plugins/kiro` nor `kiro-cli` exists in Wave 1); extend the CI document of task 7.1 (Docs) with the final gate line
-  - Observable: after this task, `cargo gate` ends with the `kiro-cli check` step and the CI job builds the plugin component and runs `kiro-cli check`; the CI document's shell snippet matches
+- [ ] 7.4 Append the plugin wasm build and kiro-cli gate steps to the CI config (amendment 2026-11-04, gap-analysis arbitration; amended 2026-11-08)
+  - Explicit integration touches outside this crate: add `kiro-check = "run -p kiro-cli -- check --project . --all --fail-on error"` to `[alias]` in the root `.cargo/config.toml` alongside `gate = "nextest run"` (since Cargo `[alias]` entries map to a single Cargo subcommand and cannot chain multiple commands), and append the standalone plugin checks and `wasm32-wasip2` build steps (`cargo clippy --manifest-path plugins/kiro/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path plugins/kiro/Cargo.toml`, `cargo deny --manifest-path plugins/kiro/Cargo.toml check`, `cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2`) plus `cargo kiro-check` (`cargo run -p kiro-cli -- check --project . --all --fail-on error`) to the CI job in `.github/workflows/ci.yml` (owned by kiro-core task 5.5, CrateScaffold — neither `plugins/kiro` nor `kiro-cli` exists in Wave 1); extend the CI document of task 7.1 (Docs) with the final gate line
+  - Observable: after this task, `cargo kiro-check` runs the `kiro-cli check` gate, and the CI job lints/tests/audits/builds the plugin component and runs `kiro-cli check`; the CI document's shell snippet matches
   - _Boundary: CliScaffold, Docs_
   - _Depends: 7.1, 7.3_
   - _Requirements: 12.1, 13.1_

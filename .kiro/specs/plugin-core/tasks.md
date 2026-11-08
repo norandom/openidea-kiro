@@ -120,18 +120,18 @@
   - _Requirements: 1.4, 1.5, 7.2_
 
 - [ ] 4.3 Verify the component in the host as a dev plugin
-  - Prerequisite: the OpenIDEA host application is built and launchable from the `../openidea` checkout
+  - Prerequisite: the OpenIDEA host application is built and launchable from the `../openidea` checkout (when no GUI host is running, build `dist/plugin.wasm`, create/verify the dev-plugin junction, run host-side integration tests if `../openidea` is present, and record the manual GUI check as deferred in the completion note — matching `spec-navigation` 4.3 and `spec-visualization` 4)
   - Build the component from the final source (3.3 merged) with the PowerShell build script before creating the junction, so `dist/plugin.wasm` is not stale from an earlier `(P)` task
   - Junction the package into this repository's `.openidea\plugins\kiro`, open the repository in OpenIDEA, trust it, reload plugins; open a spec document and run the current-spec command; run the list command and confirm the per-spec commands appear in Search Everywhere
   - Reload again, close all spec documents and run the current-spec command so it fails with the unresolved message, then confirm the per-spec commands still appear (error-path visibility through the frontend's refresh-on-failure)
   - Rebuild the component, run Reload Plugins and confirm the rebuilt component runs without restarting the IDE
-  - Observable: the plugin is listed as Active with a dev tag, the current-spec notification names the open spec, and the per-spec commands are searchable after both the successful and the failing run
+  - Observable: `dist/plugin.wasm` is freshly built and the junction is in place; when the GUI host is available, the plugin is listed as Active with a dev tag, the current-spec notification names the open spec, and the per-spec commands are searchable after both the successful and the failing run (when no GUI host is available, the manual GUI check is recorded as deferred in the completion note)
   - _Boundary: PluginScaffold_
   - _Depends: 3.3, 3.4, 3.5, 4.2_
   - _Requirements: 1.2, 1.3, 1.4, 10.5_
 
 - [ ] 4.4 Run the final quality gate on both targets
-  - From the package directory: native tests, clippy for the native and wasm targets with warnings denied, fmt check, release component build; from the repository root: tests and clippy unaffected by the plugin package
+  - From the package directory (`--manifest-path plugins/kiro/Cargo.toml`): native tests (`cargo test`), clippy for the native and wasm targets with warnings denied (`cargo clippy --all-targets -- -D warnings` and `cargo clippy --target wasm32-wasip2 -- -D warnings`), fmt check, `cargo deny --manifest-path plugins/kiro/Cargo.toml check`, and release component build (`cargo build --release --target wasm32-wasip2`); from the repository root: tests and clippy unaffected by the plugin package
   - Crate-level docs completed with the command grammar and output channels
   - Observable: every command above succeeds and the root workspace build does not require the sandbox target
   - _Boundary: PluginScaffold_

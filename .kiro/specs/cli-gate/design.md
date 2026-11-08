@@ -177,8 +177,8 @@ crates/kiro-cli/
 | Component | File | Responsibility |
 |-----------|------|----------------|
 | CliScaffold | `Cargo.toml` | Add `crates/kiro-cli` to `[workspace] members` |
-| CliScaffold | `.cargo/config.toml` | Append `cargo run -p kiro-cli -- check --project . --all --fail-on error` to the `gate` alias |
-| CliScaffold | `.github/workflows/ci.yml` | Append the plugin `wasm32-wasip2` build step and `cargo run -p kiro-cli -- check --project . --all --fail-on error` to the CI job |
+| CliScaffold | `.cargo/config.toml` | Add `kiro-check = "run -p kiro-cli -- check --project . --all --fail-on error"` to `[alias]` alongside `gate = "nextest run"` |
+| CliScaffold | `.github/workflows/ci.yml` | Append the standalone `plugins/kiro` lint/test/deny/release-`wasm32-wasip2` build steps and `cargo run -p kiro-cli -- check --project . --all --fail-on error` to the CI job |
 | CliScaffold | `crates/kiro-cli/Cargo.toml` | Package `kiro-cli` (binary), edition 2024, dependencies, lint table |
 | CliScaffold | `crates/kiro-cli/README.md` | Pointer to the docs |
 | CliScaffold | `crates/kiro-cli/src/main.rs` | `Cli::parse()` (usage errors → 2), dispatch to command modules, `Exit` → `ExitCode` |
@@ -217,8 +217,8 @@ crates/kiro-cli/
 
 ### Modified Files
 - `Cargo.toml` — workspace member.
-- `.cargo/config.toml` — append the `kiro-cli check` step to the `gate` alias.
-- `.github/workflows/ci.yml` — append the plugin `wasm32-wasip2` build step and the `kiro-cli check` step to the CI job.
+- `.cargo/config.toml` — add the `kiro-check` alias alongside `gate`.
+- `.github/workflows/ci.yml` — append the standalone `plugins/kiro` lint/test/deny/`wasm32-wasip2` build steps and the `kiro-cli check` step to the CI job.
 - `crates/kiro-core/src/finding.rs`, `crates/kiro-core/src/lib.rs` — four codes and their doc rows.
 - `docs/vocabulary.md` — verify and reconcile the Auto Ontology section (`kiro-cli vocab import --format auto-ontology-json --topic <t>`); mapping table unchanged.
 - `.kiro/specs/vocabulary-grounding/requirements.md` and `.kiro/specs/vocabulary-grounding/design.md` — verify that Requirement 10.1, Non-Goals and the VocabDocs row already name `kiro-cli vocab import --format auto-ontology-json` (applied during cross-spec review).
@@ -663,7 +663,7 @@ pub fn render(imported: &Imported, terms: &[ImportedTerm], header: &Header<'_>) 
 pub fn merge(existing_text: &str, existing: &Vocabulary, imported: &Imported, terms: &[ImportedTerm], header: &Header<'_>, findings: &mut Vec<Finding>) -> String;
 /// vocab::parse(text, out_display).findings (VOCAB_INVALID included when the writer produced invalid TOML — a test guard).
 pub fn validate_output(text: &str, out_display: &str) -> Vec<Finding>;
-/// TOML basic string with `\\`, `\"`, `\n`, `\r`, `\t` and control characters escaped.
+/// TOML basic string with `\\`, `\"`, `\n`, `\r`, `\t` and control characters escaped (may delegate to `toml_edit::Value` / `toml::Value` string formatting, since `toml_edit` is already in `Cargo.lock`).
 pub fn toml_string(s: &str) -> String;
 ```
 - Postconditions: `render` and `merge` are pure and deterministic; every emitted id satisfies `is_id`; `alt_labels` are sorted, deduplicated by `normalize_label` and never equal to the label; `broader`/`replaced_by` ids are derived with `derive_id` but not checked for existence (the loader reports); comment lines never contain `\n`.
