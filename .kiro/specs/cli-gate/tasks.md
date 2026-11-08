@@ -114,29 +114,29 @@
   - _Depends: 2.1, 4.2, 5.3, 5.4_
   - _Requirements: 2.3, 2.5, 9.1, 9.3, 9.4, 9.6, 9.7, 9.8, 9.9_
 
-- [ ] 6. Validation: binary-level integration tests
-- [ ] 6.1 Build the test harness
+- [x] 6. Validation: binary-level integration tests
+- [x] 6.1 Build the test harness
   - A shared helper that copies a fixture tree into a temporary directory and runs the built binary capturing status, standard output and standard error, with paths to the engine's check and minimal fixture trees and golden files; the source-grep test asserting the standard filesystem API appears only in the adapter module
   - Observable: a smoke run of the binary over the known-good tree through the helper exits 0, and the grep test passes
   - _Boundary: CliTests_
   - _Depends: 3.2, 1.3_
   - _Requirements: 13.3, 13.4_
 
-- [ ] 6.2 Write the check gate tests
+- [x] 6.2 Write the check gate tests
   - Scenarios: known-good tree exits 0 with the passing summary; known-bad tree exits 1 with contradiction lines; warnings-only tree exits 0 by default and 1 under fail-on warning; missing root, unknown feature, and no or double selection exit 2 with their messages; a severity override changes the verdict; a check selection shows the skipped status line; JSON output parses with the schema version, the documented keys and finding fields in order and no timestamp; the vocabulary-findings tree with both specs prints the vocabulary warning exactly once; two runs are byte-equal; verbose prints a failed-read line for a missing document and nothing without the flag
   - Observable: all scenarios pass on the development platform and the suite is platform-neutral (forward slashes, newline endings)
   - _Boundary: CliTests_
   - _Depends: 6.1_
   - _Requirements: 3.3, 3.9, 4.4, 4.5, 5.3, 6.1, 6.2, 13.4_
 
-- [ ] 6.3 (P) Write the view parity tests
+- [x] 6.3 (P) Write the view parity tests
   - Status, graph (diagram and table) and tasks (diagram and table) over the engine's minimal tree compared byte for byte with the engine's golden files plus the trailing-newline rule; the superseded `old` spec's status compared with the engine's superseded status golden (the chain line); the two error messages and exit 2; an undiscovered spec exits 2 naming the discovered ones
   - Observable: every comparison passes without normalisation
   - _Boundary: CliTests_
   - _Depends: 4.1, 6.1_
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 6.4 (P) Write the vocabulary and importer tests
+- [x] 6.4 (P) Write the vocabulary and importer tests
   - Validate: the seed vocabulary exits 0; an engine semantic fixture exits 1 listing its findings; missing default exits 1; unreadable explicit file exits 2; JSON form parses
   - Import: page and array fixtures produce byte-equal TOML (asserted in-test, no committed goldens); the detail fixture yields the related comment; the skipped and duplicate findings appear; fresh write, refused overwrite, merge with an unchanged prefix and two conflicts, standard-output mode with findings on standard error; the Turtle fixture produces the mapping-example ids, annotations and scheme title; invalid JSON and Turtle exit 2 with the line; the written files load through `vocab validate` with only the expected findings
   - Observable: all scenarios pass and no file outside the temporary directories is created
@@ -144,7 +144,7 @@
   - _Depends: 5.5, 6.1_
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 10.1, 10.2, 10.4, 10.5, 11.2, 11.6, 11.7, 13.5_
 
-- [ ] 6.5 (P) Write the self-tree determinism test and the performance test
+- [x] 6.5 (P) Write the self-tree determinism test and the performance test
   - The check over this repository's own kiro tree exits 0 or 1 but never 2 and produces byte-identical output on two runs; a generated tree of twenty specs with documents near 100 KiB checks in under five seconds, asserted only in release builds
   - Observable: both tests pass; the timing test is skipped in debug builds with a visible message
   - _Boundary: CliTests_

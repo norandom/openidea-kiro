@@ -270,6 +270,8 @@ pub fn merge(
     let mut non_conflicting_terms = Vec::new();
 
     for term in terms {
+        let mut has_conflict = false;
+
         // 1. Check if term id already exists in existing vocabulary
         if matches!(
             existing.preferred_label(&term.id, &all_topics),
@@ -283,69 +285,75 @@ pub fn merge(
                     term.id, out_display
                 ),
             ));
-            continue;
+            has_conflict = true;
         }
 
         // 2. Check if primary label collides with any term in the same topic
         let topic_scope = [term.topic.clone()];
         let label_res = existing.resolve(&term.label, &topic_scope);
         if let Lookup::Found { term: hit_term, .. } = label_res {
-            findings.push(Finding::new(
-                codes::IMPORT_MERGE_CONFLICT,
-                out_display,
-                format!(
-                    "label `{}` of `{}` already names `{}` in topic {}; not added",
-                    term.label, term.id, hit_term.id, term.topic
-                ),
-            ));
-            continue;
+            if hit_term.id != term.id {
+                findings.push(Finding::new(
+                    codes::IMPORT_MERGE_CONFLICT,
+                    out_display,
+                    format!(
+                        "label `{}` of `{}` already names `{}` in topic {}; not added",
+                        term.label, term.id, hit_term.id, term.topic
+                    ),
+                ));
+                has_conflict = true;
+            }
         } else if let Lookup::Ambiguous { hits } = label_res {
             let hit_id = hits.first().map_or("existing", |h| &h.id);
-            findings.push(Finding::new(
-                codes::IMPORT_MERGE_CONFLICT,
-                out_display,
-                format!(
-                    "label `{}` of `{}` already names `{}` in topic {}; not added",
-                    term.label, term.id, hit_id, term.topic
-                ),
-            ));
-            continue;
+            if hit_id != term.id {
+                findings.push(Finding::new(
+                    codes::IMPORT_MERGE_CONFLICT,
+                    out_display,
+                    format!(
+                        "label `{}` of `{}` already names `{}` in topic {}; not added",
+                        term.label, term.id, hit_id, term.topic
+                    ),
+                ));
+                has_conflict = true;
+            }
         }
 
         // 3. Check if any alternative label collides with any term in the same topic
-        let mut alt_conflict = false;
         for alt in &term.alt_labels {
             let alt_res = existing.resolve(alt, &topic_scope);
             if let Lookup::Found { term: hit_term, .. } = alt_res {
-                findings.push(Finding::new(
-                    codes::IMPORT_MERGE_CONFLICT,
-                    out_display,
-                    format!(
-                        "label `{}` of `{}` already names `{}` in topic {}; not added",
-                        alt, term.id, hit_term.id, term.topic
-                    ),
-                ));
-                alt_conflict = true;
-                break;
+                if hit_term.id != term.id {
+                    findings.push(Finding::new(
+                        codes::IMPORT_MERGE_CONFLICT,
+                        out_display,
+                        format!(
+                            "label `{}` of `{}` already names `{}` in topic {}; not added",
+                            alt, term.id, hit_term.id, term.topic
+                        ),
+                    ));
+                    has_conflict = true;
+                    break;
+                }
             } else if let Lookup::Ambiguous { hits } = alt_res {
                 let hit_id = hits.first().map_or("existing", |h| &h.id);
-                findings.push(Finding::new(
-                    codes::IMPORT_MERGE_CONFLICT,
-                    out_display,
-                    format!(
-                        "label `{}` of `{}` already names `{}` in topic {}; not added",
-                        alt, term.id, hit_id, term.topic
-                    ),
-                ));
-                alt_conflict = true;
-                break;
+                if hit_id != term.id {
+                    findings.push(Finding::new(
+                        codes::IMPORT_MERGE_CONFLICT,
+                        out_display,
+                        format!(
+                            "label `{}` of `{}` already names `{}` in topic {}; not added",
+                            alt, term.id, hit_id, term.topic
+                        ),
+                    ));
+                    has_conflict = true;
+                    break;
+                }
             }
         }
-        if alt_conflict {
-            continue;
-        }
 
-        non_conflicting_terms.push(term);
+        if !has_conflict {
+            non_conflicting_terms.push(term);
+        }
     }
 
     // Determine topics that lack explicit [topics.<id>] declarations in existing vocabulary
