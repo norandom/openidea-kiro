@@ -59,7 +59,7 @@
   - _Depends: 1.2_
   - _Requirements: 7.1, 7.2, 7.3, 7.5, 7.6, 7.7, 10.1_
 
-- [ ] 3. Integration: project context, dispatch, own commands, manifest, bindings
+- [x] 3. Integration: project context, dispatch, own commands, manifest, bindings
 - [x] 3.1 Implement the command context: root, active file, known specs, workspace and resolution
   - Fails with "no project is open" when the host reports no root; normalises the reported active file against the root with the engine's path normalisation, treating absent or outside files as no active file
   - Builds a fresh engine workspace over the source adapter, reads the roadmap once and takes its names in document order (not the workspace's sorted list), records whether the roadmap is absent, has no specs section (the engine's finding code) or is present with a count, adds the active-file spec and the explicit spec, and keeps each known spec with the sources it came from, deduplicated, in roadmap order
@@ -94,7 +94,7 @@
   - _Boundary: Manifest, PluginTests_
   - _Requirements: 1.1, 2.3, 5.7, 10.3_
 
-- [ ] 3.5 (P) Implement the wasm bindings and build the component
+- [x] 3.5 (P) Implement the wasm bindings and build the component
   - Prerequisite: the sibling checkout `../openidea` is present with `wit/plugin.wit` (the bindings are generated from it at `../../../openidea/wit` relative to the package) and `plugins/build.sh`
   - Wasm32-only module with unsafe code and the restriction lints allowed locally: bindings generated from the host's WIT world, a host adapter mapping the port one-to-one onto the host functions and enums, and the exported guest (`export!(Kiro with_types_in self)`) delegating activation, deactivation and command runs to dispatch
   - Build the release component with the PowerShell script and with the host repository's build script given the package's absolute path
