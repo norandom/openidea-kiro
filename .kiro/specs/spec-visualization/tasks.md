@@ -22,7 +22,7 @@
   - _Depends: 1.1_
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 2.2 (P) Build the spec graph view and its summary
+- [x] 2.2 (P) Build the spec graph view and its summary
   - Touches only the graph view file; nothing in the shared module file
   - Nodes layer by layer (requirements, criteria, leaf tasks — sub-tasks plus majors without sub-tasks — components, files assigned to a component) in document order, each added once, with the design's labels, kind markers and raw identities (`req:`, `crit:`, `task:`, `comp:`, `file:`); component labels obtained through the label seam scoped to the spec's declared topics, identity unchanged
   - Edges in layer order: requirement to criterion; criterion or whole requirement to task from `_Requirements:_` entries; task to component from `_Boundary:_` entries when `design.md` is present (unresolved boundary names on leaf tasks are counted from `join::Coverage.unknown_boundary_tasks` filtered to leaf tasks when `design.md` is present, amendment 2026-11-04, gap-analysis issue 8); component to file from the File Structure Plan; left-to-right orientation
