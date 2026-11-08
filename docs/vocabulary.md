@@ -160,7 +160,10 @@ Organizations maintaining taxonomies in Auto Ontology can export and convert the
 #### Verified Facts (Auto Ontology REST API)
 - Auto Ontology provides a REST API endpoint: `GET /api/terms`.
 - Authentication uses the HTTP header `x-api-key: <api-token>`.
-- The endpoint returns a JSON payload (either an array or `{"terms": [...]}`) containing term objects:
+- The endpoint returns either:
+  1. A page object: `{"terms": [TermListItem, ...], "total": <n>, ...}`
+  2. A bare array: `[TermListItem, ...]`
+- Term fields in the list/page shape:
   ```json
   [
     {
@@ -168,35 +171,49 @@ Organizations maintaining taxonomies in Auto Ontology can export and convert the
       "name": "Insider Threat",
       "description": "Risk posed by individuals within an organization.",
       "synonyms": ["insider risk", "internal threat"],
-      "related_terms": ["data-exfiltration"],
       "zones": ["security"]
     }
   ]
   ```
-- Alternatively, `POST /api/model/export` exports YAML in the `auto_ontology` format containing the same fields.
+- **Note on `related_terms`**: The `related_terms` array only appears in the single-term detail shape (`GET /api/terms/{id}`), not in the page or list response. When present in single-term exports or custom queries, the importer records them as a `# related: <names>` provenance comment.
+- Alternatively, `POST /api/model/export` exports YAML in the `auto_ontology` format containing equivalent fields.
 
 #### Local Steps to Confirm Against Installed Version
 - Host URL and port of the Auto Ontology deployment (e.g., `https://ontology.internal.corp:8443`).
 - API token generation and role-based access permissions.
 - Mapping between Auto Ontology `zones` and Kiro `topics`.
 
-### Importer Invocations (Supplied by `cli-gate`)
+### Importer Invocations (`kiro-cli vocab import`)
 
-#### Direct JSON Import Path
+#### Primary Path: Direct JSON Import
 ```bash
-kiro-cli vocab import export.json --format auto-ontology-json --topic sdd [--output .kiro/vocabulary.toml]
+kiro-cli vocab import export.json --format auto-ontology-json --topic sdd
 ```
-- Converts `name` into `label`.
-- Derives ID as `<topic>-<slug(name)>` (or `<slug(name)>` if `--no-topic-prefix` is passed or the name already begins with `<topic>-`).
-- Maps `description` to `definition`.
-- Maps `synonyms` to sorted, deduplicated `alt_labels`.
-- Sets `kind = "entity"` and `broader = []` (Auto Ontology term models do not maintain strict taxonomical hierarchies).
 
-#### SKOS Turtle Import Path
+Additional options:
+- `--kind <entity|bool|enum|int>`: Default kind for imported terms (default: `entity`).
+- `--out <path>`: Destination path (default: `<project-root>/.kiro/vocabulary.toml`; use `--out -` for standard output).
+- `--merge`: Append non-conflicting terms to an existing `.kiro/vocabulary.toml` without modifying existing declarations.
+
+#### What the Importer Maps Automatically
+- **Term ID**: Derived from `name` via kebab-case splitting (`InsiderThreat` → `insider-threat`, `Order PO` → `order-po`, runs of non-alphanumerics collapsed, ends trimmed).
+- **Label**: Taken from `name.trim()`.
+- **Definition**: Taken from `description` (or empty string if absent).
+- **Alternative Labels**: Taken from `synonyms`, trimmed, sorted, deduplicated, omitting any that equal the primary label.
+- **Provenance Comments**: Emits `# auto-ontology: id=<id>; zones=<names>` and `# related: <names>` directly above the term table when available.
+
+#### What Remains Maintainer Curation
+Auto Ontology term models do not maintain strict taxonomical hierarchies or Kiro constraint kinds. The maintainer must curate:
+1. **Topics**: Partitioning terms into appropriate domain topics (or running imports with distinct `--topic <t>` flags).
+2. **Hierarchy**: Declaring `broader = ["<parent-id>"]` parent-child relationships where applicable.
+3. **Kinds & Facets**: Changing `kind` to `enum` (with `values = [...]`) or `int` (with `min` / `max`) for terms representing enumerations or bounded counts.
+
+#### Secondary Path: SKOS Turtle Import
+For vocabularies exported as standard SKOS RDF Turtle:
 ```bash
-kiro-cli vocab import vocabulary.ttl --topic sdd [--output .kiro/vocabulary.toml]
+kiro-cli vocab import vocabulary.ttl --format skos-turtle --topic sdd
 ```
-- Reads standard SKOS RDF Turtle files, applying the normative mapping below.
+The importer processes all subjects typed `skos:Concept`, applying the normative mapping below.
 
 ---
 

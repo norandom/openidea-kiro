@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [master]
+    branches: [main, master]
   pull_request:
 
 jobs:
@@ -19,9 +19,7 @@ jobs:
 
       - run: rustup target add wasm32-wasip2
 
-      # The gate tooling the workflow steps below need (cli-gate task 7.4
-      # appends the plugins/kiro build and the kiro-cli check step once
-      # those crates exist).
+      # The gate tooling the workflow steps below need.
       - run: cargo install cargo-nextest cargo-deny --locked
 
       - run: cargo fmt --check
@@ -39,3 +37,12 @@ jobs:
       - run: cargo deny check
 
       - run: cargo build -p kiro-core --target wasm32-wasip2
+
+      # Standalone plugin checks and wasm32-wasip2 release build
+      - run: cargo clippy --manifest-path plugins/kiro/Cargo.toml --all-targets -- -D warnings
+      - run: cargo test --manifest-path plugins/kiro/Cargo.toml
+      - run: cargo deny --manifest-path plugins/kiro/Cargo.toml check
+      - run: cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2
+
+      # Specification constraint and quality gate
+      - run: cargo kiro-check

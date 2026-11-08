@@ -188,10 +188,7 @@ fn vocab_import_fresh_refusal_merge_and_stdout_mode() {
     assert_eq!(run_merge.code, 0);
 
     // Merge reports two conflicts on stderr
-    assert_eq!(
-        run_merge.stderr.matches("IMPORT_MERGE_CONFLICT").count(),
-        2
-    );
+    assert_eq!(run_merge.stderr.matches("IMPORT_MERGE_CONFLICT").count(), 2);
 
     // Unchanged prefix
     let existing_orig = std::fs::read_to_string(&existing_src).unwrap();

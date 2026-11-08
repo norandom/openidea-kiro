@@ -151,8 +151,8 @@
   - _Depends: 6.1_
   - _Requirements: 13.6, 13.7_
 
-- [ ] 7. Integration: documentation, upstream reconciliation, final gate
-- [ ] 7.1 Write the CI and command reference documentation
+- [x] 7. Integration: documentation, upstream reconciliation, final gate
+- [x] 7.1 Write the CI and command reference documentation
   - The CI document with a GitHub Actions job and a generic shell snippet that install the `wasm32-wasip2` target and `cargo-nextest` (`cargo install cargo-nextest --locked`), run the native tests in parallel with `cargo nextest run` plus `cargo test --doc`, run `cargo deny check` with `wasm32-wasip2` in `[graph] targets`, build the plugin component for `wasm32-wasip2`, build the CLI and run the gate with fail-on error; the exit-code table and a JSON example with a one-line query; the command reference derived from the command-line definitions with every option, default and exit code, one example per command, the note that the table flag equals the plugin's text option, and the standard-error rule of the importer (amended 2026-11-04: the CI steps above match requirement 12.1 as amended, including the nextest install step)
   - Explicit touches outside the docs boundary: the crate README pointing at both documents (CliScaffold) and one test comparing the help output's option names with the reference (CliTests)
   - Observable: every option named in the reference exists in `kiro-cli <command> --help`, checked by that test
@@ -160,21 +160,21 @@
   - _Depends: 5.5, 6.1_
   - _Requirements: 12.1, 12.2_
 
-- [ ] 7.2 (P) Reconcile the vocabulary documentation and verify upstream alignment
+- [x] 7.2 (P) Reconcile the vocabulary documentation and verify upstream alignment
   - Explicit integration touch outside this crate: in `docs/vocabulary.md` ensure the Auto Ontology import procedure documents the verified CLI flags and examples (`kiro-cli vocab import <export.json> --format auto-ontology-json --topic <t>`, the verified page shape and term fields, related terms only in the detail shape, what is mapped, what remains maintainer curation — topics, hierarchy, kinds — and SKOS as the secondary input), leaving the SKOS mapping table unchanged; verify that `.kiro/specs/vocabulary-grounding/requirements.md` (10.1) and `.kiro/specs/vocabulary-grounding/design.md` (Non-Goals, VocabDocs, Supporting References) already name `kiro-cli vocab import --format auto-ontology-json` (applied during cross-spec review)
   - Observable: `docs/vocabulary.md` documents the verified `kiro-cli vocab import` flags and examples, the SKOS mapping table is byte-identical to the design's table, and the vocabulary-grounding requirements and design documents match
   - _Boundary: Docs_
   - _Depends: 5.5_
   - _Requirements: 12.3_
 
-- [ ] 7.3 Run the final quality gate
+- [x] 7.3 Run the final quality gate
   - Workspace-wide clippy with warnings denied, formatting check, the full test suite, and the engine's sandbox-target build; confirm by review that the CLI contains no parser, check or renderer and that every printed finding code is in the engine catalogue (the catalogue test and the source grep test from 6.1 are the evidence)
   - Observable: all commands pass on a clean checkout and the gate run over this repository (`check --project . --all`) matches the self-tree test's outcome
   - _Boundary: CliScaffold_
   - _Depends: 6.2, 6.3, 6.4, 6.5, 7.1, 7.2_
   - _Requirements: 13.1, 13.3_
 
-- [ ] 7.4 Append the plugin wasm build and kiro-cli gate steps to the CI config (amendment 2026-11-04, gap-analysis arbitration; amended 2026-11-08)
+- [x] 7.4 Append the plugin wasm build and kiro-cli gate steps to the CI config (amendment 2026-11-04, gap-analysis arbitration; amended 2026-11-08)
   - Explicit integration touches outside this crate: add `kiro-check = "run -p kiro-cli -- check --project . --all --fail-on error"` to `[alias]` in the root `.cargo/config.toml` alongside `gate = "nextest run"` (since Cargo `[alias]` entries map to a single Cargo subcommand and cannot chain multiple commands), and append the standalone plugin checks and `wasm32-wasip2` build steps (`cargo clippy --manifest-path plugins/kiro/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path plugins/kiro/Cargo.toml`, `cargo deny --manifest-path plugins/kiro/Cargo.toml check`, `cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2`) plus `cargo kiro-check` (`cargo run -p kiro-cli -- check --project . --all --fail-on error`) to the CI job in `.github/workflows/ci.yml` (owned by kiro-core task 5.5, CrateScaffold — neither `plugins/kiro` nor `kiro-cli` exists in Wave 1); extend the CI document of task 7.1 (Docs) with the final gate line
   - Observable: after this task, `cargo kiro-check` runs the `kiro-cli check` gate, and the CI job lints/tests/audits/builds the plugin component and runs `kiro-cli check`; the CI document's shell snippet matches
   - _Boundary: CliScaffold, Docs_

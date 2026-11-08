@@ -127,5 +127,9 @@ fn view_errors_and_undiscovered_spec() {
     // Spec without tasks document: tasks old exits 2 with IDE's message
     let out_old_tasks = run_cli(&["--project", path_str, "tasks", "old"]);
     assert_eq!(out_old_tasks.code, 2);
-    assert!(out_old_tasks.stderr.contains("spec `old` has no readable .kiro/specs/old/tasks.md"));
+    assert!(
+        out_old_tasks
+            .stderr
+            .contains("spec `old` has no readable .kiro/specs/old/tasks.md")
+    );
 }

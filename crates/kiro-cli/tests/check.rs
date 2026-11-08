@@ -15,7 +15,10 @@ fn check_known_good_tree_exits_clean() {
     let out = run_cli(&["--project", path_str, "check", "--all"]);
     assert_eq!(out.code, 0, "stderr: {}", out.stderr);
     assert!(out.stdout.contains("fail-on error: pass"));
-    assert!(out.stdout.contains("Checked 1 specs: 0 errors, 0 warnings, 3 info"));
+    assert!(
+        out.stdout
+            .contains("Checked 1 specs: 0 errors, 0 warnings, 3 info")
+    );
 }
 
 #[test]
@@ -42,7 +45,14 @@ fn check_warnings_tree_fail_on_default_vs_warning() {
     assert!(out_default.stdout.contains("fail-on error: pass"));
 
     // --fail-on warning exits 1
-    let out_warn = run_cli(&["--project", path_str, "check", "--all", "--fail-on", "warning"]);
+    let out_warn = run_cli(&[
+        "--project",
+        path_str,
+        "check",
+        "--all",
+        "--fail-on",
+        "warning",
+    ]);
     assert_eq!(out_warn.code, 1, "stderr: {}", out_warn.stderr);
     assert!(out_warn.stdout.contains("fail-on warning: fail"));
 }
@@ -73,7 +83,11 @@ fn check_missing_root_unknown_feature_and_selection_errors() {
     // 3. Neither --all nor --feature
     let out_none = run_cli(&["--project", path_str, "check"]);
     assert_eq!(out_none.code, 2);
-    assert!(out_none.stderr.contains("specify either --all or one or more --feature arguments"));
+    assert!(
+        out_none
+            .stderr
+            .contains("specify either --all or one or more --feature arguments")
+    );
 
     // 4. Both --all and --feature
     let out_both = run_cli(&[
@@ -85,7 +99,11 @@ fn check_missing_root_unknown_feature_and_selection_errors() {
         "clean",
     ]);
     assert_eq!(out_both.code, 2);
-    assert!(out_both.stderr.contains("specify either --all or one or more --feature arguments, not both"));
+    assert!(
+        out_both
+            .stderr
+            .contains("specify either --all or one or more --feature arguments, not both")
+    );
 }
 
 #[test]
@@ -106,16 +124,17 @@ fn check_severity_override_and_disabled_checks() {
     assert!(out_override.stdout.contains("INFO EARS_NO_SHALL"));
 
     // Enabling only ears check: terms and contradictions skipped
-    let out_ears_only = run_cli(&[
-        "--project",
-        path_str,
-        "check",
-        "--all",
-        "--checks",
-        "ears",
-    ]);
-    assert!(out_ears_only.stdout.contains("Terms: skipped (disabled by configuration)"));
-    assert!(out_ears_only.stdout.contains("Contradictions: skipped (disabled by configuration)"));
+    let out_ears_only = run_cli(&["--project", path_str, "check", "--all", "--checks", "ears"]);
+    assert!(
+        out_ears_only
+            .stdout
+            .contains("Terms: skipped (disabled by configuration)")
+    );
+    assert!(
+        out_ears_only
+            .stdout
+            .contains("Contradictions: skipped (disabled by configuration)")
+    );
 }
 
 #[test]
@@ -182,5 +201,9 @@ fn check_verbose_logging_failed_read() {
     // With --verbose: prints discovered specs and read failed line for missing design.md
     let out_verbose = run_cli(&["--project", path_str, "--verbose", "check", "--all"]);
     assert!(out_verbose.stderr.contains("discovered specs: late"));
-    assert!(out_verbose.stderr.contains("read failed: .kiro/specs/late/design.md"));
+    assert!(
+        out_verbose
+            .stderr
+            .contains("read failed: .kiro/specs/late/design.md")
+    );
 }

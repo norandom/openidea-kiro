@@ -4,7 +4,12 @@
 //! `check --all` shall exit with code 0 or 1, never 2, and produce byte-identical
 //! output across two runs.
 
-#![allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::expect_used
+)]
 
 mod common;
 
@@ -13,7 +18,7 @@ use common::{run_cli, workspace_root};
 #[test]
 fn self_tree_check_all_deterministic() {
     let root = workspace_root();
-    let root_str = root.to_str().expect("valid utf-8 path to workspace root");
+    let root_str = root.to_str().unwrap();
 
     let out1 = run_cli(&["--project", root_str, "check", "--all"]);
     let out2 = run_cli(&["--project", root_str, "check", "--all"]);

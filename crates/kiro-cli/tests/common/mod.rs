@@ -87,10 +87,7 @@ pub fn setup_tree(fixture: &Path) -> (TempDir, PathBuf) {
 /// Runs the compiled `kiro-cli` binary with the given arguments.
 pub fn run_cli(args: &[&str]) -> Output {
     let bin = env!("CARGO_BIN_EXE_kiro-cli");
-    let out = Command::new(bin)
-        .args(args)
-        .output()
-        .unwrap();
+    let out = Command::new(bin).args(args).output().unwrap();
     Output::from_process(out)
 }
 
@@ -126,7 +123,12 @@ mod tests {
                         let content = std::fs::read_to_string(&path).unwrap();
                         for (line_idx, line) in content.lines().enumerate() {
                             if line.contains("std::fs") {
-                                non_fs_hits.push(format!("{}:{}: {}", path.display(), line_idx + 1, line));
+                                non_fs_hits.push(format!(
+                                    "{}:{}: {}",
+                                    path.display(),
+                                    line_idx + 1,
+                                    line
+                                ));
                             }
                         }
                     }

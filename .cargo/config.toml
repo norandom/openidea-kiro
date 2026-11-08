@@ -9,3 +9,4 @@ runner = "wasmtime"
 
 [alias]
 gate = "nextest run"
+kiro-check = "run -p kiro-cli -- check --project . --all --fail-on error"
