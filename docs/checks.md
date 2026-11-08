@@ -2,6 +2,8 @@
 
 This document describes the specification checking engine (`kiro_core::checks`), the acceptance criterion shape rules (EARS), the topic-scoped term declaration conventions, the guard and effect language, the bounded contradiction search, and the corresponding OpenIDEA plugin commands.
 
+For an in-depth exploration of the underlying mathematical theory, the comparison between SMT solvers and Binary Decision Diagrams (BDDs), and the vocabulary grounding algorithms, see **[Formal Verification Strategy: Domain Ontologies, Finitization, and BDDs](verification.md)**.
+
 ---
 
 ## 1. Overview and Motivation
@@ -141,6 +143,8 @@ When a cap is exceeded, the search refuses for the affected pair and emits `SEAR
 
 ### Documented Blind Spot
 The contradiction search considers only criteria within the same requirements document whose terms resolved inside the specification's declared topics. Inter-spec contradictions and cross-topic contradictions are an intentional blind spot to maintain modularity and prevent combinatorial explosion.
+
+> For the theoretical proof of BDD canonicity, $O(1)$ satisfiability checking, and a comprehensive comparison against SMT solvers (Z3/CVC5), consult **[Formal Verification Strategy: Domain Ontologies, Finitization, and BDDs](verification.md)**.
 
 ---
 

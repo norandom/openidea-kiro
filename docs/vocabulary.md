@@ -2,6 +2,8 @@
 
 This document describes the project vocabulary specification format, ID and labeling conventions, spec-level topic scoping, plugin integration behavior, and the import procedure from external ontologies (including Auto Ontology and SKOS Turtle).
 
+Beyond documentation and taxonomy browsing, project vocabularies provide the formal ontology that grounds natural language requirements for automated mathematical verification. To see how vocabulary definitions are finitized into Binary Decision Diagrams (BDDs), see **[Formal Verification Strategy: Domain Ontologies, Finitization, and BDDs](verification.md)**.
+
 ---
 
 ## 1. File Format and Structure

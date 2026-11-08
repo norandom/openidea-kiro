@@ -231,10 +231,52 @@ Projects using Kiro store specifications under `.kiro/`:
 
 ---
 
+## Formal Verification Strategy: Ontologies & BDDs
+
+Traditional software specifications force teams to choose between **accessible natural language** (which silently accumulates synonym drift and logical contradictions) and **classical formal methods** (such as TLA+ or SMT solvers like Z3/CVC5, which require heavyweight C++ runtimes and suffer from undecidable timeouts).
+
+Kiro provides mathematical rigor directly within your Markdown files by combining **Domain Ontologies** with **Reduced Ordered Binary Decision Diagrams (ROBDDs)**:
+
+```
+Natural Language Criteria ──▶ Ontology Grounding ──▶ Region Finitization ──▶ Canonical BDD
+  "depth > 1000 and safe"    (enum / int facets)     (one-hot variables)     O(1) Sat Check
+```
+
+### Why BDDs Instead of SMT Solvers?
+
+| Criterion | SMT Solvers (Z3, CVC5) | Kiro BDD Engine (`biodivine-lib-bdd`) |
+| :--- | :--- | :--- |
+| **Canonicity** | Non-canonical (formulas have no unique representation). | **Strictly canonical** (identical boolean functions share the exact same node). |
+| **Satisfiability Check** | NP-complete to Undecidable; requires DPLL(T) solver loop. | **$O(1)$ constant time** (pointer comparison against the False sink $\bot$). |
+| **Counterexample Witness** | Heuristic existential search over uninterpreted models. | **$O(\|V\|)$ linear time** path traversal from root to the True sink $\top$. |
+| **Runtime & Dependencies** | Massive C++ dependencies (>500k LOC, >25 MB binary). | **Pure, safe Rust** with zero native dependencies. |
+| **WebAssembly Sandbox** | Incompatible or bloated for WASI environments. | Runs seamlessly inside OpenIDEA's `wasm32-wasip2` sandbox in **< 5 ms**. |
+| **Resource Safety** | Solvers may time out or hang unpredictably. | Enforces strict bounds (`max_variables = 512`, `max_nodes = 100,000`). |
+
+### How Vocabulary Grounding Makes BDDs Possible
+
+BDDs operate strictly on finite boolean variables, whereas real software specifications express business rules over domain entities, enum states, and numerical thresholds. 
+
+Kiro bridges this gap through two techniques:
+1. **Ontology Topic Scoping (`.kiro/vocabulary.toml`)**: Terms are declared with explicit kinds (`entity`, `bool`, `enum`, `int`) and scoped by topic in `spec.json`. This prevents semantic collision across independent features.
+2. **Dynamic Region Finitization (`finitize.rs`)**: Rather than bit-blasting integers, Kiro collects all cut-points across the criteria and partitions the integer domain into contiguous one-hot regions (e.g., `depth < 500`, `depth = 500`, `depth in 501..1000`, `depth > 1000`).
+
+When criteria prescribe conflicting effects (e.g., Criterion 3.1 commands `armed = true` while Criterion 3.2 commands `armed = false`), the BDD engine calculates their joint guard conjunction. If satisfiable, it emits a `CONTRADICTION` error with an **exact counterexample witness state**:
+```text
+.kiro/specs/safety-brake/requirements.md:14: ERROR CONTRADICTION criteria 3.1 and 3.2 can both apply (effect armed: true vs false); witness: depth >= 1001, mode = safe
+```
+
+If problem size exceeds configured limits, Kiro safely degrades by emitting `SEARCH_REFUSED` rather than hanging or guessing.
+
+> 📖 **Deep Dive**: For full proofs, mathematical formulas, and algorithmic workflows, read the complete guide: **[Formal Verification Strategy: Domain Ontologies, Finitization, and BDDs](docs/verification.md)**.
+
+---
+
 ## Documentation Index
 
 - **[CLI Command Reference](docs/cli.md)**: Detailed syntax, options, and exit codes for `kiro-cli`.
 - **[CI/CD Integration Guide](docs/ci.md)**: GitHub Actions workflows, shell scripts, and JSON reporting.
+- **[Formal Verification Strategy](docs/verification.md)**: Mathematical foundations, SMT vs. BDD trade-offs, domain ontologies, and finitization algorithms.
 - **[Vocabulary Guide](docs/vocabulary.md)**: Schema rules, topic scoping, and Auto Ontology / SKOS import pipelines.
 - **[Constraint Checks Reference](docs/checks.md)**: EARS pattern rules, term resolution, and BDD contradiction search.
 
