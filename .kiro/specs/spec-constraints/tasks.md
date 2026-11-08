@@ -1,7 +1,7 @@
 # Implementation Plan
 
 - [ ] 1. Foundation: engine integration, fixtures, text utilities, guard language, annotation reader
-- [ ] 1.1 Integrate the checks seam into the engine crate
+- [x] 1.1 Integrate the checks seam into the engine crate
   - Prerequisite: `crates/kiro-core` (kiro-core spec) with the vocabulary module and the committed seed vocabulary (vocabulary-grounding spec) is implemented and builds for native and the sandbox target; `plugins/kiro` (plugin-core spec) builds its component so the size baseline below can be taken
   - Record the current size of the built plugin component as the baseline before the engine gains the decision-diagram dependency; the figure is reported by task 7
   - Add the decision-diagram library (`biodivine-lib-bdd = "0.6"`, default features) and the parser-combinator library (`winnow = "0.7"`) as runtime dependencies, and declare the checks module as its documented module root plus one documented empty stub per file of the File Structure Plan (text, ears, annotations, guard, terms, finitize, bdd, contradiction) so later tasks own their files

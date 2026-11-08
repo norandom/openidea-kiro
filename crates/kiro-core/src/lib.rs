@@ -49,6 +49,14 @@
 //! `REQ_NON_NUMERIC_ID` and the block is skipped; a baseline requirement
 //! without criteria warns `REQ_NO_CRITERIA`.
 //!
+//! ### `requirements.md` annotations
+//!
+//! Four annotations drive constraint and contradiction checking:
+//! - `_Terms:_` (comma-separated list of term labels or ids, attached at requirement or criterion level)
+//! - `_Guard:_` (boolean expression over scoped terms, e.g. `mode = "safe" and not armed`, attached at criterion level)
+//! - `_Effect:_` (comma-separated assignments, e.g. `armed = false`, attached at criterion level)
+//! - `_Conflicts:_` (comma-separated criterion ids that cannot co-occur, attached at criterion level)
+//!
 //! ## `tasks.md`
 //!
 //! Checkbox lines form a two-level tree: `- [ ] N. Major` at the left
@@ -154,6 +162,26 @@
 //! | TOPICS_UNDECLARED | info | Spec declares no topics; no term resolution |
 //! | TOPIC_UNKNOWN | warning | Spec declares a topic the vocabulary does not have |
 //! | VOCAB_LABEL_CROSS_TOPIC | info | Same normalised label in two topics — a lint only; resolution never crosses topics (2.15, amendment 2026-11-04) |
+//! | EARS_NO_SHALL | error | Criterion has no `shall` |
+//! | EARS_MULTI_SHALL | warning | Criterion has more than one `shall` ("found N") |
+//! | EARS_MODAL | warning | Competing modal outside literals and hyphenated compounds ("use `shall`, not …") |
+//! | EARS_NO_TRIGGER | warning | Condition keyword without a comma before `shall` |
+//! | EARS_UNPARSED | warning | Missing subject or response around the single `shall` |
+//! | EARS_PATTERN | info | Recognised pattern ("pattern: <name>"), only when enabled |
+//! | TERM_UNDECLARED | error | Declared term unknown in the declared topics |
+//! | TERM_TOPIC_MISMATCH | error | Declared term exists only in undeclared topics; never a match |
+//! | TERM_AMBIGUOUS | warning | Declared term matches several terms; use the id |
+//! | TERM_DEPRECATED | warning | Declared term is deprecated |
+//! | TERM_SUGGESTED | info | A visible label occurs in criteria but is not declared |
+//! | CHECK_UNSCOPED | warning | Annotations present but the spec has no topics or the vocabulary is unavailable |
+//! | GUARD_UNPARSED | error | Guard/effect text outside the grammar, term-vs-term comparison, duplicate or misplaced annotation |
+//! | GUARD_TERM_UNDECLARED | error | Guard/effect references a term not declared in `_Terms:_` |
+//! | GUARD_KIND_MISMATCH | error | Term kind incompatible with the literal or operator |
+//! | GUARD_UNSATISFIABLE | warning | A guard holds in no state |
+//! | CONFLICT_REF_UNKNOWN | warning | `_Conflicts:_` names no criterion |
+//! | CONTRADICTION | error | Two incompatible criteria can both apply; witness given |
+//! | SEARCH_REFUSED | warning | A cap was exceeded; the listed pairs were not checked |
+//! | CHECK_COVERAGE | info | "{criteria} criteria, {annotated} annotated, {pairs} pairs considered, {contradictions} contradictions, {refused} refused" (line: None) — distinguishes "checked" from "not checked" whenever the term or contradiction check ran (amendment 2026-11-04) |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -198,6 +226,26 @@
 //!     ("TOPICS_UNDECLARED", Severity::Info, "Spec declares no topics; no term resolution"),
 //!     ("TOPIC_UNKNOWN", Severity::Warning, "Spec declares a topic the vocabulary does not have"),
 //!     ("VOCAB_LABEL_CROSS_TOPIC", Severity::Info, "Same normalised label in two topics — a lint only; resolution never crosses topics (2.15, amendment 2026-11-04)"),
+//!     ("EARS_NO_SHALL", Severity::Error, "Criterion has no `shall`"),
+//!     ("EARS_MULTI_SHALL", Severity::Warning, "Criterion has more than one `shall` (\"found N\")"),
+//!     ("EARS_MODAL", Severity::Warning, "Competing modal outside literals and hyphenated compounds (\"use `shall`, not …\")"),
+//!     ("EARS_NO_TRIGGER", Severity::Warning, "Condition keyword without a comma before `shall`"),
+//!     ("EARS_UNPARSED", Severity::Warning, "Missing subject or response around the single `shall`"),
+//!     ("EARS_PATTERN", Severity::Info, "Recognised pattern (\"pattern: <name>\"), only when enabled"),
+//!     ("TERM_UNDECLARED", Severity::Error, "Declared term unknown in the declared topics"),
+//!     ("TERM_TOPIC_MISMATCH", Severity::Error, "Declared term exists only in undeclared topics; never a match"),
+//!     ("TERM_AMBIGUOUS", Severity::Warning, "Declared term matches several terms; use the id"),
+//!     ("TERM_DEPRECATED", Severity::Warning, "Declared term is deprecated"),
+//!     ("TERM_SUGGESTED", Severity::Info, "A visible label occurs in criteria but is not declared"),
+//!     ("CHECK_UNSCOPED", Severity::Warning, "Annotations present but the spec has no topics or the vocabulary is unavailable"),
+//!     ("GUARD_UNPARSED", Severity::Error, "Guard/effect text outside the grammar, term-vs-term comparison, duplicate or misplaced annotation"),
+//!     ("GUARD_TERM_UNDECLARED", Severity::Error, "Guard/effect references a term not declared in `_Terms:_`"),
+//!     ("GUARD_KIND_MISMATCH", Severity::Error, "Term kind incompatible with the literal or operator"),
+//!     ("GUARD_UNSATISFIABLE", Severity::Warning, "A guard holds in no state"),
+//!     ("CONFLICT_REF_UNKNOWN", Severity::Warning, "`_Conflicts:_` names no criterion"),
+//!     ("CONTRADICTION", Severity::Error, "Two incompatible criteria can both apply; witness given"),
+//!     ("SEARCH_REFUSED", Severity::Warning, "A cap was exceeded; the listed pairs were not checked"),
+//!     ("CHECK_COVERAGE", Severity::Info, "\"{criteria} criteria, {annotated} annotated, {pairs} pairs considered, {contradictions} contradictions, {refused} refused\" (line: None) — distinguishes \"checked\" from \"not checked\" whenever the term or contradiction check ran (amendment 2026-11-04)"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {
@@ -266,6 +314,7 @@
 //! belongs to the spec-constraints spec and is deliberately absent from this crate.
 #![forbid(unsafe_code)]
 
+pub mod checks;
 pub mod design;
 pub mod finding;
 pub mod join;

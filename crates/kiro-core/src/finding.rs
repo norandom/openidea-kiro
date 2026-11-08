@@ -266,6 +266,106 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Info,
         description: "Same normalised label in two topics — a lint only; resolution never crosses topics (2.15, amendment 2026-11-04)",
     },
+    CodeInfo {
+        code: "EARS_NO_SHALL",
+        severity: Severity::Error,
+        description: "Criterion has no `shall`",
+    },
+    CodeInfo {
+        code: "EARS_MULTI_SHALL",
+        severity: Severity::Warning,
+        description: "Criterion has more than one `shall` (\"found N\")",
+    },
+    CodeInfo {
+        code: "EARS_MODAL",
+        severity: Severity::Warning,
+        description: "Competing modal outside literals and hyphenated compounds (\"use `shall`, not …\")",
+    },
+    CodeInfo {
+        code: "EARS_NO_TRIGGER",
+        severity: Severity::Warning,
+        description: "Condition keyword without a comma before `shall`",
+    },
+    CodeInfo {
+        code: "EARS_UNPARSED",
+        severity: Severity::Warning,
+        description: "Missing subject or response around the single `shall`",
+    },
+    CodeInfo {
+        code: "EARS_PATTERN",
+        severity: Severity::Info,
+        description: "Recognised pattern (\"pattern: <name>\"), only when enabled",
+    },
+    CodeInfo {
+        code: "TERM_UNDECLARED",
+        severity: Severity::Error,
+        description: "Declared term unknown in the declared topics",
+    },
+    CodeInfo {
+        code: "TERM_TOPIC_MISMATCH",
+        severity: Severity::Error,
+        description: "Declared term exists only in undeclared topics; never a match",
+    },
+    CodeInfo {
+        code: "TERM_AMBIGUOUS",
+        severity: Severity::Warning,
+        description: "Declared term matches several terms; use the id",
+    },
+    CodeInfo {
+        code: "TERM_DEPRECATED",
+        severity: Severity::Warning,
+        description: "Declared term is deprecated",
+    },
+    CodeInfo {
+        code: "TERM_SUGGESTED",
+        severity: Severity::Info,
+        description: "A visible label occurs in criteria but is not declared",
+    },
+    CodeInfo {
+        code: "CHECK_UNSCOPED",
+        severity: Severity::Warning,
+        description: "Annotations present but the spec has no topics or the vocabulary is unavailable",
+    },
+    CodeInfo {
+        code: "GUARD_UNPARSED",
+        severity: Severity::Error,
+        description: "Guard/effect text outside the grammar, term-vs-term comparison, duplicate or misplaced annotation",
+    },
+    CodeInfo {
+        code: "GUARD_TERM_UNDECLARED",
+        severity: Severity::Error,
+        description: "Guard/effect references a term not declared in `_Terms:_`",
+    },
+    CodeInfo {
+        code: "GUARD_KIND_MISMATCH",
+        severity: Severity::Error,
+        description: "Term kind incompatible with the literal or operator",
+    },
+    CodeInfo {
+        code: "GUARD_UNSATISFIABLE",
+        severity: Severity::Warning,
+        description: "A guard holds in no state",
+    },
+    CodeInfo {
+        code: "CONFLICT_REF_UNKNOWN",
+        severity: Severity::Warning,
+        description: "`_Conflicts:_` names no criterion",
+    },
+    CodeInfo {
+        code: "CONTRADICTION",
+        severity: Severity::Error,
+        description: "Two incompatible criteria can both apply; witness given",
+    },
+    CodeInfo {
+        code: "SEARCH_REFUSED",
+        severity: Severity::Warning,
+        description: "A cap was exceeded; the listed pairs were not checked",
+    },
+    CodeInfo {
+        code: "CHECK_COVERAGE",
+        severity: Severity::Info,
+        description: "\"{criteria} criteria, {annotated} annotated, {pairs} pairs considered, {contradictions} contradictions, {refused} refused\" (line: None) — distinguishes \"checked\" from \"not checked\" whenever the term or contradiction check ran (amendment 2026-11-04)",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -307,6 +407,26 @@ pub mod codes {
     pub const TOPICS_UNDECLARED: &str = "TOPICS_UNDECLARED";
     pub const TOPIC_UNKNOWN: &str = "TOPIC_UNKNOWN";
     pub const VOCAB_LABEL_CROSS_TOPIC: &str = "VOCAB_LABEL_CROSS_TOPIC";
+    pub const EARS_NO_SHALL: &str = "EARS_NO_SHALL";
+    pub const EARS_MULTI_SHALL: &str = "EARS_MULTI_SHALL";
+    pub const EARS_MODAL: &str = "EARS_MODAL";
+    pub const EARS_NO_TRIGGER: &str = "EARS_NO_TRIGGER";
+    pub const EARS_UNPARSED: &str = "EARS_UNPARSED";
+    pub const EARS_PATTERN: &str = "EARS_PATTERN";
+    pub const TERM_UNDECLARED: &str = "TERM_UNDECLARED";
+    pub const TERM_TOPIC_MISMATCH: &str = "TERM_TOPIC_MISMATCH";
+    pub const TERM_AMBIGUOUS: &str = "TERM_AMBIGUOUS";
+    pub const TERM_DEPRECATED: &str = "TERM_DEPRECATED";
+    pub const TERM_SUGGESTED: &str = "TERM_SUGGESTED";
+    pub const CHECK_UNSCOPED: &str = "CHECK_UNSCOPED";
+    pub const GUARD_UNPARSED: &str = "GUARD_UNPARSED";
+    pub const GUARD_TERM_UNDECLARED: &str = "GUARD_TERM_UNDECLARED";
+    pub const GUARD_KIND_MISMATCH: &str = "GUARD_KIND_MISMATCH";
+    pub const GUARD_UNSATISFIABLE: &str = "GUARD_UNSATISFIABLE";
+    pub const CONFLICT_REF_UNKNOWN: &str = "CONFLICT_REF_UNKNOWN";
+    pub const CONTRADICTION: &str = "CONTRADICTION";
+    pub const SEARCH_REFUSED: &str = "SEARCH_REFUSED";
+    pub const CHECK_COVERAGE: &str = "CHECK_COVERAGE";
 }
 
 /// Orders by `(file, line with absent lines first, code, message)`; stable,
@@ -343,8 +463,8 @@ mod tests {
     }
 
     #[test]
-    fn catalogue_has_37_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 37);
+    fn catalogue_has_57_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 57);
         let all = [
             codes::SPEC_DOC_MISSING,
             codes::SPEC_JSON_INVALID,
@@ -383,8 +503,28 @@ mod tests {
             codes::TOPICS_UNDECLARED,
             codes::TOPIC_UNKNOWN,
             codes::VOCAB_LABEL_CROSS_TOPIC,
+            codes::EARS_NO_SHALL,
+            codes::EARS_MULTI_SHALL,
+            codes::EARS_MODAL,
+            codes::EARS_NO_TRIGGER,
+            codes::EARS_UNPARSED,
+            codes::EARS_PATTERN,
+            codes::TERM_UNDECLARED,
+            codes::TERM_TOPIC_MISMATCH,
+            codes::TERM_AMBIGUOUS,
+            codes::TERM_DEPRECATED,
+            codes::TERM_SUGGESTED,
+            codes::CHECK_UNSCOPED,
+            codes::GUARD_UNPARSED,
+            codes::GUARD_TERM_UNDECLARED,
+            codes::GUARD_KIND_MISMATCH,
+            codes::GUARD_UNSATISFIABLE,
+            codes::CONFLICT_REF_UNKNOWN,
+            codes::CONTRADICTION,
+            codes::SEARCH_REFUSED,
+            codes::CHECK_COVERAGE,
         ];
-        assert_eq!(all.len(), 37);
+        assert_eq!(all.len(), 57);
         for c in all {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),
