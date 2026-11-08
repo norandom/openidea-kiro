@@ -42,7 +42,7 @@
   - _Requirements: 1.6, 3.1, 4.9_
 
 - [ ] 2. Core checks: EARS shape and declared terms
-- [ ] 2.1 Implement the EARS shape check
+- [x] 2.1 Implement the EARS shape check
   - Analysis of one criterion over its masked text: shall count, offending modals outside hyphenated compounds, leading condition keyword, last comma before the first shall, the `then` form, subject and response from the unmasked text, and the pattern classification (ubiquitous, event, state, unwanted, optional, complex) that is always computed for a single-shall criterion
   - The document-level check producing the six EARS codes at the criterion line, pattern reports only when enabled, and the summary of criteria per pattern
   - Observable: unit tests produce each EARS code from constructed criteria, reproduce the version-1 false-positive cases without a finding, accept both `If` forms, detect complex conditions, and show pattern reports off and on
