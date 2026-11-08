@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: engine integration, fixtures, text utilities, guard language, annotation reader
+- [x] 1. Foundation: engine integration, fixtures, text utilities, guard language, annotation reader
 - [x] 1.1 Integrate the checks seam into the engine crate
   - Prerequisite: `crates/kiro-core` (kiro-core spec) with the vocabulary module and the committed seed vocabulary (vocabulary-grounding spec) is implemented and builds for native and the sandbox target; `plugins/kiro` (plugin-core spec) builds its component so the size baseline below can be taken
   - Record the current size of the built plugin component as the baseline before the engine gains the decision-diagram dependency; the figure is reported by task 7
@@ -34,7 +34,7 @@
   - _Depends: 1.1_
   - _Requirements: 4.1, 4.4, 4.8_
 
-- [ ] 1.5 (P) Implement the annotation reader
+- [x] 1.5 (P) Implement the annotation reader
   - A typed view over a parsed requirements document for the four keys (matched case-insensitively): declared-term lists on requirements and criteria (split on commas, trimmed, deduplicated after label normalisation), the first guard, effect and conflict list per criterion with later duplicates and requirement-level guard/effect/conflict annotations kept aside for reporting, the "any annotation present" flag and the first annotation line
   - Observable: unit tests cover requirement versus criterion placement, duplicates, misplaced annotations, the flag and first line, and list splitting with deduplication
   - _Boundary: AnnotationReader_
