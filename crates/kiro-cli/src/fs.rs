@@ -261,6 +261,12 @@ pub fn output_exists(path: &Path) -> bool {
 
 /// Writes `text` to `path`, wrapping any I/O error into a [`Failure`].
 pub fn write_output(path: &Path, text: &str) -> Result<(), Failure> {
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+        && !parent.exists()
+    {
+        let _ = std::fs::create_dir_all(parent);
+    }
     std::fs::write(path, text).map_err(|e| {
         Failure::new(format!(
             "failed to write output `{}`: {e}",

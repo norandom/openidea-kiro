@@ -9,6 +9,7 @@ pub mod check;
 pub mod cli;
 pub mod exit;
 pub mod fs;
+pub mod import;
 pub mod report;
 pub mod viz;
 pub mod vocab;
@@ -215,7 +216,7 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            match vocab::import(&root, args) {
+            match vocab::import(&root, args, cli.verbose) {
                 Ok(exit) => ExitCode::from(exit),
                 Err(failure) => {
                     eprintln!("{failure}");

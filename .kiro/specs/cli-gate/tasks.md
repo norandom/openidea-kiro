@@ -76,22 +76,22 @@
   - _Depends: 2.1, 2.2, 3.1, 4.1_
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 5. Importer
-- [ ] 5.1 Implement the importer model, id rule, deduplication and TOML writer
+- [x] 5. Importer
+- [x] 5.1 Implement the importer model, id rule, deduplication and TOML writer
   - The imported-term model built on the engine's kind type with provenance comment lines and a source reference; the id derivation rule (CamelCase and separators to hyphens, lower-case, non-id characters to hyphens, runs collapsed, ends trimmed) satisfying the mapping's three examples and Auto Ontology name forms; first-wins deduplication with the duplicate finding naming both sources; the TOML writer producing the design's header, schema version, topic tables with optional labels, and term tables sorted by id with the fixed key order and omission rules, using `toml_edit` / `toml` value formatting (or a basic-string escaper backed by it, since `toml_edit` is already in `Cargo.lock`); the input-format enum is reused from the command-line module
   - Observable: unit tests cover the id table, escaping, key order and omission, deduplication, and that every rendered id satisfies the id rule
   - _Boundary: Importer_
   - _Depends: 1.2, 2.2_
   - _Requirements: 9.2, 9.10, 9.11, 9.12_
 
-- [ ] 5.2 Implement the append-only merge, output validation and reader dispatch
+- [x] 5.2 Implement the append-only merge, output validation and reader dispatch
   - The merge that keeps the existing text unchanged, appends a merge header, only the terms whose id and labels do not resolve in the existing vocabulary through its scoped public queries, and topic tables only when the existing vocabulary has no declared table for them (using the same TOML table rendering as `render` or `toml_edit`), reporting each dropped term as a merge conflict; output validation through the engine's vocabulary parse of the exact text to be written; the format dispatch to the two readers, created here as minimal stub modules returning an empty import so that each reader task replaces only its own file
   - Observable: unit tests cover the two merge conflict rules and the topic-table rule on a constructed vocabulary, the unchanged prefix, and that a writer defect producing invalid TOML surfaces as the engine's invalid finding
   - _Boundary: Importer_
   - _Depends: 5.1_
   - _Requirements: 9.5_
 
-- [ ] 5.3 Implement the Auto Ontology JSON reader
+- [x] 5.3 Implement the Auto Ontology JSON reader
   - Lenient reading of each input as the terms page object or a bare array (anything else is an invalid-input finding with the parser's line when it is a syntax error); per item the trimmed name as label and id source (absent, null or blank → skipped with a finding naming the item's id or position), description as definition (empty when absent), synonyms as sorted alternative labels deduplicated after label normalisation and without the label itself, a provenance comment with the Auto Ontology id and zone names (object name, else id, or string), a related-terms comment when present (never a broader relation), every other property ignored, the default topic and kind on every term
   - Runs after 5.2 (replaces its stub module); 5.4 may run concurrently with this task
   - Observable: unit tests cover page versus array versus other top-level shapes, the null and blank name cases, synonym handling, zone and related comment lines for object and string forms, ignored properties, and the line in the invalid-input finding
@@ -99,14 +99,14 @@
   - _Depends: 5.2_
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-- [ ] 5.4 (P) Implement the SKOS Turtle reader
+- [x] 5.4 (P) Implement the SKOS Turtle reader
   - Turtle parsing with the first syntax error reported as an invalid-input finding with its line; concepts in first-occurrence order; ids from the IRI local name through the shared id rule (invalid → skipped with a finding); preferred label and definition by the literal preference rule (untagged, English, first); alternative labels; broader from both directions; deprecation and replacement; the project namespace annotations for topic, kind, enum values and integer bounds, with an unrecognised kind kept as default plus a comment; non-concept subjects, collections and blank nodes ignored; the single concept scheme's title as the default topic's label
   - Observable: the Turtle fixture yields the three mapping-example ids, the expected labels and definitions per language rule, merged broader lists, the deprecated term with its replacement, the annotated topic, enum and int kinds, and the scheme title; the invalid fixture yields the finding with its line
   - _Boundary: SkosReader_
   - _Depends: 5.2_
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
 
-- [ ] 5.5 Implement the import command
+- [x] 5.5 Implement the import command
   - The pipeline: read the operator's input files as given, run the chosen reader (an invalid-input finding is printed and the command fails with exit 2, nothing written), deduplicate, resolve the output path (default under the project root; dash means standard output), refuse an existing output without merge (exit 2), merge into an existing valid vocabulary (an invalid one fails with its finding line and exit 2), validate the exact output text, write the file or print it, print all import and validation findings in the finding line form on standard error, exit 1 when any is an error and 0 otherwise; under verbose, the written output path is printed on standard error
   - Explicit integration touch: adds only its own dispatch arm to the entry point
   - Observable: a fresh import of the page fixture writes the file and prints the two expected warnings; a second run without merge exits 2 and leaves the file unchanged; a merge into the merge-target fixture appends only new tables and reports two conflicts; `--out -` prints TOML on standard output only
