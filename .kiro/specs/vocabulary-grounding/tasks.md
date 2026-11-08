@@ -48,7 +48,7 @@
   - _Boundary: VocabIndex_
   - _Requirements: 2.10, 2.14, 5.1, 11.2_
 
-- [ ] 2.4 Implement the loader and the module root
+- [x] 2.4 Implement the loader and the module root
   - Status (loaded, missing, invalid) and the loaded value bundling status, vocabulary and sorted findings; text-level parse producing invalid status with an empty vocabulary or loaded status with build findings; workspace-level load reading the vocabulary path through the workspace cache once, mapping absence to the missing status with its info finding
   - Re-exports of the model types and constants from the module root (the query types are re-exported by 2.6)
   - Observable: unit tests show one read per workspace lifetime for present and absent files, the missing and invalid statuses with their single finding, and an empty vocabulary whenever the status is not loaded
