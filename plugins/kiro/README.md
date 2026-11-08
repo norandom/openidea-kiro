@@ -76,6 +76,13 @@ The static commands declared in `plugin.toml` match the registry's static list:
 | `ws.specs` | `Kiro: List Specs` | No | Yes | Lists all known specs, discovery sources, `spec.json` readability, phases, and per-spec command variants. |
 | `ws.specs.insert` | `Kiro: List Specs — Insert at Cursor` | No | Variant | Full text of `ws.specs` inserted into the active editor buffer. |
 | `ws.current` | `Kiro: Current Spec` | Yes | No | Reports the active spec name, resolution source, document presence, and findings. |
+| `nav.context` | `Kiro: Spec Context` | Yes | Yes | Reports which specs, components, tasks and criteria own the active file. |
+| `nav.context.insert` | `Kiro: Spec Context — Insert at Cursor` | Yes | Variant | Inserts reference line(s) (`kiro-spec: ...`) at the cursor wrapped in the active file's comment syntax. |
+| `nav.files` | `Kiro: Files by Component` | Yes | No | Lists design files by component with responsibilities and bound tasks. |
+| `nav.task-files` | `Kiro: Files by Task` | Yes | No | Lists tasks with boundary components and component files; optionally filtered by task id. |
+| `nav.to-requirements` | `Kiro: Requirements Outline` | Yes | No | Outlines headings from the current spec's requirements document. |
+| `nav.to-design` | `Kiro: Design Outline` | Yes | No | Outlines headings from the current spec's design document. |
+| `nav.to-tasks` | `Kiro: Tasks Outline` | Yes | No | Outlines headings and task items merged in line order from the current spec's tasks document. |
 | `vocab.term` | `Kiro: Vocabulary Term` | Yes | No | Looks up a term within the current spec's declared topics. When invoked without arguments, displays usage guidance and the visible terms table. |
 | `vocab.list` | `Kiro: List Vocabulary Terms` | Yes | Yes | Lists all visible terms for the current spec's declared topics; optionally filtered by a declared topic argument. |
 | `vocab.list.insert` | `Kiro: List Vocabulary Terms — Insert at Cursor` | Yes | Variant | Inserts the visible terms table into the active editor buffer. |
@@ -98,6 +105,36 @@ The vocabulary capability grounds requirements and design artifacts in a control
   - **Invalid Vocabulary**: If `.kiro/vocabulary.toml` contains syntax or schema errors, an error notification reporting the `VOCAB_INVALID` finding is presented.
   - **Undeclared Topics**: If a spec does not declare `"topics"` in its `spec.json`, commands guide the author to declare topics and list all available topics in the vocabulary.
   - **Findings Summary**: When vocabulary validation findings exist on a loaded vocabulary, a reminder line `Vocabulary findings: N (run Kiro: Vocabulary Topics)` is appended to term and list outputs.
+
+---
+
+## 5.2 Spec Navigation & Ownership
+
+The navigation capability provides cross-spec ownership tracing, component and task coverage views, and document outlines:
+
+- **Programmatic Argument Forms**:
+  - `nav.context [spec]`: Traces ownership of the active editor file across specs. When `spec` is provided, restricts checking to that spec; otherwise checks all known specs in roadmap order.
+  - `nav.files [spec]`: Lists design files by component with declared responsibilities and bound implementation tasks.
+  - `nav.task-files [spec] [task-id]`: Lists tasks with their boundary components and files. When `task-id` is provided (e.g., `2` or `2.1`), filters output to that major task and its subtasks or to that subtask alone. When combined with a per-spec variant (`nav.task-files.<spec>`), any argument repeating the spec must agree with `<spec>`, or specify only the `task-id`.
+  - `nav.to-requirements [spec]`, `nav.to-design [spec]`, `nav.to-tasks [spec]`: Outlines headings and sections for quick navigation. For `nav.to-tasks`, task items are merged with headings in line order.
+
+- **Comment Syntax for Reference Insertion**:
+  When inserting a spec reference (`nav.context.insert`), the inserted line is wrapped in the file's native comment syntax:
+
+  | Style | Comment Markers | Recognized Extensions / Basenames |
+  | :--- | :---: | :--- |
+  | Double Slash | `// text` | `.c`, `.h`, `.cpp`, `.cc`, `.cxx`, `.hpp`, `.hh`, `.cs`, `.java`, `.kt`, `.kts`, `.swift`, `.go`, `.rs`, `.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.tsx`, `.dart`, `.scala`, `.groovy`, `.php`, `.zig`, `.wit`, `.proto` |
+  | Hash | `# text` | `.py`, `.rb`, `.sh`, `.bash`, `.zsh`, `.ps1`, `.psm1`, `.psd1`, `.toml`, `.yaml`, `.yml`, `.pl`, `.pm`, `.r`, `.cmake`, `.ex`, `.exs`, `.nim`, `.tf`, `.hcl`, and extension-less `Makefile`, `Dockerfile`, `Justfile` |
+  | Double Dash | `-- text` | `.sql`, `.lua`, `.hs`, `.elm`, `.ada`, `.adb`, `.ads`, `.vhd`, `.vhdl` |
+  | HTML | `<!-- text -->` | `.md`, `.markdown`, `.html`, `.htm`, `.xml`, `.svg`, `.vue`, `.svelte`, `.xaml`, `.csproj`, `.fsproj`, `.vbproj`, `.props`, `.targets` (any `--` inside text is replaced by `- -`) |
+  | Bare | `text` | Unlisted extensions (e.g. `.json`), dotfiles (e.g. `.gitignore`), and unlisted extension-less files |
+
+- **Manual Host Check (Requirement 8.7)**:
+  1. Open a source file in OpenIDEA (e.g. `plugins/kiro/src/lib.rs`).
+  2. Open Search Everywhere (`Ctrl+Shift+A`) and run **Kiro: Spec Context**.
+  3. Verify that the notification balloon displays the owning spec, components, tasks and criteria.
+  4. Place the editor cursor on an empty line and run **Kiro: Spec Context — Insert at Cursor**.
+  5. Verify that a `kiro-spec: ...` reference line is inserted at the cursor wrapped in the appropriate comment marker (e.g. `// kiro-spec: ...`) and the notification confirms insertion.
 
 ---
 

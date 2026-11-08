@@ -23,6 +23,41 @@ title = "Kiro: Current Spec"
 category = "Kiro"
 
 [[contributes.commands]]
+id = "nav.context"
+title = "Kiro: Spec Context"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "nav.context.insert"
+title = "Kiro: Spec Context — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "nav.files"
+title = "Kiro: Files by Component"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "nav.task-files"
+title = "Kiro: Files by Task"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "nav.to-requirements"
+title = "Kiro: Requirements Outline"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "nav.to-design"
+title = "Kiro: Design Outline"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "nav.to-tasks"
+title = "Kiro: Tasks Outline"
+category = "Kiro"
+
+[[contributes.commands]]
 id = "vocab.term"
 title = "Kiro: Vocabulary Term"
 category = "Kiro"

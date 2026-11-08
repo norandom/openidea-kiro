@@ -78,8 +78,8 @@
   - _Depends: 1.1_
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 7.2, 7.4, 8.3_
 
-- [ ] 3. Integration: register the navigation module in the plugin package
-- [ ] 3.1 Add the module to the dispatch table, the manifest and the package documentation
+- [x] 3. Integration: register the navigation module in the plugin package
+- [x] 3.1 Add the module to the dispatch table, the manifest and the package documentation
   - Module table gains the navigation module at its canonical position (`ws, nav, viz, vocab, check`)
   - Manifest gains the seven project-independent navigation entries (six base commands then the insert variant) with the same titles and category as the declarations
   - README gains the command rows, the argument forms (`nav.context <spec>`, `nav.task-files <spec> [task-id]`, and that a per-spec variant combined with an argument must repeat the spec name), the comment-syntax table and the manual host check for the context command
