@@ -82,7 +82,7 @@
   - _Requirements: 4.10, 5.1, 5.3, 5.4, 5.5, 5.7_
 
 - [ ] 4. Runner and engine tests
-- [ ] 4.1 Implement the check runner, configuration and report
+- [x] 4.1 Implement the check runner, configuration and report
   - Configuration with the design's defaults, the single-check constructor, severity overrides limited to this spec's codes; the report with per-check status, summaries, topics and vocabulary status; orchestration in the design's order: missing requirements document, EARS, the scoped decision with skip reasons in the stated precedence, pass-through of exactly the four upstream findings once, the unscoped finding when annotations are present, term scope and findings, finitisation and search, one `CHECK_COVERAGE` info finding (`line: None`) on the requirements document whenever the term or contradiction check ran carrying the counts of requirement 1.8, overrides, sorting
   - The workspace form loading the vocabulary before the feature so one cached read serves the call
   - Observable: unit tests cover skip reasons and their precedence, single pass-through, `CHECK_COVERAGE` emission when terms or contradictions ran and its absence when only EARS ran or when both were skipped, override application only to this spec's codes, the single-check constructor, and equality of two reports from equal inputs

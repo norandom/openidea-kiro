@@ -429,6 +429,30 @@ pub mod codes {
     pub const CHECK_COVERAGE: &str = "CHECK_COVERAGE";
 }
 
+/// The twenty check finding codes introduced by the constraints engine.
+pub const CHECK_CODES: &[&str] = &[
+    codes::EARS_NO_SHALL,
+    codes::EARS_MULTI_SHALL,
+    codes::EARS_MODAL,
+    codes::EARS_NO_TRIGGER,
+    codes::EARS_UNPARSED,
+    codes::EARS_PATTERN,
+    codes::TERM_UNDECLARED,
+    codes::TERM_TOPIC_MISMATCH,
+    codes::TERM_AMBIGUOUS,
+    codes::TERM_DEPRECATED,
+    codes::TERM_SUGGESTED,
+    codes::CHECK_UNSCOPED,
+    codes::GUARD_UNPARSED,
+    codes::GUARD_TERM_UNDECLARED,
+    codes::GUARD_KIND_MISMATCH,
+    codes::GUARD_UNSATISFIABLE,
+    codes::CONFLICT_REF_UNKNOWN,
+    codes::CONTRADICTION,
+    codes::SEARCH_REFUSED,
+    codes::CHECK_COVERAGE,
+];
+
 /// Orders by `(file, line with absent lines first, code, message)`; stable,
 /// so identical input always yields identical output. Takes a mutable slice
 /// (callers pass `&mut Vec<Finding>`; the design's signature, adapted for the
@@ -453,7 +477,7 @@ pub fn sort_findings(findings: &mut [Finding]) {
 
 #[cfg(test)]
 mod tests {
-    use crate::finding::{CODES, CodeInfo, Finding, Severity, codes, sort_findings};
+    use crate::finding::{CHECK_CODES, CODES, CodeInfo, Finding, Severity, codes, sort_findings};
 
     #[test]
     fn severity_ord_error_before_warning_before_info() {
@@ -465,6 +489,7 @@ mod tests {
     #[test]
     fn catalogue_has_57_entries_and_every_codes_constant() {
         assert_eq!(CODES.len(), 57);
+        assert_eq!(CHECK_CODES.len(), 20);
         let all = [
             codes::SPEC_DOC_MISSING,
             codes::SPEC_JSON_INVALID,
