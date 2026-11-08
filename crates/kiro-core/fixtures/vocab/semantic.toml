@@ -1,0 +1,80 @@
+# Expected findings:
+# Line 13: WARNING VOCAB_SCHEMA_UNSUPPORTED (schema_version "1" != "2")
+# Line 15: INFO TOPIC_EMPTY (topic "empty" has no terms)
+# Line 24: WARNING TERM_NO_DEFINITION (term "t-no-def" has empty definition)
+# Line 29: WARNING TERM_KIND_INVALID (term "t-bad-kind" has unknown kind "custom")
+# Line 40: ERROR TERM_DUPLICATE_LABEL (term "t-dup-label" shares label "Same Label" with "t-first-label")
+# Line 45: WARNING TERM_BROADER_UNKNOWN (term "t-broader-unknown" references unknown broader term "ghost")
+# Line 51: ERROR TERM_BROADER_CROSS_TOPIC (term "t-broader-cross" references cross-topic broader term "pm-term")
+# Line 57: WARNING TERM_DEPRECATED_NO_REPLACEMENT (term "t-dep-no-rep" is deprecated without replacement)
+# Line 63: WARNING TERM_REPLACED_BY_UNKNOWN (term "t-rep-unknown" has unknown replacement "ghost")
+# Line 70: WARNING TERM_REPLACED_BY_CROSS_TOPIC (term "t-rep-cross" has cross-topic replacement "pm-term")
+
+schema_version = "1"
+
+[topics.empty]
+label = "Empty Topic"
+
+[topics.sdd]
+label = "SDD"
+
+[topics.pm]
+label = "PM"
+
+[terms.t-no-def]
+topic = "sdd"
+label = "No Def"
+definition = ""
+
+[terms.t-bad-kind]
+topic = "sdd"
+label = "Bad Kind"
+definition = "A term with invalid kind."
+kind = "custom"
+
+[terms.t-first-label]
+topic = "sdd"
+label = "Same Label"
+definition = "First term with this label."
+
+[terms.t-dup-label]
+topic = "sdd"
+label = "Same Label"
+definition = "Second term with duplicate label."
+
+[terms.t-broader-unknown]
+topic = "sdd"
+label = "Broader Unknown"
+definition = "Broader unknown."
+broader = ["ghost"]
+
+[terms.t-broader-cross]
+topic = "sdd"
+label = "Broader Cross"
+definition = "Broader cross topic."
+broader = ["pm-term"]
+
+[terms.t-dep-no-rep]
+topic = "sdd"
+label = "Dep No Rep"
+definition = "Deprecated without replacement."
+deprecated = true
+
+[terms.t-rep-unknown]
+topic = "sdd"
+label = "Rep Unknown"
+definition = "Replaced by unknown."
+deprecated = true
+replaced_by = "ghost"
+
+[terms.t-rep-cross]
+topic = "sdd"
+label = "Rep Cross"
+definition = "Replaced by cross topic."
+deprecated = true
+replaced_by = "pm-term"
+
+[terms.pm-term]
+topic = "pm"
+label = "PM Term"
+definition = "A term in PM topic."

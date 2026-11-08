@@ -1,0 +1,81 @@
+# Expected findings:
+# Line 66: INFO VOCAB_LABEL_CROSS_TOPIC (label "Task" exists in topic "sdd" as "task" and topic "pm" as "pm-task")
+
+schema_version = "2"
+
+[topics.sdd]
+label = "Spec-driven development"
+description = "Artifacts and roles of the kiro / cc-sdd workflow."
+
+[topics.pm]
+label = "Project management"
+description = "Project planning and delivery tracking."
+
+[terms.spec]
+topic = "sdd"
+label = "Specification"
+definition = "A formal unit of development containing requirements, design, and tasks."
+kind = "entity"
+
+[terms.requirement]
+topic = "sdd"
+label = "Requirement"
+definition = "A structured statement of system behavior."
+kind = "entity"
+broader = ["spec"]
+
+[terms.acceptance-criterion]
+topic = "sdd"
+label = "Acceptance criterion"
+definition = "One EARS-shaped, testable statement under a requirement, identified as N.M."
+kind = "entity"
+broader = ["requirement"]
+alt_labels = ["criterion", "AC"]
+
+[terms.task]
+topic = "sdd"
+label = "Task"
+definition = "An actionable implementation step with an explicit boundary."
+kind = "entity"
+broader = ["spec"]
+
+[terms.phase]
+topic = "sdd"
+label = "Phase"
+definition = "The workflow state recorded in spec.json."
+kind = "enum"
+values = ["initialized", "requirements-generated", "design-generated", "tasks-generated"]
+
+[terms.retries]
+topic = "sdd"
+label = "Retries"
+definition = "Allowed retry attempts for a transient failure."
+kind = "int"
+min = 0
+max = 5
+
+[terms.old-task]
+topic = "sdd"
+label = "Work item"
+definition = "Former name of a task."
+kind = "entity"
+deprecated = true
+replaced_by = "task"
+
+[terms.pm-task]
+topic = "pm"
+label = "Task"
+definition = "A scheduled work item assigned to a sprint."
+kind = "entity"
+
+[terms.milestone]
+topic = "pm"
+label = "Milestone"
+definition = "A major checkpoint marking the completion of deliverables."
+kind = "entity"
+
+[terms.sprint]
+topic = "pm"
+label = "Sprint"
+definition = "A time-boxed iteration during project execution."
+kind = "entity"

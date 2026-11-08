@@ -11,7 +11,7 @@
   - _Boundary: CoreIntegration_
   - _Requirements: 2.14, 2.15, 11.1, 11.4_
 
-- [ ] 1.2 (P) Create the vocabulary fixtures and the fixture workspace tree
+- [x] 1.2 (P) Create the vocabulary fixtures and the fixture workspace tree
   - Five TOML fixtures as listed in the design: a valid two-topic vocabulary (hierarchy of depth three, alternative labels, a deprecated term with replacement, enum and int kinds, the label "Task" in both topics `sdd` and `pm`, which yields zero warning/error findings and one `VOCAB_LABEL_CROSS_TOPIC` info finding on `pm-task`), a syntax-error file, a structure-error file (wrong-typed field and an invalid id), a semantic file exercising every semantic finding code once, and a cycle file with a three-term cycle, a self-loop and a term pointing into the cycle
   - A workspace tree with a copy of the valid vocabulary, a roadmap listing four specs, and four `spec.json` files: topics `sdd`; topics `sdd` and `pm`; no topics; topics `sdd` and an unknown topic
   - Each fixture carries a header comment stating the findings it is expected to produce and the lines they land on

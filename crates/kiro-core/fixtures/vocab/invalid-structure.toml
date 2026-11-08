@@ -1,0 +1,17 @@
+# Expected findings:
+# Line 9: ERROR VOCAB_INVALID (wrong-typed field: invalid type: integer `3`, expected a string)
+
+schema_version = "2"
+
+[topics.sdd]
+label = "SDD"
+
+[terms.task]
+topic = "sdd"
+label = 3
+definition = "A task."
+
+[terms.Bad_Id]
+topic = "sdd"
+label = "Bad"
+definition = "Invalid id."

@@ -1,0 +1,8 @@
+{
+  "feature_name": "stale",
+  "phase": "tasks-generated",
+  "topics": [
+    "sdd",
+    "legacy"
+  ]
+}

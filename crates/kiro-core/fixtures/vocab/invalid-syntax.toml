@@ -1,0 +1,12 @@
+# Expected findings:
+# Line 4: ERROR VOCAB_INVALID (unterminated string)
+
+schema_version = "2
+[topics.sdd]
+label = "SDD"
+
+[terms.task]
+topic = "sdd"
+label = "Task"
+definition = "A task."
+kind = "entity"

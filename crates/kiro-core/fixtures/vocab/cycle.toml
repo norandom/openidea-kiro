@@ -1,0 +1,37 @@
+# Expected findings:
+# Line 9: ERROR TERM_BROADER_CYCLE (term "a" is transitively broader than itself)
+# Line 15: ERROR TERM_BROADER_CYCLE (term "b" is transitively broader than itself)
+# Line 21: ERROR TERM_BROADER_CYCLE (term "c" is transitively broader than itself)
+# Line 27: ERROR TERM_BROADER_CYCLE (term "d" is transitively broader than itself)
+
+schema_version = "2"
+
+[terms.a]
+topic = "sdd"
+label = "A"
+definition = "Part of 3-cycle."
+broader = ["b"]
+
+[terms.b]
+topic = "sdd"
+label = "B"
+definition = "Part of 3-cycle."
+broader = ["c"]
+
+[terms.c]
+topic = "sdd"
+label = "C"
+definition = "Part of 3-cycle."
+broader = ["a"]
+
+[terms.d]
+topic = "sdd"
+label = "D"
+definition = "Self-loop."
+broader = ["d"]
+
+[terms.e]
+topic = "sdd"
+label = "E"
+definition = "Points into cycle without being in it."
+broader = ["a"]
