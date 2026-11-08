@@ -20,7 +20,7 @@
   - _Boundary: NavFixtures, NavTests_
   - _Requirements: 8.4_
 
-- [ ] 2. Core: comment syntax and the three views
+- [x] 2. Core: comment syntax and the three views
 - [x] 2.1 (P) Implement comment-syntax selection and wrapping
   - Replaces the body of the comment-syntax file only
   - Five styles (double slash, hash, double dash, HTML, bare); the four extension tables and the extension-less basename table from the design; selection by the file name after the last slash and its last extension (a leading dot is not an extension), compared in ASCII lowercase, extension tables first, then basenames, else bare
@@ -68,7 +68,7 @@
   - _Boundary: CoverageViews_
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 7.2, 7.4, 8.3_
 
-- [ ] 2.6 (P) Implement the document outlines
+- [x] 2.6 (P) Implement the document outlines
   - Replaces the body of the outline file only
   - One outline function over a loaded spec and a document kind: headings become entries with their line and `#`-prefixed text; for the tasks document every task item becomes an entry with its line, checkbox, id and description, sub-tasks indented, merged with the headings by line; a missing document yields no outline
   - Outline text in the design's layout: spec, document path (`(missing)` when absent), entry count or `empty`, blank line, then `<line>: <text>` entries; warning level when the document is missing
