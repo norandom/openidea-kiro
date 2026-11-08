@@ -59,8 +59,8 @@
   - _Depends: 2.1, 2.2, 3.1_
   - _Requirements: 1.4, 1.5, 1.6, 1.7, 3.1, 3.2, 3.3, 3.9, 5.4, 6.1, 6.2_
 
-- [ ] 4. Core: views and vocabulary validation
-- [ ] 4.1 (P) Implement the view commands
+- [x] 4. Core: views and vocabulary validation
+- [x] 4.1 (P) Implement the view commands
   - Status, spec graph and task graph over the engine's view functions with the raw labeler and the engine's caps, mirroring the plugin's command bodies step by step (successor chain only for superseded specs; table form on the flag; the two "nothing to draw" messages verbatim); the spec must be a discovered one, otherwise failure naming the discovered specs; printed text gets exactly one trailing newline; exit 0 on success, 2 on failure
   - Explicit integration touch: adds only its own three dispatch arms to the entry point (single lines; no other entry-point change)
   - Observable: `status demo` over the engine's minimal fixture tree prints the engine's status golden text; `graph demo --table` prints a table and no fence; a spec without a tasks document fails with the IDE's message and exit 2
@@ -68,7 +68,7 @@
   - _Depends: 2.1, 2.2_
   - _Requirements: 6.5, 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 4.2 Implement the vocabulary validation command
+- [x] 4.2 Implement the vocabulary validation command
   - Without a file: the project vocabulary through a workspace and the engine loader; with a file: the operator's file through the engine's parse with the path as given; the vocabulary report with status, topic and term counts and findings in text or JSON; exit 1 when the status is missing or any finding meets the fail-on level, 2 when an explicit file cannot be read, else 0
   - Explicit integration touch: adds only its own dispatch arm to the entry point (after 4.1's arms; not parallel with 4.1 because both edit the entry point)
   - Observable: validating the project's seed vocabulary exits 0 with "loaded" and counts; validating an engine semantic fixture lists its findings and exits 1; a missing default vocabulary prints the missing finding and exits 1
