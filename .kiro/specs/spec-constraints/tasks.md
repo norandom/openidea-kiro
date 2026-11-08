@@ -106,7 +106,7 @@
   - _Depends: 4.1_
   - _Requirements: 8.1, 8.2, 8.4_
 
-- [ ] 5. (P) Write the checks documentation
+- [x] 5. (P) Write the checks documentation
   - The four annotations with placement (requirement block, or indented directly under the criterion before any blank line), the guard grammar, the term-reference rule, kinds and literal forms, the integer region rule, the incompatibility rule, caps with the meaning of a refusal and the levers that narrow a search, the finding code table with default severities (all twenty codes including `CHECK_COVERAGE`), the worked example from the known-bad fixture with its witness, the statement that a document without annotations produces no term or contradiction failure, the same-topic-only blind spot of the contradiction search, `CHECK_COVERAGE` as the signal that distinguishes "checked, nothing found" from "not checked", and the proposed requirements-template change as commented hints, not applied
   - Observable: the document exists at the planned path with every section above and its code table equals the design's table row for row
   - _Boundary: ChecksDocs_
