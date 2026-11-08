@@ -182,6 +182,10 @@
 //! | CONTRADICTION | error | Two incompatible criteria can both apply; witness given |
 //! | SEARCH_REFUSED | warning | A cap was exceeded; the listed pairs were not checked |
 //! | CHECK_COVERAGE | info | "{criteria} criteria, {annotated} annotated, {pairs} pairs considered, {contradictions} contradictions, {refused} refused" (line: None) — distinguishes "checked" from "not checked" whenever the term or contradiction check ran (amendment 2026-11-04) |
+//! | IMPORT_INPUT_INVALID | error | Importer input could not be parsed in the chosen format |
+//! | IMPORT_TERM_SKIPPED | warning | Importer skipped a source term that yields no id or has no name |
+//! | IMPORT_DUPLICATE_ID | warning | Two source terms derive the same id; first wins |
+//! | IMPORT_MERGE_CONFLICT | warning | Imported term collides with an existing id or label; existing kept |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -246,6 +250,10 @@
 //!     ("CONTRADICTION", Severity::Error, "Two incompatible criteria can both apply; witness given"),
 //!     ("SEARCH_REFUSED", Severity::Warning, "A cap was exceeded; the listed pairs were not checked"),
 //!     ("CHECK_COVERAGE", Severity::Info, "\"{criteria} criteria, {annotated} annotated, {pairs} pairs considered, {contradictions} contradictions, {refused} refused\" (line: None) — distinguishes \"checked\" from \"not checked\" whenever the term or contradiction check ran (amendment 2026-11-04)"),
+//!     ("IMPORT_INPUT_INVALID", Severity::Error, "Importer input could not be parsed in the chosen format"),
+//!     ("IMPORT_TERM_SKIPPED", Severity::Warning, "Importer skipped a source term that yields no id or has no name"),
+//!     ("IMPORT_DUPLICATE_ID", Severity::Warning, "Two source terms derive the same id; first wins"),
+//!     ("IMPORT_MERGE_CONFLICT", Severity::Warning, "Imported term collides with an existing id or label; existing kept"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {

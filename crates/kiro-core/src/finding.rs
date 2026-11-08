@@ -366,6 +366,26 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Info,
         description: "\"{criteria} criteria, {annotated} annotated, {pairs} pairs considered, {contradictions} contradictions, {refused} refused\" (line: None) — distinguishes \"checked\" from \"not checked\" whenever the term or contradiction check ran (amendment 2026-11-04)",
     },
+    CodeInfo {
+        code: "IMPORT_INPUT_INVALID",
+        severity: Severity::Error,
+        description: "Importer input could not be parsed in the chosen format",
+    },
+    CodeInfo {
+        code: "IMPORT_TERM_SKIPPED",
+        severity: Severity::Warning,
+        description: "Importer skipped a source term that yields no id or has no name",
+    },
+    CodeInfo {
+        code: "IMPORT_DUPLICATE_ID",
+        severity: Severity::Warning,
+        description: "Two source terms derive the same id; first wins",
+    },
+    CodeInfo {
+        code: "IMPORT_MERGE_CONFLICT",
+        severity: Severity::Warning,
+        description: "Imported term collides with an existing id or label; existing kept",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -427,6 +447,10 @@ pub mod codes {
     pub const CONTRADICTION: &str = "CONTRADICTION";
     pub const SEARCH_REFUSED: &str = "SEARCH_REFUSED";
     pub const CHECK_COVERAGE: &str = "CHECK_COVERAGE";
+    pub const IMPORT_INPUT_INVALID: &str = "IMPORT_INPUT_INVALID";
+    pub const IMPORT_TERM_SKIPPED: &str = "IMPORT_TERM_SKIPPED";
+    pub const IMPORT_DUPLICATE_ID: &str = "IMPORT_DUPLICATE_ID";
+    pub const IMPORT_MERGE_CONFLICT: &str = "IMPORT_MERGE_CONFLICT";
 }
 
 /// The twenty check finding codes introduced by the constraints engine.
@@ -487,8 +511,8 @@ mod tests {
     }
 
     #[test]
-    fn catalogue_has_57_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 57);
+    fn catalogue_has_61_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 61);
         assert_eq!(CHECK_CODES.len(), 20);
         let all = [
             codes::SPEC_DOC_MISSING,
@@ -548,8 +572,12 @@ mod tests {
             codes::CONTRADICTION,
             codes::SEARCH_REFUSED,
             codes::CHECK_COVERAGE,
+            codes::IMPORT_INPUT_INVALID,
+            codes::IMPORT_TERM_SKIPPED,
+            codes::IMPORT_DUPLICATE_ID,
+            codes::IMPORT_MERGE_CONFLICT,
         ];
-        assert_eq!(all.len(), 57);
+        assert_eq!(all.len(), 61);
         for c in all {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),

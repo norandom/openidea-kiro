@@ -1,7 +1,7 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: crate scaffold, exit model, engine catalogue, fixtures
-- [ ] 1.1 Scaffold the CLI crate and the exit model
+- [x] 1. Foundation: crate scaffold, exit model, engine catalogue, fixtures
+- [x] 1.1 Scaffold the CLI crate and the exit model
   - Prerequisite: `crates/kiro-core` is implemented with its `checks`, `vocab` and `viz` modules (kiro-core, vocabulary-grounding, spec-constraints and spec-visualization specs) and builds natively
   - Add the CLI crate to the root workspace member list (the growth point the kiro-core design reserves), create the package with the binary target, the argument-parsing, JSON and RDF dependencies at the design's version lines, the test-only temporary-directory dependency, and the engine's lint table (unsafe code forbidden; unwrap, expect, panic, indexing, todo and unimplemented denied)
   - Implement the exit model: the three-valued exit mapped to process exit codes 0/1/2, the single-line failure type (newlines flattened), the fail-on level with its explicit "meets" rule (error always, warning only under fail-on warning, info never) and the verdict over a finding iterator, plus severity-name parsing
@@ -10,13 +10,13 @@
   - _Boundary: CliScaffold, ExitModel_
   - _Requirements: 6.4, 6.6, 13.1_
 
-- [ ] 1.2 (P) Append the importer finding codes to the engine catalogue
+- [x] 1.2 (P) Append the importer finding codes to the engine catalogue
   - Add the four import codes (input invalid as error; term skipped, duplicate id and merge conflict as warnings) with the design's descriptions to the engine's finding catalogue and constants module, and the matching rows to the crate documentation's code table so the existing doc test keeps both in agreement; the "emitted by" column names the CLI importer
   - Observable: the four constants are exported from the engine's finding module and listed in its documented code table, the engine's catalogue test and doc test pass, and the sandbox-target build of the engine still succeeds
   - _Boundary: CoreIntegration_
   - _Requirements: 13.2_
 
-- [ ] 1.3 (P) Create the CLI fixtures
+- [x] 1.3 (P) Create the CLI fixtures
   - Import inputs: the Auto Ontology page object shaped after the OpenAPI response (`terms` array with a term carrying synonyms and zones, a second term whose name derives the same id, a term with a null name, a term with an empty description; the ignored count arrays present), the same terms as a bare array, two detail-shaped objects with related terms and tags, a JSON file with a syntax error at a known line, a Turtle file with one concept scheme carrying a title and concepts exercising every mapped predicate (the three CamelCase id examples of the mapping, three label language forms, definitions, alternative labels, broader and inverse narrower, deprecation with replacement, topic, enum and int annotations, a collection and a blank node to ignore, a broader target that is not a concept), a Turtle file with a syntax error at a known line, and a merge target vocabulary with comments, a declared topic, a deprecated term, an existing id and an alternative label that both collide with the page fixture
   - The warnings-only tree: a copy of the known-good check vocabulary, a roadmap listing one spec, and a spec in the tasks-generated phase with clean requirements and tasks but no design document, so that it yields exactly one missing-document warning and no check finding
   - The vocabulary-findings tree: the known-good check vocabulary plus one term with an empty definition, a roadmap, and two copies of the clean spec under different names, so that a run over both specs must print the vocabulary's single warning exactly once

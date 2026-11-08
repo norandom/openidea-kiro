@@ -1,0 +1,32 @@
+[package]
+name = "kiro-cli"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "kiro-cli"
+path = "src/main.rs"
+
+[dependencies]
+kiro-core = { path = "../kiro-core" }
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+oxttl = "0.2"
+oxrdf = "0.3"
+toml = "0.8"
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+todo = "deny"
+unimplemented = "deny"

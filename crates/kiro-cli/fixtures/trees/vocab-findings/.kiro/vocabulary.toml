@@ -1,0 +1,47 @@
+schema_version = "2"
+
+[topics.ops]
+label = "Operations"
+description = "System operations and telemetry."
+
+[terms.mode]
+topic = "ops"
+label = "Mode"
+definition = "The operating mode of the controller."
+kind = "enum"
+values = ["normal", "safe", "maintenance"]
+
+[terms.depth]
+topic = "ops"
+label = "Depth"
+definition = "Submersible depth in meters."
+kind = "int"
+min = 0
+
+[terms.armed]
+topic = "ops"
+label = "Armed"
+definition = "Whether the mechanism is armed."
+kind = "bool"
+
+[terms.operator]
+topic = "ops"
+label = "Operator"
+definition = "The person operating the system."
+kind = "entity"
+alt_labels = ["on-call engineer"]
+
+[terms.legacy-mode]
+topic = "ops"
+label = "Legacy mode"
+definition = "Old mode setting."
+kind = "enum"
+values = ["off", "on"]
+deprecated = true
+replaced_by = "mode"
+
+[terms.blank]
+topic = "ops"
+label = "Blank"
+definition = ""
+kind = "entity"

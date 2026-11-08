@@ -1,0 +1,39 @@
+{
+  "total": 4,
+  "zones": [
+    "Finance",
+    "Sales"
+  ],
+  "terms": [
+    {
+      "id": "term-1",
+      "name": "Order",
+      "description": "An order placed by a customer.",
+      "synonyms": [
+        "PO",
+        "purchase order"
+      ],
+      "zones": [
+        "Finance",
+        "Sales"
+      ]
+    },
+    {
+      "id": "term-2",
+      "name": "order",
+      "description": "Internal processing sequence.",
+      "synonyms": []
+    },
+    {
+      "id": "term-3",
+      "name": null,
+      "description": "Term with null name."
+    },
+    {
+      "id": "term-4",
+      "name": "Customer Lifetime Value",
+      "description": "",
+      "synonyms": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+# Existing project vocabulary
+schema_version = "2"
+
+[topics.sdd]
+label = "Software Design Description"
+description = "SDD vocabulary topic"
+
+[terms.order]
+topic = "sdd"
+label = "Order"
+definition = "An existing order entity"
+kind = "entity"
+
+[terms.purchase-order]
+topic = "sdd"
+label = "Purchase Order"
+definition = "A purchase order document"
+kind = "entity"
+alt_labels = ["PO"]
+
+[terms.task]
+topic = "sdd"
+label = "Task"
+definition = "A unit of work"
+kind = "entity"
+
+[terms.old-task]
+topic = "sdd"
+label = "Old Task"
+definition = "Legacy task"
+kind = "entity"
+deprecated = true
+replaced_by = "task"

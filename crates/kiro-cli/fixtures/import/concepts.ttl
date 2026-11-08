@@ -1,0 +1,46 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix kiro: <urn:openidea-kiro:vocab:> .
+@prefix ex: <http://example.org/vocab/> .
+
+ex:Scheme a skos:ConceptScheme ;
+    dct:title "Security & Architecture Concepts" .
+
+ex:InsiderThreat a skos:Concept ;
+    skos:prefLabel "Insider Threat" ;
+    skos:definition "A malicious threat from within the organisation." ;
+    skos:altLabel "internal threat", "rogue employee" ;
+    kiro:topic "sec" ;
+    kiro:kind "enum" ;
+    kiro:value "low", "high" ;
+    skos:broader ex:Threat .
+
+ex:HTTPSProxy a skos:Concept ;
+    skos:prefLabel "HTTPS Proxy"@en ;
+    skos:definition "An intermediary proxy server."@en ;
+    skos:altLabel "SSL Proxy" ;
+    kiro:topic "net" ;
+    kiro:kind "entity" ;
+    owl:deprecated "true" ;
+    dct:isReplacedBy ex:Level2Cache .
+
+ex:Level2Cache a skos:Concept ;
+    skos:prefLabel "Level 2 Cache"@fr ;
+    skos:definition "CPU cache memory." ;
+    kiro:topic "arch" ;
+    kiro:kind "int" ;
+    kiro:min 1 ;
+    kiro:max 100 ;
+    skos:narrower ex:L2SubCache .
+
+ex:Threat a skos:Concept ;
+    skos:prefLabel "Threat" ;
+    skos:definition "Potential cause of an unwanted incident." .
+
+ex:NonConcept a skos:Collection ;
+    skos:prefLabel "Ignored Collection" .
+
+_:b0 a skos:Concept ;
+    skos:prefLabel "Blank Node Ignored" .

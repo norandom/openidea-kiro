@@ -1,0 +1,33 @@
+[
+  {
+    "id": "term-101",
+    "name": "Invoice",
+    "description": "A bill issued to a customer.",
+    "related_terms": [
+      {
+        "id": "term-1",
+        "name": "Order",
+        "description": "Related order"
+      }
+    ],
+    "tags": [
+      "billing",
+      "finance"
+    ]
+  },
+  {
+    "id": "term-102",
+    "name": "Receipt",
+    "description": "Proof of payment.",
+    "related_terms": [
+      {
+        "id": "term-101",
+        "name": "Invoice",
+        "description": "Related invoice"
+      }
+    ],
+    "tags": [
+      "accounting"
+    ]
+  }
+]
