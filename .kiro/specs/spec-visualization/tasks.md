@@ -11,7 +11,7 @@
   - _Boundary: VizCommon_
   - _Requirements: 1.4, 2.2, 2.3, 4.3, 6.2, 6.3, 7.1, 7.2, 8.6_
 
-- [ ] 2. Core: the three views
+- [x] 2. Core: the three views
 - [x] 2.1 (P) Build the status view and its fixed text
   - Touches only the status view file; nothing in the shared module file
   - Status model from one loaded feature: spec name, phase label, ready flag, approvals (all defaults when `spec.json` is unreadable), task totals (checked/total, parallel, optional) with one row per major task, requirement and criteria counts, component/file counts with the unassigned count, finding counts over the feature's findings only
@@ -44,7 +44,7 @@
   - _Depends: 1.1_
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.8, 7.1_
 
-- [ ] 2.4 Write the engine's golden fixtures and the output lints
+- [x] 2.4 Write the engine's golden fixtures and the output lints
   - Golden files for the status view (`demo`, `old`), the spec graph and the task graph (diagram and table forms) generated once from the engine over the minimal fixture through the in-memory source and workspace (successor chain included for `old`), reviewed line by line against the design's formats and label catalogue, then committed
   - Mermaid shape lint (orientation line, node/class/edge line shapes, safe ids, escaped labels, endpoints among declared ids) and table lint (header, separator shape, equal cell counts) implemented in the new engine test file and applied to every golden diagram and table
   - Observable: `cargo test -p kiro-core` passes with the new test file; the six golden comparisons are byte-identical and every golden passes both lints
@@ -52,7 +52,7 @@
   - _Depends: 2.1, 2.2, 2.3_
   - _Requirements: 7.3, 8.1, 8.3_
 
-- [ ] 2.5 Write the engine's over-cap, partial, no-panic and determinism tests
+- [x] 2.5 Write the engine's over-cap, partial, no-panic and determinism tests
   - Over-cap test built from generated requirements text (250 criteria) and tasks text (300 sub-tasks referencing them) loaded through the in-memory source and workspace: truncated body, the engine's ellipsis node, the truncation line with figures from the caps, a table form containing every node, and both lints passing on the truncated diagram
   - Partial graphs from the minimal fixture with the design document removed (no component or file nodes, `Missing: design.md`), with only the tasks document present, and with nothing present (nothing to draw)
   - Every view over garbage documents without panicking, using a minimal fixed-seed garbage generator copied into the new test file (no edit to any existing engine test); two builds of every view byte-identical

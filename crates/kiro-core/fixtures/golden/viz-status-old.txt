@@ -1,0 +1,16 @@
+Spec: old
+Phase: superseded
+Successor chain: old -> demo (terminal)
+Ready for implementation: no
+
+| Document | Generated | Approved |
+| --- | --- | --- |
+| requirements | yes | yes |
+| design | no | no |
+| tasks | no | no |
+
+Tasks: missing
+
+Requirements: missing
+Design: missing
+Findings: 0 errors, 0 warnings, 3 info

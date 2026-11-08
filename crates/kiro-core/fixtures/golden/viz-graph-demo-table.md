@@ -1,0 +1,18 @@
+Graph for demo: 2 requirements, 4 criteria, 3 tasks, 2 components, 2 files; 13 edges
+Unscoped tasks: 0; unassigned files: 0; unresolved references: 0
+
+| Kind | Node | Links to |
+| --- | --- | --- |
+| req | R1: Own a file | 1.1: The demo engine shall report the component that …; 1.2: While a file is mapped by exactly one component,… |
+| crit | 1.1: The demo engine shall report the component that … | [x] 1.1 Implement the ownership query |
+| crit | 1.2: While a file is mapped by exactly one component,… | [ ] 1.2 (P) Implement the display |
+| req | R2: Count tasks | 2.1: The demo engine shall count majors and sub-tasks…; 2.2: The demo engine shall mark completed tasks. |
+| crit | 2.1: The demo engine shall count majors and sub-tasks… | [ ]* 2 Optional hardening |
+| crit | 2.2: The demo engine shall mark completed tasks. | [ ] 1.2 (P) Implement the display |
+| task_done | [x] 1.1 Implement the ownership query | Core |
+| task | [ ] 1.2 (P) Implement the display | Ui |
+| task | [ ]* 2 Optional hardening | Core |
+| comp | Core | src/demo.rs |
+| file | src/demo.rs |  |
+| comp | Ui | src/ui.rs |
+| file | src/ui.rs |  |
