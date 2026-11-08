@@ -69,7 +69,7 @@
   - _Depends: 2.2, 2.4_
   - _Requirements: 3.1, 3.2, 4.6, 4.7, 4.8, 4.9, 6.3, 6.4, 8.3, 9.3, 10.1_
 
-- [ ] 3.2 Implement dispatch: activation, deactivation, command run and the feature-module contract
+- [x] 3.2 Implement dispatch: activation, deactivation, command run and the feature-module contract
   - Feature-module trait (group, command declarations, run with context and request returning an output) in its own module placed left of the feature modules in the dependency direction, and the module table in the dispatch module, empty until 3.3 adds the first module
   - Activation: verify the three permissions against the granted list and fail with a message naming the missing ones; register the static command list through the registry; keep the granted permissions in the plugin-wide static; log the command count. Deactivation logs only
   - Command run in order: parse the id (unknown id, a per-spec id on a non-spec-addressable command, or a known group with no module, are errors), parse arguments, build the context, reject an explicitly named spec whose metadata is unreadable (synchronising variants for roadmap/active-file specs first without registering variants for the unreadable spec), synchronise per-spec variants (logging skipped specs) before anything else runs, run the module, deliver the output (passing `cmd.insert_id().as_deref()` for the notification trailer), return the complete text; every error passes through the single-line error formatter and shows no notification

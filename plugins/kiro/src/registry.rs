@@ -255,6 +255,18 @@ pub enum RegisterError {
     Budget,
 }
 
+impl std::fmt::Display for RegisterError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidId(id) => write!(f, "invalid command id `{id}`"),
+            Self::InvalidTitle(title) => write!(f, "invalid command title `{title}`"),
+            Self::Budget => write!(f, "command registration limit reached (256 commands)"),
+        }
+    }
+}
+
+impl std::error::Error for RegisterError {}
+
 /// State tracking registered command identifiers and enforcing the 256 budget.
 #[derive(Debug, Default)]
 pub struct Registry {
