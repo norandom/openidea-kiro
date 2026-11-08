@@ -138,7 +138,7 @@
   - _Depends: 1.2, 6.2_
   - _Requirements: 6.9, 8.7_
 
-- [ ] 7. Validation: both targets, lints, size and the host check
+- [x] 7. Validation: both targets, lints, size and the host check
   - Prerequisite: the dev-plugin installation of plugin-core (junction, trust, Reload Plugins) is in place in the open project
   - Engine and plugin build for the sandbox target with the decision-diagram library present; clippy with warnings denied and fmt check pass for the root workspace and the plugin package; the dependency tree for the sandbox target is re-checked
   - Manual host check as a dev plugin: with this spec's requirements document open, the spec command shows three status lines and the EARS command shows the patterns line; with the vocabulary-grounding requirements document open (that spec declares a topic), the contradictions command shows the caps line; with this spec's document open it shows the skipped line with its reason (when no GUI host is available, the manual check is recorded as deferred in the completion note — matching `spec-navigation` 4.3 and `spec-visualization` 4)

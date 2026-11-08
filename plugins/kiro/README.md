@@ -233,5 +233,27 @@ Validation of the WebAssembly component binary and dev-plugin integration:
   - **After Vocabulary Grounding**: 292,878 bytes (includes `toml` parser and `vocab` module)
   - **After Spec Navigation**: 708,150 bytes (includes `nav` module, join ownership and coverage, comment wrapping)
   - **After Spec Visualization**: 754,260 bytes (includes `viz` module, Mermaid flowcharts, and table renderers)
+  - **After Spec Constraints**: 950,313 bytes (includes `check` module, `biodivine-lib-bdd` engine, and guard parsers)
 - **Host Integration Verification**:
-  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/viz.rs`, `plugins/kiro/tests/nav.rs`, `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.
+  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/check.rs`, `plugins/kiro/tests/viz.rs`, `plugins/kiro/tests/nav.rs`, `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.
+
+---
+
+## 10. Check commands: verification
+
+- **Component Size**:
+  - **Before `spec-constraints` (baseline from 1.1)**: 754,260 bytes
+  - **After `spec-constraints`**: 950,313 bytes (+196,053 bytes)
+- **Host Check Outcome**:
+  - Manual host check as a dev plugin deferred: No interactive OpenIDEA GUI host instance was running during automated execution.
+  - Verification is covered end-to-end by simulated host test harness in `plugins/kiro/tests/check.rs` across all 10 scenarios:
+    1. `check.spec` on clean spec (`0 errors, 0 warnings, 1 info` with `CHECK_COVERAGE`, info level, three status lines).
+    2. `check.spec` on broken spec (`Error` level, counts in title, `CONTRADICTION` finding lines).
+    3. `check.ears` on broken spec (`Patterns:` breakdown line and individual `EARS_PATTERN` info reports).
+    4. `check.terms` on broken spec (declared breakdown, suggestions count, `TERM_TOPIC_MISMATCH`, undeclared, deprecated, ambiguous).
+    5. `check.contradictions` on broken spec (guarded criteria count, pairs considered, active caps, and both witness states).
+    6. `check.spec` on unscoped `none` spec (skipped lines for terms and contradictions, `TOPICS_UNDECLARED`, `CHECK_UNSCOPED`, and documentation pointer).
+    7. Missing and invalid `.kiro/vocabulary.toml` degradation completing successfully with warning/error notifications, skipped lines, and documentation pointers.
+    8. `check.spec.insert` producing exactly one text insertion event with unclipped report.
+    9. Unresolved spec error handling matching plugin-core contracts.
+    10. Single vocabulary file read cache invariant per command execution.
