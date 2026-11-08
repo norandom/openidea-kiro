@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: workspace scaffold, finding model, Markdown scanner, fixtures
+- [x] 1. Foundation: workspace scaffold, finding model, Markdown scanner, fixtures
 - [x] 1.1 Create the root Cargo workspace and the engine crate skeleton
   - Prerequisite: `rustup target add wasm32-wasip2` (required for the wasm build observable here and in 5.4); `wasmtime` on PATH is optional and only enables the wasm *test* run in 5.4
   - Root workspace manifest listing the engine crate with resolver 3; engine package on edition 2024 with serde (derive) and serde_json as the only runtime dependencies and insta as a dev-dependency
@@ -38,7 +38,7 @@
   - _Boundary: Fixtures_
   - _Requirements: 4.1, 4.3, 4.4, 4.5, 4.12, 5.1, 5.2, 5.3, 6.2, 6.3, 6.4, 6.8, 7.2, 8.7_
 
-- [ ] 2. Core: document parsers
+- [x] 2. Core: document parsers
 - [x] 2.1 (P) Implement the spec metadata parser
   - Parse `spec.json` field by field through a generic JSON value so unknown or wrongly typed fields degrade individually; expose name, language, phase with raw string, approvals, ready flag, topics, notes and timestamps
   - Phase classification for the six recognised phases (case-insensitive, trimmed) with unknown and missing phase findings; invalid JSON yields defaults plus the error finding
@@ -94,7 +94,7 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-- [ ] 3. Core: renderers
+- [x] 3. Core: renderers
 - [x] 3.1 (P) Implement the graph model, caps, safe identifiers and line clipping
   - Graph with direction, nodes (id, label, optional class) and edges (from, to, optional label); caps with defaults; rendered result carrying truncation flag and omitted counts
   - Identifier map producing letters, digits and underscores only, prefixing when needed and suffixing on collisions, stable for a given insertion order
@@ -119,7 +119,7 @@
   - _Depends: 3.1, 1.2_
   - _Requirements: 11.4, 11.5, 11.6, 11.8_
 
-- [ ] 4. Integration: join, workspace and resolution
+- [x] 4. Integration: join, workspace and resolution
 - [x] 4.1 Implement the file, component and task join
   - Path matching by normalised equality or suffix at a segment boundary in either direction, normalising with the design parser's path normalisation (the join must not import the resolver — dependency direction)
   - Owners of a queried path: matching components in design order, tasks whose boundary names them in document order, criteria from those tasks' requirement references sorted and deduplicated, and a covered flag
@@ -149,7 +149,7 @@
   - _Boundary: Resolver_
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9_
 
-- [ ] 5. Validation
+- [x] 5. Validation
 - [x] 5.1 Create the crate-root re-exports, the shared test harness, golden fixtures and golden renderer tests
   - Public re-exports of the model, workspace, resolution, join, finding and render types from the crate root as listed in the design's module map (every module is already `pub mod` since 1.1; this is the only edit to the crate root until 5.4 adds the crate-level docs and doc tests)
   - Test helper building an in-memory source from embedded fixture text so no test touches the file system; harness and tests import through the crate-root re-exports

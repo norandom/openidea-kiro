@@ -191,12 +191,12 @@ crates/
 | Fixtures | `crates/kiro-core/fixtures/self/design.md` | Copy of this design (parsed by its own DesignParser) |
 | Fixtures | `crates/kiro-core/fixtures/self/tasks.md` | Copy of this spec's tasks |
 | Fixtures | `crates/kiro-core/fixtures/self/roadmap.md` | Copy of `.kiro/steering/roadmap.md` |
-| Fixtures | `crates/kiro-core/fixtures/golden/graph.mmd` | Expected Mermaid for the golden graph |
-| Fixtures | `crates/kiro-core/fixtures/golden/graph.txt` | Expected text rendering of the golden graph |
-| Fixtures | `crates/kiro-core/fixtures/golden/truncated.mmd` | Expected Mermaid with caps exceeded |
-| Fixtures | `crates/kiro-core/fixtures/golden/findings.txt` | Expected `findings_text` output |
+| Fixtures | `crates/kiro-core/fixtures/golden/graph.mermaid` | Expected Mermaid for the golden graph |
+| Fixtures | `crates/kiro-core/fixtures/golden/graph.text` | Expected text rendering of the golden graph |
+| Fixtures | `crates/kiro-core/fixtures/golden/graph-truncated.mermaid` | Expected Mermaid with caps exceeded |
+| Fixtures | `crates/kiro-core/fixtures/golden/findings.text` | Expected `findings_text` output |
 | IntegrationTests | `crates/kiro-core/tests/common/mod.rs` | Fixture loading into `MemorySource` via `include_str!` constants |
-| IntegrationTests | `crates/kiro-core/tests/grammars.rs` | Requirement grammar matrix over `fixtures/grammars` |
+| IntegrationTests | `crates/kiro-core/tests/grammar.rs` | Requirement grammar matrix over `fixtures/grammars` |
 | IntegrationTests | `crates/kiro-core/tests/workspace.rs` | Load, missing documents, link findings, resolution, successors over `fixtures/minimal` and `fixtures/self` |
 | IntegrationTests | `crates/kiro-core/tests/golden.rs` | Renderer golden comparisons |
 | IntegrationTests | `crates/kiro-core/tests/no_panic.rs` | Deterministic pseudo-random garbage, truncated fixtures, deep nesting through every parser |
@@ -825,9 +825,9 @@ Not applicable inside the crate (no logging, no clock). Frontends log `Workspace
 - Render: `IdMap` sanitising and collisions (11.1), escaping (11.2), caps and ellipsis node (11.3), text graph (11.4), findings text (11.5), table escaping (11.6), `clip_lines` at boundaries with and without trailer hint (11.7).
 
 ### Integration Tests (`tests/`)
-- `grammars.rs`: every `fixtures/grammars/*.md` parses to the expected criterion id list and finding codes.
+- `grammar.rs`: every `fixtures/grammars/*.md` parses to the expected criterion id list and finding codes.
 - `workspace.rs`: `fixtures/minimal` loads `demo` with zero `SPEC_DOC_MISSING`; removing `design.md` from the `MemorySource` yields a `warning` for a `tasks-generated` feature and an `info` for an `initialized` one (1.4); each path read exactly once (counting `Source` wrapper) (1.3); `old` is superseded with successor `demo` and a chain terminating at `demo` (8.7–8.9); `owners_of` on a demo source file returns its component, task and criteria (9.1); `fixtures/self` yields every component of this design with files and no `TASK_BOUNDARY_UNKNOWN`; `findings()` order is stable across two runs (10.4, 12.5).
-- `golden.rs`: `mermaid`, `graph_text`, `findings_text` against `fixtures/golden/*` byte-for-byte (11.8); truncated case against `truncated.mmd`.
+- `golden.rs`: `mermaid`, `graph_text`, `findings_text` against `fixtures/golden/*` byte-for-byte (11.8); truncated case against `graph-truncated.mermaid`.
 - `no_panic.rs` and `perf.rs` as described under IntegrationTests (12.1–12.3).
 
 ### Target Tests

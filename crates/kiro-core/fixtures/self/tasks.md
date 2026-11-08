@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: workspace scaffold, finding model, Markdown scanner, fixtures
+- [x] 1. Foundation: workspace scaffold, finding model, Markdown scanner, fixtures
 - [x] 1.1 Create the root Cargo workspace and the engine crate skeleton
   - Prerequisite: `rustup target add wasm32-wasip2` (required for the wasm build observable here and in 5.4); `wasmtime` on PATH is optional and only enables the wasm *test* run in 5.4
   - Root workspace manifest listing the engine crate with resolver 3; engine package on edition 2024 with serde (derive) and serde_json as the only runtime dependencies and insta as a dev-dependency
@@ -29,7 +29,7 @@
   - _Boundary: MarkdownScanner_
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 12.3_
 
-- [ ] 1.4 (P) Create the fixture trees, grammar matrix and self fixtures
+- [x] 1.4 (P) Create the fixture trees, grammar matrix and self fixtures
   - Minimal tree: roadmap with two entries and a dependency; `demo` feature in tasks-generated phase with topics, canonical requirements with annotations, table-shape design plan with two components (at least one mapped to a source-file path such as `src/demo.rs`) and a Mermaid block, tasks using `(P)`, `[x]`, `[ ]*` and all three annotations where every `_Boundary:_` value names one of the two demo components and every `_Requirements:_` entry names an existing demo criterion; `old` feature superseded with notes naming `demo`; no `initialized`-phase feature is included (tests synthesise one in memory)
   - Grammar matrix adapted from the prior-art conformance inputs: canonical, dotted, R-style, amendment, empty, fenced example, malformed (duplicate ids, non-numeric heading, unclosed fence)
   - Task variants fixture (`[X]`, optional marker, `(P)` on a major, depth-3 id, duplicate id, invalid requirement reference) and design plan fixtures (table with multi-path cells, bullet shape, no plan, and `tree-plan.md`: the template tree with comments plus a table row naming some of the tree files, so that some tree files are assigned to a component and the rest stay unassigned)
@@ -38,8 +38,8 @@
   - _Boundary: Fixtures_
   - _Requirements: 4.1, 4.3, 4.4, 4.5, 4.12, 5.1, 5.2, 5.3, 6.2, 6.3, 6.4, 6.8, 7.2, 8.7_
 
-- [ ] 2. Core: document parsers
-- [ ] 2.1 (P) Implement the spec metadata parser
+- [x] 2. Core: document parsers
+- [x] 2.1 (P) Implement the spec metadata parser
   - Parse `spec.json` field by field through a generic JSON value so unknown or wrongly typed fields degrade individually; expose name, language, phase with raw string, approvals, ready flag, topics, notes and timestamps
   - Phase classification for the six recognised phases (case-insensitive, trimmed) with unknown and missing phase findings; invalid JSON yields defaults plus the error finding
   - The document-kind enumeration, the phase-label helper (`phase_raw` trimmed when non-empty, else `"missing"`), the required-document table per phase, and successor-name extraction from notes (whole-word, longest-first, deduplicated); the workspace and frontends consume these
@@ -48,7 +48,7 @@
   - _Depends: 1.2_
   - _Requirements: 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 8.7_
 
-- [ ] 2.2 (P) Implement the requirements parser
+- [x] 2.2 (P) Implement the requirements parser
   - State machine over scanned lines recognising canonical, dotted, R-style and amendment headings; criterion opening by self-identifying dotted markers anywhere and by bare numbered markers under an Acceptance Criteria heading or inside an amendment
   - Continuation joining, blank-line closing, objective capture, annotations (the scanner's owned annotation value) attached to the requirement or the open criterion, extends list on amendments
   - Findings for requirements without criteria, duplicate ids (first wins) and non-numeric headings (block skipped); empty document yields no findings
@@ -58,7 +58,7 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 4.12_
 
-- [ ] 2.3 (P) Implement the tasks parser
+- [x] 2.3 (P) Implement the tasks parser
   - Task items from checkbox list lines with one- or two-group ids, checked/optional/parallel flags, description with the parallel marker removed, detail lines until the next task or heading
   - Two-level nesting in document order; hierarchy finding for depth over two or a sub-task without its major (kept at top level); duplicate id finding (first wins)
   - Interpretation of the requirements, depends and boundary annotations (comma split, trimmed, empties dropped), recording the line of each so the join can place its findings, with the invalid-reference finding; other annotations stored as the scanner's owned annotation value
@@ -68,7 +68,7 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 5.12, 5.13_
 
-- [ ] 2.4 (P) Implement the design parser: regions, table and bullet shapes, components, Mermaid blocks
+- [x] 2.4 (P) Implement the design parser: regions, table and bullet shapes, components, Mermaid blocks
   - File Structure Plan and Components regions by heading text up to the next heading of equal or higher level
   - Table shape with component and file/files/path columns (multi-path cells split, responsibility column optional) and bold-component bullets with backticked paths
   - Component discovery from level-4 headings in the Components region and from any table's component column; findings for components without files, unassigned files and a missing plan; Mermaid blocks with spans; design path normalisation
@@ -79,14 +79,14 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 6.1, 6.2, 6.3, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10_
 
-- [ ] 2.5 Implement the design parser: fenced directory-tree shape and merge
+- [x] 2.5 Implement the design parser: fenced directory-tree shape and merge
   - Tree entries from fenced blocks inside the plan region with depth from the name column (unit 4 when tree glyphs are present, else the smallest indent), directory entries pushed on a stack and skipped as files, trailing comments kept as responsibility, full paths joined from ancestors
   - Tree files also named by a table or bullet mapping are merged regardless of which appears first in the document (component filled in, responsibility kept when the mapping has none); remaining tree files stay unassigned with their finding
   - Observable: the tree design fixture (`tree-plan.md` from 1.4, tree plus a table row naming some tree files) parses to the expected full paths and responsibilities, the table-named tree files are merged into their component without duplicate entries, and the remaining tree files carry the unassigned-file finding
   - _Boundary: DesignParser_
   - _Requirements: 6.4, 6.7, 6.10_
 
-- [ ] 2.6 (P) Implement the roadmap parser
+- [x] 2.6 (P) Implement the roadmap parser
   - Specs region by heading text; entries from checkbox list lines split into name, description and dependencies with `--` and em dash separators, backticks stripped, `none` as empty
   - Unknown-dependency finding after all entries are read; missing-section finding with an empty list; names in document order deduplicated
   - Observable: the minimal roadmap fixture and the self roadmap fixture parse to the expected entries, and unit tests cover each separator, `none`, a missing section and an unknown dependency
@@ -94,8 +94,8 @@
   - _Depends: 1.3, 1.4_
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-- [ ] 3. Core: renderers
-- [ ] 3.1 (P) Implement the graph model, caps, safe identifiers and line clipping
+- [x] 3. Core: renderers
+- [x] 3.1 (P) Implement the graph model, caps, safe identifiers and line clipping
   - Graph with direction, nodes (id, label, optional class) and edges (from, to, optional label); caps with defaults; rendered result carrying truncation flag and omitted counts
   - Identifier map producing letters, digits and underscores only, prefixing when needed and suffixing on collisions, stable for a given insertion order
   - Cap application keeping the first nodes and the edges whose ends survive, in input order; line clipping at a newline below the byte limit with an omitted-lines trailer (`"… N more lines"` when no hint is given, or `"… N more lines — <hint>"` when an optional trailer hint is supplied; crate-internal helpers may carry a temporary `#[allow(dead_code)]` until 3.2/3.3 call them, so clippy stays clean per task)
@@ -104,13 +104,13 @@
   - _Depends: 1.1_
   - _Requirements: 11.1, 11.3, 11.7, 11.8_
 
-- [ ] 3.2 Implement the Mermaid backend
+- [x] 3.2 Implement the Mermaid backend
   - Graph header by direction, quoted node labels with escaping of double quotes and angle brackets, class lines, edges with optional quoted labels, ellipsis node stating omitted counts when truncated, single trailing newline
   - Observable: unit tests prove no raw `<`, `>` or unescaped quote appears inside labels and that the truncated output contains exactly one ellipsis node
   - _Boundary: MermaidRenderer_
   - _Requirements: 11.1, 11.2, 11.3, 11.8_
 
-- [ ] 3.3 (P) Implement the text backend
+- [x] 3.3 (P) Implement the text backend
   - Graph as one line per node followed by indented outgoing edges under the same caps, with the omitted-counts trailer
   - Findings as `path:line: SEVERITY CODE message` lines in the finding sort order (file, line, code, message), line omitted when absent
   - Markdown table with escaped pipes and padded short rows
@@ -119,8 +119,8 @@
   - _Depends: 3.1, 1.2_
   - _Requirements: 11.4, 11.5, 11.6, 11.8_
 
-- [ ] 4. Integration: join, workspace and resolution
-- [ ] 4.1 Implement the file, component and task join
+- [x] 4. Integration: join, workspace and resolution
+- [x] 4.1 Implement the file, component and task join
   - Path matching by normalised equality or suffix at a segment boundary in either direction, normalising with the design parser's path normalisation (the join must not import the resolver — dependency direction)
   - Owners of a queried path: matching components in design order, tasks whose boundary names them in document order, criteria from those tasks' requirement references sorted and deduplicated, and a covered flag
   - Coverage listing of components with files and bound tasks, unscoped tasks, unassigned files, and unknown-boundary tasks (every task whose `_Boundary:_` contains one or more names matching no design component paired with those unmatched names as written, or all boundary names when the design document is absent)
@@ -130,7 +130,7 @@
   - _Depends: 2.2, 2.3, 2.5_
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10_
 
-- [ ] 4.2 Implement the read port, in-memory source and workspace
+- [x] 4.2 Implement the read port, in-memory source and workspace
   - Read trait keyed by project-relative path; in-memory source with exact key lookup (no path normalisation in this module) for tests and frontends
   - Workspace owning its source, known feature names (sorted, extendable), a read cache that also remembers absent paths, loaded features and the roadmap; document paths built by joining the fixed directory and file names only
   - Loading a feature reads its four documents once each, parses them, runs the join's link findings when tasks exist, records the missing-document finding with severity from the phase table (an absent `spec.json` is always a warning), and records the dangling-successor finding for superseded features using the metadata parser's successor extraction; loading adds the feature to the known names
@@ -141,7 +141,7 @@
   - _Depends: 2.1, 2.6, 4.1_
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 8.8, 10.4_
 
-- [ ] 4.3 Implement path normalisation, current-spec resolution and the successor chain
+- [x] 4.3 Implement path normalisation, current-spec resolution and the successor chain
   - Relative normalisation (separators, leading `./`, repeated and trailing slashes); absolute-to-relative conversion against the workspace root with case-insensitive prefix comparison for Windows-style paths and an explicit outside result; feature extraction from `.kiro/specs/<feature>/…`
   - Resolution order: explicit name, active-file feature, single known feature, otherwise unresolved with sorted candidates and the normalised active path
   - Successor chain over the workspace following the first successor, loading as needed, terminating at a non-superseded feature or reporting a cycle with its finding; re-export of the metadata parser's successor extraction
@@ -149,8 +149,8 @@
   - _Boundary: Resolver_
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9_
 
-- [ ] 5. Validation
-- [ ] 5.1 Create the crate-root re-exports, the shared test harness, golden fixtures and golden renderer tests
+- [x] 5. Validation
+- [x] 5.1 Create the crate-root re-exports, the shared test harness, golden fixtures and golden renderer tests
   - Public re-exports of the model, workspace, resolution, join, finding and render types from the crate root as listed in the design's module map (every module is already `pub mod` since 1.1; this is the only edit to the crate root until 5.4 adds the crate-level docs and doc tests)
   - Test helper building an in-memory source from embedded fixture text so no test touches the file system; harness and tests import through the crate-root re-exports
   - Golden graph (labels with quotes and angle brackets, classes, labelled edges), golden text rendering, truncated Mermaid under small caps, and golden findings text, each stored as a fixture file
@@ -159,7 +159,7 @@
   - _Depends: 3.2, 3.3, 4.3_
   - _Requirements: 1.5, 11.2, 11.3, 11.4, 11.5, 11.8_
 
-- [ ] 5.2 (P) Write the grammar matrix and workspace integration tests
+- [x] 5.2 (P) Write the grammar matrix and workspace integration tests
   - Owns only the grammar and workspace test files; reads the shared helper from 5.1 without changing it
   - Grammar test iterating every grammar fixture against expected criterion ids and finding codes
   - Workspace tests over the minimal tree: clean load of `demo`, missing-document severities for tasks-generated (from the fixture) versus initialized (an `initialized` feature synthesised in the in-memory source, since the fixture has none), single read per path, superseded `old` resolving to `demo` with a terminating chain, owners of a demo source file, resolution from an absolute Windows-style active path
@@ -169,7 +169,7 @@
   - _Depends: 4.3, 5.1_
   - _Requirements: 1.3, 1.4, 4.1, 4.2, 4.3, 4.4, 4.5, 8.2, 8.5, 8.7, 8.8, 8.9, 9.1, 9.6, 10.4, 12.5_
 
-- [ ] 5.3 (P) Write the no-panic and performance tests
+- [x] 5.3 (P) Write the no-panic and performance tests
   - Owns only the no-panic and performance test files; reads the shared helper from 5.1 without changing it
   - Every parser and the scanner fed with empty text, a lone byte-order mark, ten thousand nested headings, ten thousand unclosed fences, one-megabyte lines and 256 documents from a fixed-seed generator over the marker alphabet; each call returns a document with partial data where recognisable
   - Synthetic 16 MiB tasks-shaped document timed through the scanner and parser, asserted under two seconds only in release builds
@@ -178,7 +178,7 @@
   - _Depends: 4.3, 5.1_
   - _Requirements: 12.1, 12.2, 12.3_
 
-- [ ] 5.4 Verify both targets and the grammar documentation
+- [x] 5.4 Verify both targets and the grammar documentation
   - Crate-level documentation describing the accepted grammar per document type and listing the finding codes, with a doc test asserting the documented code list equals the catalogue and a crate-root doc test that compiles a workspace load, a resolution and a render using only the re-exported names
   - Native test run, `wasm32-wasip2` build, and the wasm test run when the runner is installed; clippy with warnings denied and fmt check
   - Observable: `cargo test` (including the crate-root doc tests), `cargo build --target wasm32-wasip2`, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` all succeed from the repository root
@@ -186,7 +186,7 @@
   - _Depends: 5.2, 5.3_
   - _Requirements: 12.4, 12.6_
 
-- [ ] 5.5 Wire the CI gate: `cargo gate` alias, parallel tests, the wasm dependency audit and the CI files (amendment 2026-11-04, gap-analysis arbitration)
+- [x] 5.5 Wire the CI gate: `cargo gate` alias, parallel tests, the wasm dependency audit and the CI files (amendment 2026-11-04, gap-analysis arbitration)
   - `.cargo/config.toml` gains the `gate` alias alongside the existing wasm runner config (running the native parallel test suite; the full multi-step gate sequence — fmt --check, clippy --all-targets with warnings denied, `cargo nextest run`, `cargo test --doc`, the `wasm32-wasip2` engine build — is wired in `.github/workflows/ci.yml`; the `plugins/kiro` component build and `cargo run -p kiro-cli -- check --project . --all --fail-on error` step are NOT in this workflow yet because `plugins/kiro` and `kiro-cli` do not exist yet — cli-gate task 7.4 appends them)
   - Creates `deny.toml` (cargo-deny config: `wasm32-wasip2` in `[graph] targets`, `getrandom`/`rand` and fs-dependent crates banned on that graph, with `wrappers = ["biodivine-lib-bdd", "rand"]` permitted so `biodivine-lib-bdd`'s dead-code-eliminated `rand` dependency does not trip the lockfile check when spec-constraints lands) and `.github/workflows/ci.yml` (dtolnay toolchain + Swatinem/rust-cache + `rustup target add wasm32-wasip2` + `cargo install cargo-nextest cargo-deny --locked` + `cargo fmt --check` + `cargo clippy --all-targets -- -D warnings` + `cargo nextest run` + `cargo test --doc` + `cargo deny check` + `cargo build -p kiro-core --target wasm32-wasip2`)
   - CI runs `cargo nextest run` + `cargo test --doc` per requirement 12.7 and `cargo deny check` so `getrandom`/`rand`/fs stay out of the wasm tree automatically
@@ -195,3 +195,12 @@
   - _Boundary: CrateScaffold_
   - _Depends: 5.4_
   - _Requirements: 12.7_
+
+## Implementation Notes
+
+- Clippy/wasm results can be served from cargo's cache: inspect stdout for warning lines, not just exit codes; force a fresh compile (`cargo clean -p kiro-core`) when a gate claim must be proven.
+- PowerShell wraps cargo's stderr as errors and reports misleading exit codes: redirect to `$null` and read `$LASTEXITCODE` for the true status.
+- Workspace lints deny `unwrap`/`expect`/indexing even in `cfg(test)` modules; `panic!` remains usable in tests only.
+- Returning a cached `&Feature` via `if let Some(f) = map.get(k) { return f; }` hits the NLL conditional-return borrow limitation (E0502) when followed by `&mut self` work; `entry().or_insert(built)` after unconditional cache reads avoids it (source.rs `load`).
+- Tasks fixtures need a major task (`- [ ] 1. …`) before sub-task `1.1`, or the parser records `TASK_HIERARCHY`.
+- The tasks parser's original `Vec::contains`/linear-scan dedup was O(N²) — a 16 MiB corpus exceeded 15 minutes even in release; replaced by `HashSet` + a `HashMap<u32, usize>` major index guarded by `task.id == task.major.to_string()` so only canonical labels adopt sub-tasks (zero-padded/overflow ids keep the original string-match semantics, pinned by two unit tests). ATX headings are level 1-6 only.
