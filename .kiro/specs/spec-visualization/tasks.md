@@ -12,7 +12,7 @@
   - _Requirements: 1.4, 2.2, 2.3, 4.3, 6.2, 6.3, 7.1, 7.2, 8.6_
 
 - [ ] 2. Core: the three views
-- [ ] 2.1 (P) Build the status view and its fixed text
+- [x] 2.1 (P) Build the status view and its fixed text
   - Touches only the status view file; nothing in the shared module file
   - Status model from one loaded feature: spec name, phase label, ready flag, approvals (all defaults when `spec.json` is unreadable), task totals (checked/total, parallel, optional) with one row per major task, requirement and criteria counts, component/file counts with the unassigned count, finding counts over the feature's findings only
   - Successor chain line derived from the engine's chain value: the path as given with the terminal appended when it is not already last, an empty path starting with the spec name, cycle shown as the path as given, and a superseded spec without a chain shown as its own name with no known successor
