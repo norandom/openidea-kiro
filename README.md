@@ -1,6 +1,6 @@
-# OpenIDEA Kiro (`opencode-kiro`)
+# OpenIDEA Kiro (`openidea-kiro`)
 
-[![CI](https://github.com/norandom/opencode-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/norandom/opencode-kiro/actions/workflows/ci.yml)
+[![CI](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
 
 **Kiro** is a Spec-Driven Development (SDD) tooling ecosystem and OpenIDEA IDE plugin. It brings formal requirement constraints, domain vocabulary grounding, structural specification visualization, bidirectional code ↔ spec navigation, and automated CI quality gates to modern software development.
@@ -83,22 +83,28 @@ From the repository root:
 
 #### Step B: Install in OpenIDEA
 
-##### Option 1: Live Development Link (Recommended for Development)
-Link the plugin directory into your project's `.openidea` configuration:
+##### Option 1: PowerShell Workspace Install (Windows)
+Copy the plugin folder into your project's `.openidea\plugins` directory using standard PowerShell:
 
-- **Windows (NTFS Junction)**:
-  ```powershell
-  New-Item -ItemType Directory -Force -Path .openidea\plugins
-  cmd /c mklink /J .openidea\plugins\kiro <absolute-path-to-openidea-kiro>\plugins\kiro
-  ```
-- **macOS / Linux (Symlink)**:
-  ```bash
-  mkdir -p .openidea/plugins
-  ln -s "$(pwd)/plugins/kiro" .openidea/plugins/kiro
-  ```
+```powershell
+# Create plugin directory and copy files
+New-Item -ItemType Directory -Force -Path .openidea\plugins\kiro
+Copy-Item -Recurse -Force plugins\kiro\* .openidea\plugins\kiro\
+```
 
-##### Option 2: Install from Disk
-Zip the contents of `plugins/kiro` (including `plugin.toml` and `dist/plugin.wasm`) and select **Install Plugin from Disk...** in OpenIDEA's **Settings › Plugins**.
+For macOS / Linux:
+```bash
+mkdir -p .openidea/plugins/kiro
+cp -R plugins/kiro/* .openidea/plugins/kiro/
+```
+
+##### Option 2: GUI Install from Disk
+In OpenIDEA:
+1. Open **Settings › Plugins** (or press `Ctrl+Alt+S` on Windows / `⌘,` on macOS).
+2. Click the gear icon / menu and select **Install Plugin from Disk...**.
+3. Select the `plugins/kiro` directory (or a zip containing `plugin.toml` and `dist/plugin.wasm`).
+4. Ensure the project is trusted when prompted.
+5. In Search Everywhere (`Ctrl+Shift+A` or `Double Shift`), run **Reload Plugins**.
 
 ---
 

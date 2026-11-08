@@ -31,21 +31,21 @@ cp target/wasm32-wasip2/release/openidea_plugin_kiro.wasm dist/plugin.wasm
 
 ---
 
-## 2. Windows Dev-Plugin Installation
+## 2. Windows Dev-Plugin Installation (PowerShell)
 
-To install and test this plugin as a live developer plugin in OpenIDEA on Windows:
+To install and test this plugin in OpenIDEA on Windows using pure PowerShell:
 
 1. Create the plugin folder inside your project's `.openidea` configuration directory:
    ```powershell
-   New-Item -ItemType Directory -Force -Path .openidea\plugins
+   New-Item -ItemType Directory -Force -Path .openidea\plugins\kiro
    ```
-2. Create an NTFS directory junction pointing to the plugin package directory:
+2. Copy the plugin package files (including `plugin.toml` and `dist\plugin.wasm`) into that directory:
    ```powershell
-   cmd /c mklink /J .openidea\plugins\kiro <absolute-path-to-openidea-kiro>\plugins\kiro
+   Copy-Item -Recurse -Force plugins\kiro\* .openidea\plugins\kiro\
    ```
 3. Open or switch to the OpenIDEA IDE window.
 4. Ensure the project is trusted (Plugins do not run in untrusted mode).
-5. Open **Settings › Plugins** or execute the action **Reload Plugins** from Search Everywhere (`Ctrl+Shift+A`).
+5. Open **Settings › Plugins** or execute the action **Reload Plugins** from Search Everywhere (`Ctrl+Shift+A` or `Double Shift`).
 
 ---
 

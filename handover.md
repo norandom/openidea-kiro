@@ -1,7 +1,7 @@
 # Project Handover & Progress Status
 
 **Timestamp**: 2026-11-08T15:00:00+01:00  
-**Repository**: `opencode-kiro` (`https://github.com/norandom/opencode-kiro.git`)  
+**Repository**: `openidea-kiro` (`https://github.com/norandom/openidea-kiro.git`)  
 **Current Milestone**: Wave 4 (`cli-gate`) Complete — Full Project SDLC Roadmap Delivered  
 **Status**: All 7 Specifications Fully Implemented & Verified (100%)
 
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-The `opencode-kiro` project implements an end-to-end Spec-Driven Development (SDD) ecosystem and OpenIDEA IDE plugin providing formal requirements constraint checking, vocabulary grounding, structural specification visualization, spec ↔ code bidirectional navigation, and an automated continuous integration CLI gate.
+The `openidea-kiro` project implements an end-to-end Spec-Driven Development (SDD) ecosystem and OpenIDEA IDE plugin providing formal requirements constraint checking, vocabulary grounding, structural specification visualization, spec ↔ code bidirectional navigation, and an automated continuous integration CLI gate.
 
 All 4 waves of the SDLC roadmap are now 100% implemented, tested, and validated in the foreground with strict TDD:
 1. **Wave 1**: [`kiro-core`](file:///C:/Users/mariu/Source/openidea-kiro/.kiro/specs/kiro-core/spec.json) (pure parsing & domain engine), [`plugin-core`](file:///C:/Users/mariu/Source/openidea-kiro/.kiro/specs/plugin-core/spec.json) (host API port, command dispatch, WebAssembly sandbox).
@@ -86,5 +86,5 @@ All quality gates were verified in the foreground:
    - Self-tree check produces byte-identical output across runs.
    - Performance test over 20 generated specs (~100 KiB/document) completed in **~92 ms** (requirement: < 5.0 s).
 6. **Git Remote & Tracking**:
-   - Remote `origin` linked to `https://github.com/norandom/opencode-kiro.git`.
+   - Remote `origin` linked to `https://github.com/norandom/openidea-kiro.git`.
    - Branch `main` tracking `origin/main`.
