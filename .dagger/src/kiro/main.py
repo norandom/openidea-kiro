@@ -13,7 +13,7 @@ class Kiro:
 
     container = (
         dag.container()
-        .from_("rust:1.85-bookworm")
+        .from_("rust:latest")
         .with_exec(["rustup", "target", "add", "wasm32-wasip2"])
         .with_exec(["rustup", "component", "add", "clippy", "rustfmt"])
         .with_exec([
