@@ -43,7 +43,7 @@
   - _Boundary: Args_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 7.4, 10.1_
 
-- [ ] 2.4 (P) Implement the engine source adapter over the host read
+- [x] 2.4 (P) Implement the engine source adapter over the host read
   - Engine read port implemented over the host port: project-relative paths passed straight through; empty, absolute, backslash or `..` paths refused without a host call; any host error logged at debug level with path and reason and turned into "absent"
   - Observable: unit tests prove guarded paths cause no read event, a host error yields `None` plus one debug log event, and a successful read returns the text
   - _Boundary: HostSource_
