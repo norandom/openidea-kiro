@@ -41,7 +41,7 @@
   - _Depends: 1.1_
   - _Requirements: 1.6, 3.1, 4.9_
 
-- [ ] 2. Core checks: EARS shape and declared terms
+- [x] 2. Core checks: EARS shape and declared terms
 - [x] 2.1 Implement the EARS shape check
   - Analysis of one criterion over its masked text: shall count, offending modals outside hyphenated compounds, leading condition keyword, last comma before the first shall, the `then` form, subject and response from the unmasked text, and the pattern classification (ubiquitous, event, state, unwanted, optional, complex) that is always computed for a single-shall criterion
   - The document-level check producing the six EARS codes at the criterion line, pattern reports only when enabled, and the summary of criteria per pattern
@@ -50,7 +50,7 @@
   - _Depends: 1.3_
   - _Requirements: 2.1, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10_
 
-- [ ] 2.2 (P) Implement term scope resolution and the term check
+- [x] 2.2 (P) Implement term scope resolution and the term check
   - Resolution of every declared name through the vocabulary's scoped resolution with exactly the spec's declared topics, kept per requirement and per criterion with the outcome; the term-reference rule for guards and effects (resolved id, or the declared name with whitespace replaced by hyphens, case-insensitively); the found-id set per requirement for the summary
   - The findings for deprecated, mismatched, unknown and ambiguous declared terms at their annotation line with the design's messages; term suggestions once per requirement and term, excluding terms declared on the requirement or on the criterion where the label occurs; the unscoped finding helper; the terms summary counts
   - Observable: unit tests cover each resolution outcome and its code, the reference rule for ids, hyphenated labels and case, suggestions bounded to one per requirement and term with per-criterion exclusion, and the unscoped finding text; no code path resolves a name without the topic list
