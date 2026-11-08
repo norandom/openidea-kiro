@@ -104,7 +104,7 @@
   - _Requirements: 1.2, 8.2, 10.4_
 
 - [ ] 4. Validation
-- [ ] 4.1 Write the end-to-end dispatch tests over the fake host
+- [x] 4.1 Write the end-to-end dispatch tests over the fake host
   - Fake host loaded with the engine's minimal fixture tree (embedded text, root `C:\proj`) and driven through activation and command runs
   - Scenarios: activation registers exactly the static command list and nothing project-dependent; current spec from an active design file notifies the spec and phase and returns the full text; afterwards both per-spec variants exist and the superseded spec's variant reports it; no active file with two known specs fails listing both candidates; a variant for an unknown spec fails with "not found" and does not register per-spec variants for that unknown spec; listing with `insert` produces one insertion and one notification; insertion on the current-spec command fails; spec named twice; invalid spec name causes no read; a command of a group without a module (through the `run_command_with` seam with a partial table) fails with "not available in this build"; a 20 KiB finding list is clipped in the notification (ending with the variant-naming trailer for an insert-capable command and the plain trailer for a command without an insert variant) but complete in the return value; each path is read at most once per command; "no project is open" without a root
   - Observable: all scenarios pass natively with `cargo test` from the package directory
