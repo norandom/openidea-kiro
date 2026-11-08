@@ -12,7 +12,7 @@
 
 wit_bindgen::generate!({
     world: "plugin",
-    path: "../../../openidea/wit",
+    path: "wit",
 });
 
 use openidea::plugin::host;
