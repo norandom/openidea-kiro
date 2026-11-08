@@ -87,7 +87,7 @@
   - _Boundary: WsCommands, Commands_
   - _Requirements: 2.7, 3.2, 3.3, 3.4, 5.4, 5.5, 7.8_
 
-- [ ] 3.4 Create the plugin manifest and the manifest consistency test
+- [x] 3.4 Create the plugin manifest and the manifest consistency test
   - Manifest with id `kiro`, name, version, description, API version `0.1`, the component path, exactly the three permissions, and one static command block per entry of the static command list (base commands and insert variants) with category `Kiro`
   - Test that parses the manifest and asserts its static command ids, titles and categories equal the registry's static list for all declared modules
   - Observable: the manifest test passes; the manifest contains only keys the host accepts

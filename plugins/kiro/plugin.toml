@@ -1,0 +1,23 @@
+id = "kiro"
+name = "Kiro"
+version = "0.1.0"
+description = "Spec-driven development in OpenIDEA: discovery, navigation, visualization, vocabulary and quality checks."
+authors = ["The OpenIDEA Authors"]
+openidea-api = "0.1"
+wasm = "dist/plugin.wasm"
+permissions = ["project-read", "editor-read", "editor-write"]
+
+[[contributes.commands]]
+id = "ws.specs"
+title = "Kiro: List Specs"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "ws.specs.insert"
+title = "Kiro: List Specs — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "ws.current"
+title = "Kiro: Current Spec"
+category = "Kiro"
