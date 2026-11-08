@@ -16,9 +16,15 @@ class Kiro:
         .from_("rust:1.85-bookworm")
         .with_exec(["rustup", "target", "add", "wasm32-wasip2"])
         .with_exec(["rustup", "component", "add", "clippy", "rustfmt"])
-        .with_exec(
-            ["cargo", "install", "cargo-nextest", "cargo-deny", "--locked"]
-        )
+        .with_exec([
+            "sh",
+            "-c",
+            (
+                "curl -sL"
+                " https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.3/cargo-deny-0.18.3-x86_64-unknown-linux-musl.tar.gz"
+                " | tar -xz -C /usr/local/cargo/bin --strip-components=1"
+            ),
+        ])
         .with_mounted_cache("/usr/local/cargo/registry", cargo_cache)
         .with_mounted_cache("/workspace/target", target_cache)
         .with_directory("/workspace", source)
@@ -33,7 +39,7 @@ class Kiro:
             "-D",
             "warnings",
         ])
-        .with_exec(["cargo", "nextest", "run", "--workspace"])
+        .with_exec(["cargo", "test", "--workspace"])
         .with_exec(["cargo", "test", "--workspace", "--doc"])
         .with_exec(["cargo", "deny", "check"])
         .with_exec(
