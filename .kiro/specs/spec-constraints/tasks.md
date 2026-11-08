@@ -58,7 +58,7 @@
   - _Depends: 1.3, 1.5_
   - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 4.2_
 
-- [ ] 3. Contradiction search
+- [x] 3. Contradiction search
 - [x] 3.1 Implement finitisation: typed guards, domains and conflicts
   - Per criterion with any of guard, effect or conflicts: parsing errors, undeclared references, unresolved declared terms (excluded silently), kind rules for bool, enum, int and entity terms, bare-word literals that name a declared term (literal constants only), duplicate and misplaced annotations, unknown conflict ids; criteria without annotations that are named by an accepted conflict list are prepared as unconditional
   - Domains for every term used by an accepted criterion in topic-then-id order: bool, enum values in declaration order, integer regions cut at the constants mentioned by accepted guards and effects within the declared bounds; the brute-force evaluator of a typed guard over a state, for tests
@@ -74,7 +74,7 @@
   - _Depends: 3.1_
   - _Requirements: 5.2, 5.6, 5.7, 5.8_
 
-- [ ] 3.3 Implement pair selection and the contradiction search
+- [x] 3.3 Implement pair selection and the contradiction search
   - Incompatible pairs from declared conflicts (symmetric) and clashing effects on one term, one per unordered pair in document order; the search building the encoding, encoding each accepted guard, reporting unsatisfiable guards, deciding each pair and reporting contradictions at the first criterion with the reason and the witness in topic-then-id order (or "in every state"); one refusal finding without a line listing the unchecked pairs and the largest terms; the search summary
   - Observable: unit tests cover declared and effect pairs, disjoint guards, an unconditional pair, an unsatisfiable guard, refusal listing, and the exact message forms of the design
   - _Boundary: ContradictionSearch_
