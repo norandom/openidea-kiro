@@ -1,7 +1,7 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: nav module scaffold and fixture tree
-- [ ] 1.1 Create the nav module scaffold with the command table, final dispatch, shared helpers and view stubs
+- [x] 1. Foundation: nav module scaffold and fixture tree
+- [x] 1.1 Create the nav module scaffold with the command table, final dispatch, shared helpers and view stubs
   - Prerequisite: the plugin package from plugin-core builds natively with its module contract, command context, argument request and output types in place
   - Directory module for navigation declared once in the crate root — the single crate-root line this task touches, so that the scaffold compiles; every other registration file (dispatch table, manifest, README) stays with 3.1
   - The module's root file holds the six command declarations with their titles and category (every command spec-addressable, only the context command insert-capable, every command reading its first argument token as the spec), the constants stating the static id count (seven) and the per-spec id count (six), the shared helpers, and the final module-contract implementation that routes `context` to the context view's run function, `files` and `task-files` to the coverage view's two functions and the three outline commands to the outline view's run function with the respective document kind
@@ -11,7 +11,7 @@
   - _Boundary: NavModule, NavRegistration_
   - _Requirements: 1.1, 1.2, 1.3, 1.5, 1.6, 7.1, 7.5_
 
-- [ ] 1.2 (P) Create the navigation fixture tree and a loading smoke test
+- [x] 1.2 (P) Create the navigation fixture tree and a loading smoke test
   - Roadmap listing `alpha`, `beta`, `gamma` in dependency order
   - `alpha`: tasks-generated metadata; requirements with criteria 1.1 and 1.2; design with components `Alpha` (two files including the shared file, one with a responsibility) and `Empty` (no files) in a table plan, plus a tree fence adding one unassigned file, and component headings under Components and Interfaces; tasks with a container major and an unscoped sub-task, a completed sub-task bound to `Alpha` referencing 1.1, 1.2 and a non-existent 9.9, an open sub-task bound to `Empty`, and a sub-task bound to the undefined component `Glue`
   - `beta`: tasks-generated; design mapping the shared file and one own file to `Beta`; one open task bound to `Beta` referencing 1.1

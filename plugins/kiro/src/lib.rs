@@ -51,6 +51,7 @@ pub mod context;
 pub mod host;
 pub mod host_source;
 pub mod module;
+pub mod nav;
 pub mod present;
 pub mod registry;
 pub mod vocab;
