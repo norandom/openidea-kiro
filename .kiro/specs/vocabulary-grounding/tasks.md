@@ -127,7 +127,7 @@
   - _Depends: 1.2, 4.3_
   - _Requirements: 2.15, 8.3, 8.5, 11.6_
 
-- [ ] 5. Validation: both targets, lints and the host check
+- [x] 5. Validation: both targets, lints and the host check
   - Prerequisite: the dev-plugin installation of plugin-core (junction, trust, Reload Plugins) is in place in the open project
   - Engine and plugin build for the sandbox target with the TOML parser present; clippy with warnings denied and fmt check pass for the root workspace and the plugin package
   - Manual host check as a dev plugin: with this spec's requirements document open, the topics command reports `sdd` declared, the list command shows the seed table, and the term command without an argument shows the usage line plus the table (when no GUI host is available, the manual check is recorded as deferred in the completion note — matching `spec-navigation` 4.3 and `spec-visualization` 4)

@@ -8,13 +8,13 @@ The project is **v2 of spec constraint checking** (successor to the retired `spe
 |---|---|---|---|---|---|---|
 | **1** | `kiro-core` | 12 / 100 | 16 | 20 / 20 | `tasks-generated`, approved | **Implemented & verified** (`crates/kiro-core`, 25/25 items `[x]`) |
 | **2** | `plugin-core` | 10 / 62 | 12 | 16 / 16 | `tasks-generated`, approved | **Implemented & verified** (`plugins/kiro`, 16/16 items `[x]`, junction active) |
-| **2** | `vocabulary-grounding` | 11 / 72 | 13 | 0 / 12 | `tasks-generated`, approved | Ready for `/kiro-impl vocabulary-grounding` |
-| **2** | `spec-navigation` | 8 / 57 | 8 | 0 / 13 | `tasks-generated`, approved | Ready (after `plugin-core`) |
+| **2** | `vocabulary-grounding` | 11 / 72 | 13 | 12 / 12 | `tasks-generated`, approved | **Implemented & verified** (`crates/kiro-core`, `plugins/kiro`, 12/12 items `[x]`) |
+| **2** | `spec-navigation` | 8 / 57 | 8 | 0 / 13 | `tasks-generated`, approved | Ready for `/kiro-impl spec-navigation` |
 | **2** | `spec-visualization` | 8 / 50 | 7 | 0 / 10 | `tasks-generated`, approved | Ready (after `plugin-core`) |
 | **3** | `spec-constraints` | 8 / 66 | 16 | 0 / 24 | `tasks-generated`, approved | Ready (after `vocabulary-grounding`) |
 | **4** | `cli-gate` | 13 / 81 | 15 | 0 / 20 | `tasks-generated`, approved | Ready (after `spec-constraints` & `spec-visualization`) |
 
-Roadmap (`.kiro/steering/roadmap.md`) marks `[x] kiro-core` and `[x] plugin-core`, and keeps the remaining five specs `[ ]` until their implementation waves complete.
+Roadmap (`.kiro/steering/roadmap.md`) marks `[x] kiro-core`, `[x] plugin-core`, and `[x] vocabulary-grounding`, and keeps the remaining four specs `[ ]` until their implementation waves complete.
 
 ## Architecture decisions locked in
 
@@ -58,9 +58,8 @@ When an implementation or review step uncovers a spec gap, tooling constraint, o
 
 ## Suggested order next
 
-1. Run `/kiro-impl vocabulary-grounding` in **foreground manual mode** (per `.kiro/steering/workflow.md`: no subagent dispatch unless explicitly requested).
+1. Run `/kiro-impl spec-navigation` in **foreground manual mode** (per `.kiro/steering/workflow.md`: no subagent dispatch unless explicitly requested).
 2. Continue through Wave 2 & Wave 3 in the roadmap sequence:
-   - `/kiro-impl spec-navigation`
    - `/kiro-impl spec-visualization`
    - `/kiro-impl spec-constraints` (Wave 3, depends on `vocabulary-grounding`)
 3. Finish with Wave 4:

@@ -186,9 +186,7 @@ fn degraded(scoped: &Scoped, cmd: &str) -> Option<Output> {
                     format!("Kiro: {} declares no topics", scoped.spec),
                     format!(
                         "Spec {} declares no topics: add \"topics\": [\"sdd\"] to .kiro/specs/{}/spec.json.\nAvailable topics: {}",
-                        scoped.spec,
-                        scoped.spec,
-                        avail_str
+                        scoped.spec, scoped.spec, avail_str
                     ),
                 ))
             } else {
@@ -203,7 +201,11 @@ fn format_list_text(
     topic_filter: Option<&str>,
     visible_terms: &[&Term],
 ) -> String {
-    let mut text = format!("Spec: {} (topics: {})", scoped.spec, scoped.topics.join(", "));
+    let mut text = format!(
+        "Spec: {} (topics: {})",
+        scoped.spec,
+        scoped.topics.join(", ")
+    );
     if let Some(t) = topic_filter {
         text.push_str(&format!("\nTopic: {t}"));
     }
@@ -233,7 +235,8 @@ fn format_list_text(
 fn term(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
     let scoped = scoped(ctx, req)?;
     if let Some(out) = degraded(&scoped, "term") {
-        ctx.host.log(LogLevel::Debug, "vocab.term: outcome degraded");
+        ctx.host
+            .log(LogLevel::Debug, "vocab.term: outcome degraded");
         return Ok(out);
     }
 
@@ -241,7 +244,8 @@ fn term(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
     let query_trimmed = query.trim();
 
     if query_trimmed.is_empty() {
-        ctx.host.log(LogLevel::Debug, "vocab.term: outcome empty query");
+        ctx.host
+            .log(LogLevel::Debug, "vocab.term: outcome empty query");
         let visible = scoped.loaded.vocabulary.visible(&scoped.topics);
         let list_body = format_list_text(&scoped, None, &visible);
         let mut text = format!(
@@ -311,7 +315,8 @@ fn term(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
             Output::info(format!("Kiro: {} ({})", term.label, term.topic), text)
         }
         Lookup::NotInTopic { hits } => {
-            ctx.host.log(LogLevel::Debug, "vocab.term: outcome NotInTopic");
+            ctx.host
+                .log(LogLevel::Debug, "vocab.term: outcome NotInTopic");
             let mut text = format!(
                 "`{query_trimmed}` is a term of another topic: {}.\nSpec {} declares: {}.\nCross-topic matches are never resolved; declare the topic in spec.json if the spec is about it.",
                 hits_text(&hits),
@@ -326,7 +331,8 @@ fn term(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
             }
         }
         Lookup::Ambiguous { hits } => {
-            ctx.host.log(LogLevel::Debug, "vocab.term: outcome Ambiguous");
+            ctx.host
+                .log(LogLevel::Debug, "vocab.term: outcome Ambiguous");
             let mut text = format!(
                 "`{query_trimmed}` matches several terms in the declared topics: {}. Use the term id.",
                 hits_text(&hits)
@@ -353,15 +359,14 @@ fn term(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
             }
         }
         Lookup::Unscoped => {
-            ctx.host.log(LogLevel::Debug, "vocab.term: outcome Unscoped");
+            ctx.host
+                .log(LogLevel::Debug, "vocab.term: outcome Unscoped");
             let avail_str = available_topics_summary(&scoped.loaded.vocabulary);
             Output::info(
                 format!("Kiro: {} declares no topics", scoped.spec),
                 format!(
                     "Spec {} declares no topics: add \"topics\": [\"sdd\"] to .kiro/specs/{}/spec.json.\nAvailable topics: {}",
-                    scoped.spec,
-                    scoped.spec,
-                    avail_str
+                    scoped.spec, scoped.spec, avail_str
                 ),
             )
         }
@@ -374,7 +379,8 @@ fn term(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
 fn list(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
     let scoped = scoped(ctx, req)?;
     if let Some(out) = degraded(&scoped, "list") {
-        ctx.host.log(LogLevel::Debug, "vocab.list: outcome degraded");
+        ctx.host
+            .log(LogLevel::Debug, "vocab.list: outcome degraded");
         return Ok(out);
     }
 
@@ -418,7 +424,8 @@ fn list(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
 fn topics(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, String> {
     let scoped = scoped(ctx, req)?;
     if let Some(out) = degraded(&scoped, "topics") {
-        ctx.host.log(LogLevel::Debug, "vocab.topics: outcome degraded");
+        ctx.host
+            .log(LogLevel::Debug, "vocab.topics: outcome degraded");
         return Ok(out);
     }
 
@@ -545,10 +552,7 @@ mod tests {
     #[test]
     fn helper_one_line_truncation() {
         assert_eq!(one_line("Simple line", 72), "Simple line");
-        assert_eq!(
-            one_line("  Multiline\nSecond line", 72),
-            "Multiline"
-        );
+        assert_eq!(one_line("  Multiline\nSecond line", 72), "Multiline");
         assert_eq!(
             one_line("Internal   whitespace   collapsed", 72),
             "Internal whitespace collapsed"
@@ -664,7 +668,10 @@ mod tests {
         assert!(out.text.contains("Term: task"));
         assert!(out.text.contains("Matched via: id"));
         assert!(out.text.contains("Broader: spec"));
-        assert!(out.text.contains("Vocabulary findings: 1 (run Kiro: Vocabulary Topics)"));
+        assert!(
+            out.text
+                .contains("Vocabulary findings: 1 (run Kiro: Vocabulary Topics)")
+        );
 
         // 2. Found via Label ("Specification")
         let req = Request {
@@ -696,7 +703,10 @@ mod tests {
             raw: None,
         };
         let out = term(&mut ctx, &req).unwrap();
-        assert!(out.text.contains("Deprecated: yes, replaced by task (Task)"));
+        assert!(
+            out.text
+                .contains("Deprecated: yes, replaced by task (Task)")
+        );
 
         // 5. Not in topic ("sprint" is in pm)
         let req = Request {
@@ -708,7 +718,10 @@ mod tests {
         let out = term(&mut ctx, &req).unwrap();
         assert_eq!(out.title, "Kiro: sprint not in scope");
         assert_eq!(out.level, Level::Warning);
-        assert!(out.text.contains("`sprint` is a term of another topic: pm/sprint"));
+        assert!(
+            out.text
+                .contains("`sprint` is a term of another topic: pm/sprint")
+        );
 
         // 6. Unknown
         let req = Request {
@@ -732,7 +745,10 @@ mod tests {
         let out = term(&mut both_ctx, &req).unwrap();
         assert_eq!(out.title, "Kiro: Task is ambiguous");
         assert_eq!(out.level, Level::Warning);
-        assert!(out.text.contains("matches several terms in the declared topics: pm/pm-task, sdd/task"));
+        assert!(
+            out.text
+                .contains("matches several terms in the declared topics: pm/pm-task, sdd/task")
+        );
 
         // 8. Empty query
         let req = Request {
@@ -744,7 +760,10 @@ mod tests {
         let out = term(&mut ctx, &req).unwrap();
         assert_eq!(out.title, "Kiro: Vocabulary Term");
         assert_eq!(out.level, Level::Info);
-        assert!(out.text.contains("vocab.term expects a term label or id as its argument"));
+        assert!(
+            out.text
+                .contains("vocab.term expects a term label or id as its argument")
+        );
         assert!(out.text.contains("| Id"));
     }
 
@@ -764,7 +783,10 @@ mod tests {
         assert!(out.title.contains("terms visible to demo"));
         assert_eq!(out.level, Level::Info);
         assert!(out.text.contains("Spec: demo (topics: sdd)"));
-        assert!(out.text.contains("Vocabulary findings: 1 (run Kiro: Vocabulary Topics)"));
+        assert!(
+            out.text
+                .contains("Vocabulary findings: 1 (run Kiro: Vocabulary Topics)")
+        );
 
         // 2. List with valid topic filter
         let req = Request {
@@ -786,7 +808,10 @@ mod tests {
         let out = list(&mut ctx, &req).unwrap();
         assert_eq!(out.title, "Kiro: topic pm not declared");
         assert_eq!(out.level, Level::Warning);
-        assert!(out.text.contains("Topic pm is not declared by spec demo; declared: sdd."));
+        assert!(
+            out.text
+                .contains("Topic pm is not declared by spec demo; declared: sdd.")
+        );
 
         // 4. Topics on demo
         let req = Request {

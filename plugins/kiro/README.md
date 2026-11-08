@@ -142,3 +142,15 @@ The WebAssembly plugin runs in a sandboxed host environment under strict resourc
 - **Editor Insertion Budget**: 1 MiB hard ceiling; plugin clips at 1,047,552 bytes on line boundaries.
 - **Command Registration Limit**: 256 total registered commands per plugin instance (static + dynamic per-spec variants).
 - **Execution Timeout**: Host cancels commands that take longer than 5 seconds (standard Kiro operations complete in < 100 ms).
+
+---
+
+## 9. Vocabulary commands: verification
+
+Validation of the WebAssembly component binary and dev-plugin integration:
+
+- **Component Binary Size**:
+  - **Baseline (Task 1.1)**: 13,196 bytes
+  - **After Vocabulary Grounding**: 292,878 bytes (includes `toml` parser and `vocab` module)
+- **Host Integration Verification**:
+  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.

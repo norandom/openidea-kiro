@@ -96,7 +96,9 @@ fn term_command_outcomes_and_findings_line() {
     let out = run_command(&host, "vocab.term.both", Some("Task"))
         .unwrap()
         .unwrap();
-    assert!(out.contains("`Task` matches several terms in the declared topics: pm/pm-task, sdd/task."));
+    assert!(
+        out.contains("`Task` matches several terms in the declared topics: pm/pm-task, sdd/task.")
+    );
     assert!(out.contains("Use the term id."));
 
     // 6. Unknown
@@ -118,7 +120,9 @@ fn term_command_outcomes_and_findings_line() {
     let out = run_command(&host, "vocab.term.none", Some("task"))
         .unwrap()
         .unwrap();
-    assert!(out.contains("Spec none declares no topics: add \"topics\": [\"sdd\"] to .kiro/specs/none/spec.json."));
+    assert!(out.contains(
+        "Spec none declares no topics: add \"topics\": [\"sdd\"] to .kiro/specs/none/spec.json."
+    ));
     assert!(out.contains("Available topics:"));
 }
 
@@ -217,7 +221,9 @@ fn missing_and_invalid_vocabulary_across_all_commands() {
         )
         .with_file(
             ".kiro/specs/demo/spec.json",
-            include_str!("../../../crates/kiro-core/fixtures/vocab/tree/.kiro/specs/demo/spec.json"),
+            include_str!(
+                "../../../crates/kiro-core/fixtures/vocab/tree/.kiro/specs/demo/spec.json"
+            ),
         );
     activate_host(&missing_host);
 
@@ -244,7 +250,9 @@ fn missing_and_invalid_vocabulary_across_all_commands() {
         )
         .with_file(
             ".kiro/specs/demo/spec.json",
-            include_str!("../../../crates/kiro-core/fixtures/vocab/tree/.kiro/specs/demo/spec.json"),
+            include_str!(
+                "../../../crates/kiro-core/fixtures/vocab/tree/.kiro/specs/demo/spec.json"
+            ),
         );
     activate_host(&invalid_host);
 
