@@ -103,7 +103,7 @@
   - _Depends: 3.3_
   - _Requirements: 1.2, 8.2, 10.4_
 
-- [ ] 4. Validation
+- [x] 4. Validation
 - [x] 4.1 Write the end-to-end dispatch tests over the fake host
   - Fake host loaded with the engine's minimal fixture tree (embedded text, root `C:\proj`) and driven through activation and command runs
   - Scenarios: activation registers exactly the static command list and nothing project-dependent; current spec from an active design file notifies the spec and phase and returns the full text; afterwards both per-spec variants exist and the superseded spec's variant reports it; no active file with two known specs fails listing both candidates; a variant for an unknown spec fails with "not found" and does not register per-spec variants for that unknown spec; listing with `insert` produces one insertion and one notification; insertion on the current-spec command fails; spec named twice; invalid spec name causes no read; a command of a group without a module (through the `run_command_with` seam with a partial table) fails with "not available in this build"; a 20 KiB finding list is clipped in the notification (ending with the variant-naming trailer for an insert-capable command and the plain trailer for a command without an insert variant) but complete in the return value; each path is read at most once per command; "no project is open" without a root
@@ -119,7 +119,7 @@
   - _Depends: 3.4_
   - _Requirements: 1.4, 1.5, 7.2_
 
-- [ ] 4.3 Verify the component in the host as a dev plugin
+- [x] 4.3 Verify the component in the host as a dev plugin
   - Prerequisite: the OpenIDEA host application is built and launchable from the `../openidea` checkout (when no GUI host is running, build `dist/plugin.wasm`, create/verify the dev-plugin junction, run host-side integration tests if `../openidea` is present, and record the manual GUI check as deferred in the completion note — matching `spec-navigation` 4.3 and `spec-visualization` 4)
   - Build the component from the final source (3.3 merged) with the PowerShell build script before creating the junction, so `dist/plugin.wasm` is not stale from an earlier `(P)` task
   - Junction the package into this repository's `.openidea\plugins\kiro`, open the repository in OpenIDEA, trust it, reload plugins; open a spec document and run the current-spec command; run the list command and confirm the per-spec commands appear in Search Everywhere
@@ -130,7 +130,7 @@
   - _Depends: 3.3, 3.4, 3.5, 4.2_
   - _Requirements: 1.2, 1.3, 1.4, 10.5_
 
-- [ ] 4.4 Run the final quality gate on both targets
+- [x] 4.4 Run the final quality gate on both targets
   - From the package directory (`--manifest-path plugins/kiro/Cargo.toml`): native tests (`cargo test`), clippy for the native and wasm targets with warnings denied (`cargo clippy --all-targets -- -D warnings` and `cargo clippy --target wasm32-wasip2 -- -D warnings`), fmt check, `cargo deny --manifest-path plugins/kiro/Cargo.toml check`, and release component build (`cargo build --release --target wasm32-wasip2`); from the repository root: tests and clippy unaffected by the plugin package
   - Crate-level docs completed with the command grammar and output channels
   - Observable: every command above succeeds and the root workspace build does not require the sandbox target

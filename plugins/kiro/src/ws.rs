@@ -8,7 +8,7 @@ use crate::present::Output;
 use crate::registry::{CommandSpec, Group, Positional};
 use kiro_core::finding::Severity;
 use kiro_core::resolve::ResolvedVia;
-use kiro_core::spec::{phase_label, Doc};
+use kiro_core::spec::{Doc, phase_label};
 use kiro_core::table;
 
 pub use kiro_core::spec::phase_label as exported_phase_label;
@@ -168,11 +168,7 @@ pub fn current(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, St
     let phase_line = format!("Phase: {phase}");
 
     let doc_status = |readable: bool| {
-        if readable {
-            "present"
-        } else {
-            "missing"
-        }
+        if readable { "present" } else { "missing" }
     };
     let docs_line = format!(
         "Documents: spec.json {}, requirements.md {}, design.md {}, tasks.md {}",
@@ -273,8 +269,16 @@ mod tests {
 
         // Notifications
         let notifs = host.notifications();
-        assert!(notifs.iter().any(|(_, title, _)| title == "Kiro: 2 specs known"));
-        assert!(notifs.iter().any(|(_, title, _)| title == "Kiro: spec-a (tasks)"));
+        assert!(
+            notifs
+                .iter()
+                .any(|(_, title, _)| title == "Kiro: 2 specs known")
+        );
+        assert!(
+            notifs
+                .iter()
+                .any(|(_, title, _)| title == "Kiro: spec-a (tasks)")
+        );
     }
 
     #[test]

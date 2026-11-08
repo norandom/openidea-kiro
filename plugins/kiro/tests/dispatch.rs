@@ -8,15 +8,11 @@
     clippy::cloned_ref_to_slice_refs
 )]
 
-use openidea_plugin_kiro::commands::{
-    activate, all_commands, run_command, run_command_with,
-};
+use openidea_plugin_kiro::commands::{activate, all_commands, run_command, run_command_with};
 use openidea_plugin_kiro::host::{FakeHost, HostEvent};
 use openidea_plugin_kiro::module::FeatureModule;
 use openidea_plugin_kiro::present::Output;
-use openidea_plugin_kiro::registry::{
-    static_commands, CommandSpec, Group, Positional,
-};
+use openidea_plugin_kiro::registry::{CommandSpec, Group, Positional, static_commands};
 
 fn setup_minimal_host() -> FakeHost {
     let host = FakeHost::new().with_root("C:\\proj");
@@ -200,7 +196,10 @@ fn scenario_09_invalid_spec_name_causes_no_read() {
         .filter(|e| matches!(e, HostEvent::Read(_)))
         .count();
 
-    assert_eq!(reads_before, reads_after, "no read should be performed for invalid spec");
+    assert_eq!(
+        reads_before, reads_after,
+        "no read should be performed for invalid spec"
+    );
 }
 
 #[test]
@@ -271,7 +270,9 @@ fn scenario_11_clipping_budget_and_trailers() {
     let notif1 = notifs.last().unwrap();
     assert!(notif1.2.len() <= 16 * 1024);
     assert!(
-        notif1.2.contains("— run ws.long-insert.insert for the full text"),
+        notif1
+            .2
+            .contains("— run ws.long-insert.insert for the full text"),
         "expected variant trailer in notification"
     );
 

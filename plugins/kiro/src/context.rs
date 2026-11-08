@@ -5,7 +5,7 @@ use crate::host_source::HostSource;
 use crate::registry::SyncReport;
 use kiro_core::finding::codes::ROADMAP_NO_SPECS_SECTION;
 use kiro_core::resolve::{
-    feature_of_path, to_project_relative, ProjectPath, Resolution, ResolveInput, ResolvedVia,
+    ProjectPath, Resolution, ResolveInput, ResolvedVia, feature_of_path, to_project_relative,
 };
 use kiro_core::source::{Feature, Workspace};
 use kiro_core::spec::Doc;
@@ -304,10 +304,8 @@ mod tests {
 
         // 2. Multiple candidates known, active file absent
         let rm = "# Roadmap\n## Specs (dependency order)\n- [ ] beta\n- [ ] alpha\n";
-        host.files.insert(
-            ".kiro/steering/roadmap.md".to_owned(),
-            rm.to_owned(),
-        );
+        host.files
+            .insert(".kiro/steering/roadmap.md".to_owned(), rm.to_owned());
         let ctx2 = CommandContext::new(&host, None).unwrap();
         let err2 = ctx2.resolve(None).unwrap_err();
         // candidates must be sorted alphabetically
@@ -327,12 +325,10 @@ mod tests {
         );
 
         // 4. Single known spec resolved via OnlyKnown
-        let host3 = FakeHost::new()
-            .with_root("C:\\proj")
-            .with_file(
-                ".kiro/steering/roadmap.md",
-                "# Roadmap\n## Specs (dependency order)\n- [ ] solo\n",
-            );
+        let host3 = FakeHost::new().with_root("C:\\proj").with_file(
+            ".kiro/steering/roadmap.md",
+            "# Roadmap\n## Specs (dependency order)\n- [ ] solo\n",
+        );
         let ctx3 = CommandContext::new(&host3, None).unwrap();
         let res4 = ctx3.resolve(None).unwrap();
         assert_eq!(
@@ -364,12 +360,10 @@ mod tests {
 
     #[test]
     fn repeated_loads_cause_no_repeated_read_events() {
-        let host = FakeHost::new()
-            .with_root("C:\\proj")
-            .with_file(
-                ".kiro/specs/test-spec/spec.json",
-                r#"{"name": "test-spec", "phase": "tasks"}"#,
-            );
+        let host = FakeHost::new().with_root("C:\\proj").with_file(
+            ".kiro/specs/test-spec/spec.json",
+            r#"{"name": "test-spec", "phase": "tasks"}"#,
+        );
 
         let mut ctx = CommandContext::new(&host, Some("test-spec")).unwrap();
 

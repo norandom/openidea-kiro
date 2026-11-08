@@ -7,9 +7,7 @@ use crate::context::CommandContext;
 use crate::host::{HostApi, LogLevel, REQUIRED_PERMISSIONS};
 use crate::module::FeatureModule;
 use crate::present;
-use crate::registry::{
-    parse_id, registry, static_commands, sync_variants, CommandSpec, Group,
-};
+use crate::registry::{CommandSpec, Group, parse_id, registry, static_commands, sync_variants};
 
 static GRANTED_PERMISSIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
@@ -331,8 +329,9 @@ mod tests {
         assert_eq!(err2, "`ws` commands are not available in this build");
 
         // Module table present, but group nav not in table
-        let mods: Vec<Box<dyn FeatureModule>> =
-            vec![Box::new(TestModule { commands: &TEST_COMMANDS })];
+        let mods: Vec<Box<dyn FeatureModule>> = vec![Box::new(TestModule {
+            commands: &TEST_COMMANDS,
+        })];
         let err3 = run_command_with(&host, &mods, "nav.next", None).unwrap_err();
         assert_eq!(err3, "`nav` commands are not available in this build");
 
@@ -352,8 +351,9 @@ mod tests {
             .with_root("C:\\proj")
             .with_file(".kiro/steering/roadmap.md", rm);
 
-        let mods: Vec<Box<dyn FeatureModule>> =
-            vec![Box::new(TestModule { commands: &TEST_COMMANDS })];
+        let mods: Vec<Box<dyn FeatureModule>> = vec![Box::new(TestModule {
+            commands: &TEST_COMMANDS,
+        })];
 
         // Call ws.current with explicit unreadable-spec
         let err = run_command_with(&host, &mods, "ws.current", Some("missing-spec")).unwrap_err();

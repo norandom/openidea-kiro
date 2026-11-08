@@ -39,7 +39,7 @@ The checking engine (`kiro-core`) is a pure Rust crate with two frontends: an Op
 ## Specs (dependency order)
 
 - [x] kiro-core -- pure crate: cc-sdd parsers (spec.json, requirements, tasks, design File Structure Plan, roadmap), spec model, file↔component↔task join, current-spec resolution, finding model, Mermaid/text renderers. Dependencies: none
-- [ ] plugin-core -- OpenIDEA plugin package: manifest, WIT bindings, host wrapper, `Source` over `read-file`, command dispatch, dev-plugin install. Dependencies: kiro-core
+- [x] plugin-core -- OpenIDEA plugin package: manifest, WIT bindings, host wrapper, `Source` over `read-file`, command dispatch, dev-plugin install. Dependencies: kiro-core
 - [ ] vocabulary-grounding -- topic-scoped vocabulary file (`.kiro/vocabulary.toml`) seeded from an Auto Ontology export, term resolution scoped by spec topics, `vocab.*` plugin commands. Dependencies: kiro-core, plugin-core
 - [ ] spec-navigation -- `nav.*` commands moving between requirements/design/tasks and the code they cover, in both directions, via the File Structure Plan join. Dependencies: plugin-core
 - [ ] spec-visualization -- `viz.*` Mermaid/text renderings of the spec graph (phases, requirements → criteria → tasks → components → files, task dependencies). Dependencies: plugin-core

@@ -207,9 +207,7 @@ impl HostApi for FakeHost {
             if lower_path == lower_root {
                 ""
             } else if lower_path.starts_with(&(lower_root.clone() + "/")) {
-                let suffix = norm_path
-                    .get(norm_root_trimmed.len()..)
-                    .unwrap_or_default();
+                let suffix = norm_path.get(norm_root_trimmed.len()..).unwrap_or_default();
                 suffix.trim_start_matches('/')
             } else {
                 return Err(format!(
@@ -294,10 +292,7 @@ mod tests {
         assert_eq!(host.read_file(""), Err("empty path".to_owned()));
 
         // Backslash normalization
-        assert_eq!(
-            host.read_file(r"src\main.rs").as_deref(),
-            Ok("content")
-        );
+        assert_eq!(host.read_file(r"src\main.rs").as_deref(), Ok("content"));
 
         // Absolute path under root (Windows style, case-insensitive)
         assert_eq!(

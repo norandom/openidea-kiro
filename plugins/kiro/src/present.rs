@@ -183,7 +183,10 @@ mod tests {
         assert_eq!(out.title, "Title");
         assert_eq!(out.level, Level::Error);
         assert!(out.text.starts_with("Intro paragraph\n\n"));
-        assert!(out.text.contains("spec.json:10: ERROR SPEC_UNPARSEABLE failed parse"));
+        assert!(
+            out.text
+                .contains("spec.json:10: ERROR SPEC_UNPARSEABLE failed parse")
+        );
 
         // When intro is empty, text is byte-identical to findings_text
         let findings = [make_finding(Severity::Warning, "SPEC_ORPHAN", "orphan")];

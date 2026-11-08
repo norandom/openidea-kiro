@@ -191,9 +191,8 @@ pub fn is_command_id(s: &str) -> bool {
     if !first.is_ascii_lowercase() && !first.is_ascii_digit() {
         return false;
     }
-    s.chars().all(|c| {
-        c.is_ascii_lowercase() || c.is_ascii_digit() || c == '.' || c == '_' || c == '-'
-    })
+    s.chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '.' || c == '_' || c == '-')
 }
 
 /// Checks whether `s` matches `[a-z0-9][a-z0-9_-]*`, is <= 64 bytes, has no dots, and is not "insert".
@@ -205,9 +204,8 @@ pub fn is_spec_segment(s: &str) -> bool {
     if !first.is_ascii_lowercase() && !first.is_ascii_digit() {
         return false;
     }
-    s.chars().all(|c| {
-        c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_' || c == '-'
-    })
+    s.chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_' || c == '-')
 }
 
 /// Checks whether `s` matches `[a-z0-9][a-z0-9._-]*`, has no `/`, `\`, or `..`, and is <= 64 bytes.
@@ -222,9 +220,8 @@ pub fn is_spec_name(s: &str) -> bool {
     if s.contains("..") || s.contains('/') || s.contains('\\') {
         return false;
     }
-    s.chars().all(|c| {
-        c.is_ascii_lowercase() || c.is_ascii_digit() || c == '.' || c == '_' || c == '-'
-    })
+    s.chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '.' || c == '_' || c == '-')
 }
 
 /// Base declaration of every command followed by the insert variant of each insert-capable one.
