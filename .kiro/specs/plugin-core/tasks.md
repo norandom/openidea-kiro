@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: package scaffold and host seam
+- [x] 1. Foundation: package scaffold and host seam
 - [x] 1.1 Create the plugin package scaffold and exclude it from the root workspace
   - Prerequisite: `crates/kiro-core` is implemented and builds (kiro-core spec), and `rustup target add wasm32-wasip2` has been run
   - Package manifest with its own standalone workspace, both library crate types (component plus native library for tests), the engine dependency by path, the bindings generator as a wasm32-only target dependency, the TOML parser as a dev-dependency, the host's release profile (size optimisation, link-time optimisation, symbol stripping, single codegen unit, abort on panic) and the same lint table as the engine with unsafe code denied
@@ -11,7 +11,7 @@
   - _Boundary: PluginScaffold_
   - _Requirements: 1.2, 1.7, 10.4_
 
-- [ ] 1.2 Implement the host port and its in-memory fake
+- [x] 1.2 Implement the host port and its in-memory fake
   - Trait over the eight host functions (the WIT's `register-language`/`register-theme` are deliberately excluded) with the plugin's log and notification level enums and the constant list of the three required permissions
   - In-memory fake host holding a root, an active file and project files, recording every log, registration, notification, insertion, replacement and read as events, with query helpers for registered commands, notifications, inserts and reads
   - Fake read emulation faithful to the host: empty path rejected, no root means "no project is open", backslashes normalised, absolute paths accepted only under the root (case-insensitive) and made relative, `..` segments rejected as outside the root, missing files reported as "no such file"
