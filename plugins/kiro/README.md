@@ -210,5 +210,6 @@ Validation of the WebAssembly component binary and dev-plugin integration:
   - **Baseline (Task 1.1)**: 13,196 bytes
   - **After Vocabulary Grounding**: 292,878 bytes (includes `toml` parser and `vocab` module)
   - **After Spec Navigation**: 708,150 bytes (includes `nav` module, join ownership and coverage, comment wrapping)
+  - **After Spec Visualization**: 754,260 bytes (includes `viz` module, Mermaid flowcharts, and table renderers)
 - **Host Integration Verification**:
-  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/nav.rs`, `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.
+  - Live GUI check deferred: No interactive OpenIDEA GUI host instance was attached during automated verification. Dev-plugin junction (`.openidea/plugins/kiro` → `plugins/kiro`), manifest registration, and command behaviors are verified end-to-end via `plugins/kiro/tests/viz.rs`, `plugins/kiro/tests/nav.rs`, `plugins/kiro/tests/vocab.rs`, `plugins/kiro/tests/dispatch.rs`, and `plugins/kiro/tests/manifest.rs`.

@@ -83,7 +83,7 @@
   - _Boundary: VizPluginTests_
   - _Requirements: 1.1, 1.2, 1.4, 1.5, 2.1, 2.4, 2.5, 3.4, 4.7, 5.7, 8.4, 8.5_
 
-- [ ] 4. Run the quality gate on both targets and verify the views in the host
+- [x] 4. Run the quality gate on both targets and verify the views in the host
   - Engine: tests, clippy with warnings denied, fmt check, `wasm32-wasip2` build; plugin package: tests, clippy for the native and wasm targets with warnings denied, fmt check, release component build
   - Host check (manual, non-blocking for the automated gate): rebuild the component, reload the dev plugin, open plugin-core's design document, run Spec Status and Spec Graph (notification titles name the spec), run Task Graph — Insert at Cursor in a scratch Markdown buffer and open the Markdown preview to confirm the fenced diagram renders with bracketed task labels and class lines
   - Observable: every automated command above succeeds; the manual preview check is recorded as done or deferred
