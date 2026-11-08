@@ -20,7 +20,7 @@
   - _Requirements: 6.5, 8.2, 10.2_
 
 - [ ] 2. Core: registry, arguments, source adapter, presentation
-- [ ] 2.1 Implement command declarations, the id grammar and the static command list
+- [x] 2.1 Implement command declarations, the id grammar and the static command list
   - Command groups (`ws`, `nav`, `viz`, `vocab`, `check`) and the per-command declaration (name, title, spec-addressable, insert-capable, positional policy) with derived base, insert and per-spec variant ids and titles; title rule (`Kiro:` prefix, at most 128 bytes) and category `Kiro`
   - Id grammar: parse `<group>.<name>`, `<group>.<name>.insert` and `<group>.<name>.<spec>` into base, insert flag and spec; validators for host command ids (64-byte limit), spec id segments (no dots, not `insert`) and spec names (no path separators, no `..`)
   - Static command list = every base command followed by the insert variant of each insert-capable one, in declaration order
@@ -28,7 +28,7 @@
   - _Boundary: Registry_
   - _Requirements: 2.1, 2.2, 4.3, 4.5, 5.7, 9.2, 10.1_
 
-- [ ] 2.2 Implement the registry state, registration guard and per-spec variant synchronisation
+- [x] 2.2 Implement the registry state, registration guard and per-spec variant synchronisation
   - Plugin-wide registry of registered ids behind a poison-tolerant mutex; registration validates id and title and the 256 budget before any host call and records the id
   - Variant synchronisation over the known specs in roadmap order: every composed variant id of a spec validated against the host id rule before any host call; all variants of a spec or none; invalid spec names or over-long composed ids skipped and reported; budget exhaustion skipping that spec and all later ones and reporting them; re-synchronisation reporting unchanged entries only
   - Observable: unit tests cover an invalid id refused without a host call, a budget that fits two of three specs, idempotent re-sync, an invalid name reported, and a name valid as a segment but yielding a 65-byte composed id reported with no registration event
