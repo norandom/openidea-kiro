@@ -332,7 +332,9 @@ fn nav_files_by_component_and_per_spec() {
     assert!(out_alpha.contains("Spec: alpha"));
     assert!(out_alpha.contains("Design: .kiro/specs/alpha/design.md"));
     assert!(out_alpha.contains("Tasks: .kiro/specs/alpha/tasks.md"));
-    assert!(out_alpha.contains("Components: 2 (files: 3, unassigned: 1); tasks: 7 (unscoped: 4, unknown boundary: 1)"));
+    assert!(out_alpha.contains(
+        "Components: 2 (files: 3, unassigned: 1); tasks: 7 (unscoped: 4, unknown boundary: 1)"
+    ));
     assert!(out_alpha.contains("Alpha (2 files, 1 tasks)"));
     assert!(out_alpha.contains("  src/alpha.rs — Alpha logic"));
     assert!(out_alpha.contains("  src/shared.rs"));
@@ -371,8 +373,12 @@ fn nav_files_by_task_and_filters() {
     assert!(out_full.contains("  2.1 [x] Build alpha (.kiro/specs/alpha/tasks.md:6) — Alpha"));
     assert!(out_full.contains("      src/alpha.rs"));
     assert!(out_full.contains("      src/shared.rs"));
-    assert!(out_full.contains("  2.2 [ ] Empty work (.kiro/specs/alpha/tasks.md:9) — Empty (no files)"));
-    assert!(out_full.contains("  3.1 [ ] Glue work (.kiro/specs/alpha/tasks.md:12) — Glue (unknown)"));
+    assert!(
+        out_full.contains("  2.2 [ ] Empty work (.kiro/specs/alpha/tasks.md:9) — Empty (no files)")
+    );
+    assert!(
+        out_full.contains("  3.1 [ ] Glue work (.kiro/specs/alpha/tasks.md:12) — Glue (unknown)")
+    );
 
     // Major filter
     let out_major = run_command(&host, "nav.task-files.alpha", Some("alpha 2"))
@@ -402,7 +408,9 @@ fn nav_files_by_task_and_filters() {
         .unwrap()
         .unwrap();
     assert!(out_gamma.contains("Design: .kiro/specs/gamma/design.md (missing)"));
-    assert!(out_gamma.contains("1.1 [ ] Gamma work (.kiro/specs/gamma/tasks.md:4) — Gamma (unknown)"));
+    assert!(
+        out_gamma.contains("1.1 [ ] Gamma work (.kiro/specs/gamma/tasks.md:4) — Gamma (unknown)")
+    );
 }
 
 #[test]

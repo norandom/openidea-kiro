@@ -16,8 +16,8 @@ pub const DOUBLE_SLASH_EXTENSIONS: &[&str] = &[
 ];
 
 pub const HASH_EXTENSIONS: &[&str] = &[
-    "py", "rb", "sh", "bash", "zsh", "ps1", "psm1", "psd1", "toml", "yaml", "yml", "pl", "pm",
-    "r", "cmake", "ex", "exs", "nim", "tf", "hcl",
+    "py", "rb", "sh", "bash", "zsh", "ps1", "psm1", "psd1", "toml", "yaml", "yml", "pl", "pm", "r",
+    "cmake", "ex", "exs", "nim", "tf", "hcl",
 ];
 
 pub const DOUBLE_DASH_EXTENSIONS: &[&str] = &[
@@ -140,7 +140,10 @@ mod tests {
             wrap(CommentStyle::DoubleSlash, "kiro-spec: foo"),
             "// kiro-spec: foo"
         );
-        assert_eq!(wrap(CommentStyle::Hash, "kiro-spec: foo"), "# kiro-spec: foo");
+        assert_eq!(
+            wrap(CommentStyle::Hash, "kiro-spec: foo"),
+            "# kiro-spec: foo"
+        );
         assert_eq!(
             wrap(CommentStyle::DoubleDash, "kiro-spec: foo"),
             "-- kiro-spec: foo"

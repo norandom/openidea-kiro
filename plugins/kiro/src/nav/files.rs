@@ -35,11 +35,7 @@ pub fn by_task(ctx: &mut CommandContext<'_>, req: &Request) -> Result<Output, St
         Some(id) => format!("Kiro: {} files by task — task {id}", resolved.name),
         None => format!("Kiro: {} files by task", resolved.name),
     };
-    Ok(Output {
-        title,
-        level,
-        text,
-    })
+    Ok(Output { title, level, text })
 }
 
 /// Label for one boundary name: "<Name>" | "<Name> (no files)" | "<name as written> (unknown)";
@@ -246,7 +242,10 @@ pub fn task_text(feature: &Feature, filter: Option<&str>) -> Result<(String, Lev
             labels.join(", ")
         };
 
-        entry_lines.push(format!("{indent}{} — {boundary_str}", task_line(t, &tasks_path)));
+        entry_lines.push(format!(
+            "{indent}{} — {boundary_str}",
+            task_line(t, &tasks_path)
+        ));
 
         if let Some(design) = &feature.design {
             let mut files: Vec<String> = Vec::new();
@@ -429,8 +428,12 @@ mod tests {
         assert!(text.contains("  2.1 [x] Build alpha (.kiro/specs/alpha/tasks.md:6) — Alpha"));
         assert!(text.contains("      src/alpha.rs"));
         assert!(text.contains("      src/shared.rs"));
-        assert!(text.contains("  2.2 [ ] Empty work (.kiro/specs/alpha/tasks.md:9) — Empty (no files)"));
-        assert!(text.contains("  3.1 [ ] Glue work (.kiro/specs/alpha/tasks.md:12) — Glue (unknown)"));
+        assert!(
+            text.contains("  2.2 [ ] Empty work (.kiro/specs/alpha/tasks.md:9) — Empty (no files)")
+        );
+        assert!(
+            text.contains("  3.1 [ ] Glue work (.kiro/specs/alpha/tasks.md:12) — Glue (unknown)")
+        );
 
         // Major filter
         let (major_text, _) = task_text(alpha, Some("2")).unwrap();
@@ -462,6 +465,8 @@ mod tests {
         let (text, level) = task_text(gamma, None).unwrap();
         assert_eq!(level, Level::Warning);
         assert!(text.contains("Design: .kiro/specs/gamma/design.md (missing)"));
-        assert!(text.contains("1.1 [ ] Gamma work (.kiro/specs/gamma/tasks.md:4) — Gamma (unknown)"));
+        assert!(
+            text.contains("1.1 [ ] Gamma work (.kiro/specs/gamma/tasks.md:4) — Gamma (unknown)")
+        );
     }
 }

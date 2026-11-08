@@ -61,7 +61,7 @@
   - _Requirements: 4.7, 7.1, 7.2, 7.4, 7.6, 8.2_
 
 - [ ] 3. Integration: plugin feature module
-- [ ] 3.1 (P) Implement the `viz` feature module
+- [x] 3.1 (P) Implement the `viz` feature module
   - Prerequisite: `plugins/kiro` from the plugin-core spec is implemented (dispatch, context, presentation, in-memory host)
   - Three command declarations (status, graph, tasks: spec-addressable, insert-capable, first token names the spec) with the design's titles; option parsing accepting `text` for graph and tasks and nothing for status, rejecting unknown options with the documented message before any read; the labeler constructor returning the identity labeler as the single substitution point for a vocabulary-backed labeler
   - Command bodies: status (resolve, load, successor chain when superseded, view, title with phase, level from the feature's findings); graph (view or the no-document error, body rendered with the caps constant, summary, title with drawn node count, level from missing documents, unresolved references and truncation); tasks (missing-tasks error, view, body, summary, title with done/total, level)

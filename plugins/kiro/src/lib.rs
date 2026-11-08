@@ -35,6 +35,13 @@
 //! 3. **CLI Durable Record**: Companion CLI tools produce durable structured JSON records
 //!    for automated CI/CD and pre-commit hooks.
 //!
+//! # Feature Modules
+//!
+//! - `ws`: Workspace discovery, spec listing, and active-spec reporting.
+//! - `nav`: Specification navigation, context reporting, and file references.
+//! - `viz`: Structural visualization views: spec status, spec graph, and task dependency graph.
+//! - `vocab`: Vocabulary term lookup, domain term listing, and topic inspection.
+//!
 //! # Host Resource Limits
 //!
 //! - **Notification Budget**: 16 KiB hard ceiling; clipped at 15 KiB.
@@ -54,6 +61,7 @@ pub mod module;
 pub mod nav;
 pub mod present;
 pub mod registry;
+pub mod viz;
 pub mod vocab;
 pub mod ws;
 

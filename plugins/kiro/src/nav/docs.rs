@@ -34,11 +34,7 @@ pub fn run(ctx: &mut CommandContext<'_>, req: &Request, doc: Doc) -> Result<Outp
     let doc_file_name = file_name(&path);
     let title = format!("Kiro: {} {doc_file_name}", resolved.name);
 
-    Ok(Output {
-        title,
-        level,
-        text,
-    })
+    Ok(Output { title, level, text })
 }
 
 /// Extracts the outline entries for `doc` from `feature`.
@@ -258,11 +254,8 @@ mod tests {
 
         // Empty entries
         let empty_entries: Vec<OutlineEntry> = Vec::new();
-        let (text_empty, level_empty) = outline_text(
-            "gamma",
-            ".kiro/specs/gamma/empty.md",
-            Some(&empty_entries),
-        );
+        let (text_empty, level_empty) =
+            outline_text("gamma", ".kiro/specs/gamma/empty.md", Some(&empty_entries));
         assert_eq!(level_empty, Level::Info);
         assert!(text_empty.contains("Document: .kiro/specs/gamma/empty.md"));
         assert!(text_empty.contains("Outline: empty"));
