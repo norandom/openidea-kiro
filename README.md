@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/1450282526.svg)](https://zenodo.org/badge/latestdoi/1450282526)
 
 **Kiro** is a Spec-Driven Development (SDD) tooling ecosystem and OpenIDEA IDE plugin. It brings formal requirement constraints, domain vocabulary grounding, structural specification visualization, bidirectional code ↔ spec navigation, and automated CI quality gates to modern software development.
 
@@ -302,6 +303,23 @@ cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wa
 
 # Run self-tree specification check
 cargo kiro-check
+```
+
+---
+
+## Citation
+
+If you use OpenIDEA Kiro in your research or engineering workflows, please cite it using the metadata in [`CITATION.cff`](CITATION.cff):
+
+```bibtex
+@software{openidea_kiro_2026,
+  author = {norandom and OpenIDEA Kiro Contributors},
+  title = {OpenIDEA Kiro: Spec-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification},
+  version = {0.1.0-alpha},
+  year = {2026},
+  url = {https://github.com/norandom/openidea-kiro},
+  doi = {10.5281/zenodo.1450282526}
+}
 ```
 
 ---

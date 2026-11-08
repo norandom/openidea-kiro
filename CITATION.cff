@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - name: "norandom and OpenIDEA Kiro Contributors"
+    website: "https://github.com/norandom/openidea-kiro"
+title: "OpenIDEA Kiro: Spec-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification"
+version: 0.1.0-alpha
+date-released: "2026-11-08"
+license: MIT
+url: "https://github.com/norandom/openidea-kiro"
+repository-code: "https://github.com/norandom/openidea-kiro"
+keywords:
+  - "spec-driven development"
+  - "formal verification"
+  - "binary decision diagrams"
+  - "bdd"
+  - "domain ontologies"
+  - "requirements engineering"
+  - "ears"
+  - "webassembly"
+  - "openidea"
+  - "rust"
+abstract: >-
+  OpenIDEA Kiro is a Spec-Driven Development (SDD) tooling ecosystem and OpenIDEA
+  IDE plugin that introduces formal requirement constraints, domain ontology
+  grounding, and sub-millisecond logical contradiction detection to software
+  engineering lifecycles. By pairing Easy Approach to Requirements Syntax (EARS)
+  with project-level ontologies and Reduced Ordered Binary Decision Diagrams
+  (ROBDDs) via biodivine-lib-bdd, Kiro finitizes discrete domain states and
+  continuous integer thresholds into canonical decision diagrams. This provides
+  O(1) satisfiability verification, exact minimal counterexample witness extraction,
+  and guaranteed resource bounds within a zero-dependency WebAssembly (wasm32-wasip2)
+  plugin runtime and native CI quality gate.
