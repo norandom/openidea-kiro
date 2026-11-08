@@ -50,7 +50,7 @@
   - _Depends: 2.1_
   - _Requirements: 3.1, 3.5, 3.6, 8.3_
 
-- [ ] 2.4 (P) Implement the by-component coverage view
+- [x] 2.4 (P) Implement the by-component coverage view
   - Replaces the by-component half of the coverage file, including the shared boundary helpers; the by-task half stays a stub until 2.5
   - Unknown-boundary sections read from `join::Coverage.unknown_boundary_tasks` (amendment 2026-11-04, gap-analysis issue 8 — no local re-derivation); boundary labels `Name`, `Name (no files)`, `name (unknown)`, `unscoped`
   - Command path: no extra tokens allowed, current spec resolved through the context with its standard errors, the spec loaded once
@@ -60,7 +60,7 @@
   - _Depends: 1.1_
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 7.2, 7.4, 8.3_
 
-- [ ] 2.5 Implement the by-task coverage view
+- [x] 2.5 Implement the by-task coverage view
   - Blocked by 2.4 (same file, reuses the boundary helpers), so not parallel with its preceding peer
   - Command path: at most one extra token (the task id), current spec resolved through the context with its standard errors, the spec loaded once
   - Text in the design's layout: spec, tasks path, design path, count line with the optional filter, then majors with indented sub-tasks, each with its boundary labels and the files of its known components (deduplicated, in boundary order); the filter narrows to one major with its sub-tasks or to one sub-task; an unknown id is an error naming the id and the tasks path; a missing tasks document gives the summary only at warning level; a missing design marks every boundary as unknown at warning level
