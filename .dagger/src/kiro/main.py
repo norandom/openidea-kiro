@@ -21,7 +21,7 @@ class Kiro:
             "-c",
             (
                 "curl -sL"
-                " https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.3/cargo-deny-0.18.3-x86_64-unknown-linux-musl.tar.gz"
+                " https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz"
                 " | tar -xz -C /usr/local/cargo/bin --strip-components=1"
             ),
         ])
