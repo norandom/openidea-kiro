@@ -249,12 +249,15 @@ mod tests {
         assert!(specs_out.contains("Roadmap: .kiro/steering/roadmap.md (2 entries)"));
         assert!(specs_out.contains("spec-a"));
         assert!(specs_out.contains("spec-b"));
-        assert!(specs_out.contains("Per-spec commands: 2 registered, 0 unchanged"));
+        assert!(specs_out.contains("Per-spec commands: 8 registered, 0 unchanged"));
 
-        // Per-spec variants for ws.current should be registered
+        // Per-spec variants for ws.current and vocab.* should be registered
         let registered = host.registered();
         assert!(registered.contains_key("ws.current.spec-a"));
         assert!(registered.contains_key("ws.current.spec-b"));
+        assert!(registered.contains_key("vocab.term.spec-a"));
+        assert!(registered.contains_key("vocab.list.spec-a"));
+        assert!(registered.contains_key("vocab.topics.spec-a"));
 
         // 2. Run ws.current with explicit spec
         let current_out = run_command(&host, "ws.current", Some("spec-a"))

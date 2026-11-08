@@ -16,7 +16,10 @@ static GRANTED_PERMISSIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 /// plugin-core ships `[Box::new(crate::ws::Ws)]`; each sibling spec inserts its module at its canonical position.
 #[must_use]
 pub fn modules() -> Vec<Box<dyn FeatureModule>> {
-    vec![Box::new(crate::ws::Ws)]
+    vec![
+        Box::new(crate::ws::Ws),
+        Box::new(crate::vocab::Vocab),
+    ]
 }
 
 /// Concatenation of all base command specifications across modules.
@@ -300,7 +303,7 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(logs, vec!["kiro activated: 3 commands"]);
+        assert_eq!(logs, vec!["kiro activated: 7 commands"]);
     }
 
     #[test]

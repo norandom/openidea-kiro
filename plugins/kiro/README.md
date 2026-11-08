@@ -76,8 +76,28 @@ The static commands declared in `plugin.toml` match the registry's static list:
 | `ws.specs` | `Kiro: List Specs` | No | Yes | Lists all known specs, discovery sources, `spec.json` readability, phases, and per-spec command variants. |
 | `ws.specs.insert` | `Kiro: List Specs — Insert at Cursor` | No | Variant | Full text of `ws.specs` inserted into the active editor buffer. |
 | `ws.current` | `Kiro: Current Spec` | Yes | No | Reports the active spec name, resolution source, document presence, and findings. |
+| `vocab.term` | `Kiro: Vocabulary Term` | Yes | No | Looks up a term within the current spec's declared topics. When invoked without arguments, displays usage guidance and the visible terms table. |
+| `vocab.list` | `Kiro: List Vocabulary Terms` | Yes | Yes | Lists all visible terms for the current spec's declared topics; optionally filtered by a declared topic argument. |
+| `vocab.list.insert` | `Kiro: List Vocabulary Terms — Insert at Cursor` | Yes | Variant | Inserts the visible terms table into the active editor buffer. |
+| `vocab.topics` | `Kiro: Vocabulary Topics` | Yes | No | Reports declared, available, not declared, and unknown topics along with vocabulary validation findings. |
 
-*Note*: For spec-addressable commands like `ws.current`, dynamic per-spec variants (`ws.current.<spec>`, e.g., `ws.current.plugin-core`) are registered automatically for each known spec in the active project.
+*Note*: For spec-addressable commands like `ws.current`, `vocab.term`, `vocab.list`, and `vocab.topics`, dynamic per-spec variants (`<command>.<spec>`, e.g., `vocab.term.demo`, `vocab.list.plugin-core`) are registered automatically for each known spec in the active project within the command budget.
+
+---
+
+## 5.1 Vocabulary Grounding & Graceful Degradation
+
+The vocabulary capability grounds requirements and design artifacts in a controlled domain glossary:
+
+- **Programmatic Argument Form**:
+  - `vocab.term`: Pass-through arguments joined by single spaces form the query (e.g. `plugin.kiro.vocab.term "acceptance criterion"` or `vocab.term.demo task`).
+  - `vocab.list`: The first token optionally specifies a declared topic to filter by (e.g. `plugin.kiro.vocab.list sdd`).
+  - `vocab.topics`: Arguments are ignored; the command reports topic status and findings for the target spec.
+- **Graceful Degradation**:
+  - **No Vocabulary**: If `.kiro/vocabulary.toml` is absent, vocabulary commands return an informational notification pointing to `.kiro/vocabulary.toml` and `docs/vocabulary.md` rather than failing.
+  - **Invalid Vocabulary**: If `.kiro/vocabulary.toml` contains syntax or schema errors, an error notification reporting the `VOCAB_INVALID` finding is presented.
+  - **Undeclared Topics**: If a spec does not declare `"topics"` in its `spec.json`, commands guide the author to declare topics and list all available topics in the vocabulary.
+  - **Findings Summary**: When vocabulary validation findings exist on a loaded vocabulary, a reminder line `Vocabulary findings: N (run Kiro: Vocabulary Topics)` is appended to term and list outputs.
 
 ---
 

@@ -94,8 +94,8 @@
   - _Boundary: VocabDocs_
   - _Requirements: 3.5, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-- [ ] 4. Plugin: the `vocab` feature module
-- [ ] 4.1 Implement the vocabulary feature module, per-call scoping, degradation and the term command
+- [x] 4. Plugin: the `vocab` feature module
+- [x] 4.1 Implement the vocabulary feature module, per-call scoping, degradation and the term command
   - Prerequisite: `plugins/kiro` is implemented per the plugin-core spec (feature-module contract, command context, presentation, fake host, manifest test, build script) and the `../openidea` checkout providing the host WIT is present for the sandbox build
   - Command declarations (term, list, topics; all spec-addressable, pass-through arguments, list insert-capable) and the feature-module implementation dispatching on the command name, with the list and topics branches stubbed until 4.2; explicit integration touch: the crate-root module declaration
   - Per-call scoping: resolve the spec with plugin-core's error passed through, load the feature, copy spec name, spec.json path and topics into owned values, then load the vocabulary once and compute the scope findings; one debug log line per call through the host port
@@ -106,21 +106,21 @@
   - _Depends: 2.6_
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 4.2 Implement the list and topics commands
+- [x] 4.2 Implement the list and topics commands
   - The list command: spec line with declared topics, the optional topic filter restricted to declared topics with the undeclared-topic warning, the term table (id, label, topic, kind, one-line definition) in visible order, the findings-count line, and the whole text as the inserted content when the insert flag is set
   - The topics command: declared, available (with counts and labels), not-declared and unknown-to-the-vocabulary lines, the vocabulary status line, and all scope and vocabulary findings in the shared text form with the level derived from them; for a spec without topics it still lists the available topics
   - Observable: unit tests cover the list table and filter branches and the topics command lines for the four fixture specs
   - _Boundary: VocabCommands_
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 8.3_
 
-- [ ] 4.3 Register the module in the plugin package
+- [x] 4.3 Register the module in the plugin package
   - Insert `vocab::Vocab` at its canonical position in the plugin's module table (`ws, nav, viz, vocab, check`); the manifest gains the four static declarations in registry order with the design's titles; the README's command table documents the three commands, the programmatic argument form, the per-spec variants and the no-vocabulary behaviour
   - Explicit integration touch: verify the plugin-core design document's Allowed Dependencies line already covers the engine's vocabulary module (amended during cross-spec review: each feature module declares its own kiro-core imports in its design)
   - Observable: the existing manifest consistency test passes with the static declarations in canonical module-table order and the existing activation test registers exactly those
   - _Boundary: PluginIntegration_
   - _Requirements: 7.7, 11.6_
 
-- [ ] 4.4 Write the plugin end-to-end tests for the vocabulary commands
+- [x] 4.4 Write the plugin end-to-end tests for the vocabulary commands
   - Simulated host serving the fixture workspace tree: term found via label and via alternative label with the match-kind line, not-in-topic, ambiguous across two declared topics, unknown, empty query, no topics, deprecated with replacement, and the `Vocabulary findings: 1 (run Kiro: Vocabulary Topics)` line from `VOCAB_LABEL_CROSS_TOPIC` in `tree/.kiro/vocabulary.toml`; list rows and order, topic filter, undeclared topic warning, insert producing one insertion event; topics command lines and findings (including `VOCAB_LABEL_CROSS_TOPIC`); missing and invalid vocabulary across all three commands completing successfully with the expected levels; unresolved spec error identical to plugin-core's; the vocabulary path read at most once per command; after any vocabulary command the three per-spec vocabulary variants are registered for each known spec within the budget
   - Observable: the test file passes natively alongside the existing dispatch and manifest tests
   - _Boundary: PluginVocabTests_

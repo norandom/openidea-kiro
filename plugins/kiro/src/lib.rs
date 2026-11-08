@@ -53,6 +53,7 @@ pub mod host_source;
 pub mod module;
 pub mod present;
 pub mod registry;
+pub mod vocab;
 pub mod ws;
 
 #[cfg(target_arch = "wasm32")]

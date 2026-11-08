@@ -21,3 +21,23 @@ category = "Kiro"
 id = "ws.current"
 title = "Kiro: Current Spec"
 category = "Kiro"
+
+[[contributes.commands]]
+id = "vocab.term"
+title = "Kiro: Vocabulary Term"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "vocab.list"
+title = "Kiro: List Vocabulary Terms"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "vocab.list.insert"
+title = "Kiro: List Vocabulary Terms — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "vocab.topics"
+title = "Kiro: Vocabulary Topics"
+category = "Kiro"
