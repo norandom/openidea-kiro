@@ -2,3 +2,6 @@
 resolver = "3"
 members = ["crates/kiro-core", "crates/kiro-cli"]
 exclude = ["plugins/kiro"]
+
+[workspace.package]
+license = "MIT"

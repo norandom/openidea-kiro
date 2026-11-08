@@ -1,7 +1,7 @@
 # OpenIDEA Kiro (`openidea-kiro`)
 
 [![CI](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml)
-[![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Kiro** is a Spec-Driven Development (SDD) tooling ecosystem and OpenIDEA IDE plugin. It brings formal requirement constraints, domain vocabulary grounding, structural specification visualization, bidirectional code ↔ spec navigation, and automated CI quality gates to modern software development.
 
@@ -266,4 +266,4 @@ cargo kiro-check
 
 ## License
 
-This project is dual-licensed under either the [MIT License](LICENSE-MIT) or the [Apache 2.0 License](LICENSE-APACHE) at your option.
+This project is licensed under the [MIT License](LICENSE).

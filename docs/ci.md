@@ -18,65 +18,66 @@ This guide describes how to integrate `kiro-cli` into continuous integration (CI
 
 ---
 
-## 2. GitHub Actions Job
+## 2. GitHub Actions CI with Dagger
 
-The following GitHub Actions workflow job executes the full validation gate:
+The primary continuous integration gate executes via [Dagger](https://dagger.io) inside containerized, reproducible build runners:
 
 ```yaml
-name: CI Quality Gate
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, master]
   pull_request:
-    branches: [ main ]
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  gate:
-    name: Specification & Build Gate
+  dagger:
+    name: Dagger CI Quality Gate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Run Dagger Quality Gate
+        uses: dagger/dagger-for-github@v7
         with:
-          targets: wasm32-wasip2
-          components: clippy, rustfmt
-
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-
-      - name: Install cargo-nextest and cargo-deny
-        run: |
-          cargo install cargo-nextest --locked
-          cargo install cargo-deny --locked
-
-      - name: Format check
-        run: cargo fmt --all -- --check
-
-      - name: Workspace Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
-
-      - name: Run native tests
-        run: |
-          cargo nextest run --workspace
-          cargo test --workspace --doc
-
-      - name: Dependency and License Check
-        run: cargo deny check
-
-      - name: Build and test plugin component
-        run: |
-          cargo clippy --manifest-path plugins/kiro/Cargo.toml --all-targets -- -D warnings
-          cargo test --manifest-path plugins/kiro/Cargo.toml
-          cargo deny --manifest-path plugins/kiro/Cargo.toml check
-          cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2
-
-      - name: Build and Run kiro-cli Quality Gate
-        run: cargo kiro-check
+          version: "latest"
+          verb: call
+          args: check --source=.
 ```
+
+---
+
+## 3. Tagged Releases Workflow
+
+Automated releases trigger whenever a version tag matching `v*` (such as `v0.1.0-alpha.1`) is pushed:
+
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v0.1.0-alpha.1)"
+        required: true
+```
+
+The release workflow:
+1. Compiles `kiro-cli` binaries for Linux (`x86_64`), macOS Intel & Apple Silicon, and Windows (`x86_64`).
+2. Builds the `openidea-plugin-kiro` WebAssembly component (`wasm32-wasip2`) packaged with `plugin.toml`.
+3. Computes `SHA256SUMS.txt` cryptographic digests across all built assets.
+4. Automatically flags pre-releases if the tag matches `-alpha`, `-beta`, or `-rc`.
+5. Publishes a GitHub Release with attached binaries and generated release notes.
 
 ---
 

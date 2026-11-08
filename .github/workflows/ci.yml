@@ -1,48 +1,27 @@
-name: ci
+name: CI
 
 on:
   push:
     branches: [main, master]
   pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  gate:
+  dagger:
+    name: Dagger CI Quality Gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Run Dagger Quality Gate
+        uses: dagger/dagger-for-github@v7
         with:
-          components: rustfmt, clippy
-
-      - uses: Swatinem/rust-cache@v2
-
-      - run: rustup target add wasm32-wasip2
-
-      # The gate tooling the workflow steps below need.
-      - run: cargo install cargo-nextest cargo-deny --locked
-
-      - run: cargo fmt --check
-
-      - run: cargo clippy --all-targets -- -D warnings
-
-      # Requirement 12.7: process-per-test parallel native suite plus the
-      # doc tests.
-      - run: cargo nextest run
-
-      - run: cargo test --doc
-
-      # Keeps getrandom/rand and filesystem-dependent crates out of the
-      # wasm32-wasip2 graph automatically (see deny.toml).
-      - run: cargo deny check
-
-      - run: cargo build -p kiro-core --target wasm32-wasip2
-
-      # Standalone plugin checks and wasm32-wasip2 release build
-      - run: cargo clippy --manifest-path plugins/kiro/Cargo.toml --all-targets -- -D warnings
-      - run: cargo test --manifest-path plugins/kiro/Cargo.toml
-      - run: cargo deny --manifest-path plugins/kiro/Cargo.toml check
-      - run: cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2
-
-      # Specification constraint and quality gate
-      - run: cargo kiro-check
+          version: "latest"
+          verb: call
+          args: check --source=.

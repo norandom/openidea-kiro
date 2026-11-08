@@ -1,0 +1,155 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v0.1.0-alpha.1)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build-cli:
+    name: Build kiro-cli (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: kiro-cli
+            archive_ext: tar.gz
+          - os: macos-13
+            target: x86_64-apple-darwin
+            artifact_name: kiro-cli
+            archive_ext: tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: kiro-cli
+            archive_ext: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: kiro-cli.exe
+            archive_ext: zip
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build kiro-cli
+        run: cargo build --release -p kiro-cli --target ${{ matrix.target }}
+
+      - name: Package binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p stage
+          cp target/${{ matrix.target }}/release/${{ matrix.artifact_name }} stage/
+          cd stage
+          tar -czf ../kiro-cli-${{ env.TAG }}-${{ matrix.target }}.${{ matrix.archive_ext }} ${{ matrix.artifact_name }}
+        shell: bash
+
+      - name: Package binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          New-Item -ItemType Directory -Force -Path stage
+          Copy-Item target\${{ matrix.target }}\release\${{ matrix.artifact_name }} stage\
+          Compress-Archive -Path stage\${{ matrix.artifact_name }} -DestinationPath kiro-cli-${{ env.TAG }}-${{ matrix.target }}.${{ matrix.archive_ext }}
+        shell: powershell
+
+      - name: Upload CLI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiro-cli-${{ matrix.target }}
+          path: kiro-cli-${{ env.TAG }}-${{ matrix.target }}.${{ matrix.archive_ext }}
+
+  build-plugin:
+    name: Build Plugin Wasm (wasm32-wasip2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+
+      - name: Compile Plugin Wasm
+        run: |
+          cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2
+          mkdir -p plugins/kiro/dist
+          cp plugins/kiro/target/wasm32-wasip2/release/openidea_plugin_kiro.wasm plugins/kiro/dist/plugin.wasm
+
+      - name: Package Plugin Archive
+        run: |
+          mkdir -p stage-plugin
+          cp plugins/kiro/plugin.toml stage-plugin/
+          mkdir -p stage-plugin/dist
+          cp plugins/kiro/dist/plugin.wasm stage-plugin/dist/
+          cd stage-plugin
+          zip -r ../openidea-plugin-kiro-${{ env.TAG }}.zip plugin.toml dist/
+
+      - name: Upload Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openidea-plugin-kiro
+          path: openidea-plugin-kiro-${{ env.TAG }}.zip
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-cli, build-plugin]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-release
+          merge-multiple: true
+
+      - name: Generate Checksums
+        run: |
+          cd dist-release
+          sha256sum * > SHA256SUMS.txt
+        shell: bash
+
+      - name: Determine Prerelease Status
+        id: prerelease-check
+        run: |
+          if [[ "${{ env.TAG }}" =~ -(alpha|beta|rc|pre) ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+        shell: bash
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: OpenIDEA Kiro ${{ env.TAG }}
+          prerelease: ${{ steps.prerelease-check.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
+          files: |
+            dist-release/*

@@ -1,0 +1,6 @@
+{
+  "name": "kiro",
+  "engineVersion": "v0.16.0",
+  "sdk": "python",
+  "source": ".dagger"
+}
