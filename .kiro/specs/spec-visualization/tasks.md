@@ -1,7 +1,7 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: engine view support
-- [ ] 1.1 Create the engine's visualization module and its shared view support
+- [x] 1. Foundation: engine view support
+- [x] 1.1 Create the engine's visualization module and its shared view support
   - Prerequisite: `crates/kiro-core` from the kiro-core spec is implemented (model, render, `fixtures/minimal`, `tests/common`)
   - Module declared in the engine crate root with a crate-doc paragraph naming the three views; the three view submodules (status, graph, tasks) declared as documented empty stubs whose ownership passes to 2.1–2.3; after this task the shared module file is frozen for the parallel view tasks
   - Label seam: the one-method preferred-label trait taking the raw component name and the spec's declared topics, and the identity implementation that always answers "use the raw name"

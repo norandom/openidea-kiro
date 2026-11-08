@@ -98,6 +98,17 @@
 //! (string). Ids match `[a-z0-9][a-z0-9-]*`. Malformed TOML, missing `terms`
 //! table or invalid ids yield `VOCAB_INVALID` at the offending line.
 //!
+//! # Visualization views
+//!
+//! The `viz` module renders three views over a spec's cross-document structure:
+//!
+//! - **Status view** (`viz.status`): phase, approvals, task completion, and
+//!   successor chain for superseded specs.
+//! - **Spec graph** (`viz.graph`): requirements → criteria → tasks → components
+//!   → files graph with kind markers, truncation caps and summary statistics.
+//! - **Task graph** (`viz.tasks`): task dependency graph built from `_Depends:_`
+//!   annotations, sequential ordering, parallel-capability and completion markers.
+//!
 //! # Finding codes
 //!
 //! Every code the engine can produce, with its default severity (the
@@ -266,6 +277,7 @@ pub mod roadmap;
 pub mod source;
 pub mod spec;
 pub mod tasks;
+pub mod viz;
 pub mod vocab;
 
 // Crate-root re-exports as listed in the design's CrateScaffold contract.
