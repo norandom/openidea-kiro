@@ -15,10 +15,10 @@ static GRANTED_PERMISSIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 /// The module table in canonical order `ws, nav, viz, vocab, check`.
 ///
-/// In task 3.2 this table is empty; task 3.3 adds `Ws`.
+/// plugin-core ships `[Box::new(crate::ws::Ws)]`; each sibling spec inserts its module at its canonical position.
 #[must_use]
 pub fn modules() -> Vec<Box<dyn FeatureModule>> {
-    Vec::new()
+    vec![Box::new(crate::ws::Ws)]
 }
 
 /// Concatenation of all base command specifications across modules.
@@ -302,7 +302,7 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(logs, vec!["kiro activated: 0 commands"]);
+        assert_eq!(logs, vec!["kiro activated: 3 commands"]);
     }
 
     #[test]

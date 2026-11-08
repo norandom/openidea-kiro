@@ -78,7 +78,7 @@
   - _Depends: 2.3, 2.5, 3.1_
   - _Requirements: 1.6, 2.3, 2.4, 2.6, 5.2, 5.6, 7.7, 8.1, 8.4, 8.5, 9.1, 9.3, 9.4_
 
-- [ ] 3.3 Implement the `ws.specs` and `ws.current` commands and add the module to the table
+- [x] 3.3 Implement the `ws.specs` and `ws.current` commands and add the module to the table
   - Command declarations: list specs (not spec-addressable, insert-capable, pass-through tokens) and current spec (spec-addressable, not insert-capable, first token names the spec)
   - `ws.specs`: known-spec counts by source, roadmap state line, a table of spec, sources, spec.json readability and phase (via `kiro_core::spec::phase_label`) in known order, the variant synchronisation line with skipped specs; a warning-level message naming the roadmap path and the active-file rule when nothing is known
   - `ws.current`: resolved spec with how it was resolved, phase label (`kiro_core::spec::phase_label`), presence of the four documents, finding counts per severity, the findings text; level from the findings
