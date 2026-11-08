@@ -43,7 +43,7 @@ The checking engine (`kiro-core`) is a pure Rust crate with two frontends: an Op
 - [x] vocabulary-grounding -- topic-scoped vocabulary file (`.kiro/vocabulary.toml`) seeded from an Auto Ontology export, term resolution scoped by spec topics, `vocab.*` plugin commands. Dependencies: kiro-core, plugin-core
 - [x] spec-navigation -- `nav.*` commands moving between requirements/design/tasks and the code they cover, in both directions, via the File Structure Plan join. Dependencies: plugin-core
 - [x] spec-visualization -- `viz.*` Mermaid/text renderings of the spec graph (phases, requirements → criteria → tasks → components → files, task dependencies). Dependencies: plugin-core
-- [ ] spec-constraints -- v2 constraint checks: EARS shape, declared-before-use terms, topic mismatch, bounded contradiction search; `check.*` plugin commands. Dependencies: vocabulary-grounding
+- [x] spec-constraints -- v2 constraint checks: EARS shape, declared-before-use terms, topic mismatch, bounded contradiction search; `check.*` plugin commands. Dependencies: vocabulary-grounding
 - [ ] cli-gate -- `kiro-cli` native binary running the same checks over a `.kiro` tree with text/JSON reports, exit codes, CI example, and vocabulary import (Auto Ontology JSON primary, SKOS Turtle secondary → TOML). Dependencies: spec-constraints, spec-visualization
 
 ## Post-approval amendments (2026-11-04, ultrathink-fusion review)
