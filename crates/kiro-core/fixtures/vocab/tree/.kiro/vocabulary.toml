@@ -1,5 +1,5 @@
 # Expected findings:
-# Line 66: INFO VOCAB_LABEL_CROSS_TOPIC (label "Task" exists in topic "sdd" as "task" and topic "pm" as "pm-task")
+# Line 65: INFO VOCAB_LABEL_CROSS_TOPIC (label "Task" exists in topic "sdd" as "task" and topic "pm" as "pm-task")
 
 schema_version = "2"
 

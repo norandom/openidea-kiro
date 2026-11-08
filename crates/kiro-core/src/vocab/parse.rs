@@ -45,14 +45,30 @@ pub(crate) struct RawTerm {
     pub(crate) replaced_by: Option<String>,
 }
 
+/// Precomputed newline index for O(log N) line lookups.
+pub(crate) struct LineIndex {
+    newlines: Vec<usize>,
+}
+
+impl LineIndex {
+    #[must_use]
+    pub(crate) fn new(text: &str) -> Self {
+        Self {
+            newlines: text.match_indices('\n').map(|(i, _)| i).collect(),
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn line_of(&self, byte: usize) -> usize {
+        self.newlines.partition_point(|&nl| nl < byte) + 1
+    }
+}
+
 /// 1-based line containing byte offset `byte` (count of '\n' before it + 1); clamps past the end.
 #[allow(dead_code)]
 #[must_use]
 pub(crate) fn line_of(text: &str, byte: usize) -> usize {
-    let clamp = byte.min(text.len());
-    // Safe slicing: 0x0A is an ASCII byte that never occurs inside multibyte UTF-8 code points
-    let bytes = text.as_bytes().get(..clamp).unwrap_or_default();
-    bytes.iter().filter(|&&b| b == b'\n').count() + 1
+    LineIndex::new(text).line_of(byte)
 }
 
 /// Parses the text of a vocabulary file into `RawFile`, or returns a `VOCAB_INVALID` finding.

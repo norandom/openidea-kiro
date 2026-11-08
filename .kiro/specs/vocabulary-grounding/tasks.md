@@ -35,14 +35,14 @@
   - _Boundary: VocabParser_
   - _Requirements: 1.1, 2.3, 11.1_
 
-- [ ] 2.2 Implement semantic validation and the per-topic label index
+- [x] 2.2 Implement semantic validation and the per-topic label index
   - Build steps 1 to 5 and 7 of the design in order: schema version check at its line; definition and kind checks keeping the term (invalid kind becomes entity); declared and implicit topics with term counts and the empty-topic finding; per-topic label index with the duplicate-label finding at the later term in file order while both terms stay indexed, plus the cross-topic label-collision lint (`VOCAB_LABEL_CROSS_TOPIC`, info) at the later term in file order naming both ids and their topics when one normalised label or alternative label occurs in two topics; broader validation removing unknown and cross-topic relations with their findings; replacement validation (unknown, cross-topic, deprecated without replacement) keeping the value as written
   - Findings carry the vocabulary file path and the term's or topic's table line and are sorted at the end of the build
   - Observable: unit tests from constructed raw values produce each of these finding codes (including `VOCAB_LABEL_CROSS_TOPIC`) exactly where the design says, and a single-topic valid raw file builds with no finding
   - _Boundary: VocabIndex_
   - _Requirements: 1.6, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.11, 2.12, 2.13, 2.14, 2.15_
 
-- [ ] 2.3 Implement the hierarchy closure and cycle detection
+- [x] 2.3 Implement the hierarchy closure and cycle detection
   - Build step 6 of the design: one walk per term over the kept broader relations with a visited set, the start term a legal target; the walk order is the nearest-first closure; a term that reaches itself gets the cycle finding at its line and is removed from its own closure; terms that merely point into a cycle are not flagged and keep a finite closure
   - Observable: unit tests show the closure order for a diamond hierarchy and the depth-three chain, the cycle set for the three-cycle, self-loop and pointer-into-cycle cases, and that a generated vocabulary of ten thousand terms with depth ten builds without error (timing is asserted only by the release-only test of 2.8)
   - _Boundary: VocabIndex_
