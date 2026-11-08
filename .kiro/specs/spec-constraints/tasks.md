@@ -20,7 +20,7 @@
   - _Boundary: CheckFixtures_
   - _Requirements: 1.8, 2.10, 8.5_
 
-- [ ] 1.3 (P) Implement criterion text masking and word scanning
+- [x] 1.3 (P) Implement criterion text masking and word scanning
   - Masking of balanced quoted literals (straight and typographic double quotes, backticks, single quotes that are not inside a word) preserving byte length, leaving unbalanced quotes unmasked and treating word-internal apostrophes as part of the word; word enumeration; whole-word case-insensitive search; hyphen adjacency; whole-word phrase containment for normalised multi-word labels
   - Observable: unit tests cover balanced and unbalanced quotes, typographic pairs, backticks, possessives, length preservation, boundary matches, hyphen adjacency and multi-word phrases
   - _Boundary: CriterionText_
