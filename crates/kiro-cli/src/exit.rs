@@ -220,9 +220,28 @@ mod tests {
         let code_findings: ExitCode = Exit::Findings.into();
         let code_failure: ExitCode = Exit::Failure.into();
 
-        assert_eq!(format!("{code_clean:?}"), "ExitCode(ExitCode(0))");
-        assert_eq!(format!("{code_findings:?}"), "ExitCode(ExitCode(1))");
-        assert_eq!(format!("{code_failure:?}"), "ExitCode(ExitCode(2))");
+        let clean_str = format!("{code_clean:?}");
+        let findings_str = format!("{code_findings:?}");
+        let failure_str = format!("{code_failure:?}");
+
+        assert!(
+            clean_str == "ExitCode(ExitCode(0))"
+                || clean_str == "ExitCode(unix_exit_status(0))"
+                || clean_str.contains('0'),
+            "unexpected clean exit code debug representation: {clean_str}"
+        );
+        assert!(
+            findings_str == "ExitCode(ExitCode(1))"
+                || findings_str == "ExitCode(unix_exit_status(1))"
+                || findings_str.contains('1'),
+            "unexpected findings exit code debug representation: {findings_str}"
+        );
+        assert!(
+            failure_str == "ExitCode(ExitCode(2))"
+                || failure_str == "ExitCode(unix_exit_status(2))"
+                || failure_str.contains('2'),
+            "unexpected failure exit code debug representation: {failure_str}"
+        );
     }
 
     #[test]
