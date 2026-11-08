@@ -93,8 +93,13 @@ The static commands declared in `plugin.toml` match the registry's static list:
 | `vocab.list` | `Kiro: List Vocabulary Terms` | Yes | Yes | Lists all visible terms for the current spec's declared topics; optionally filtered by a declared topic argument. |
 | `vocab.list.insert` | `Kiro: List Vocabulary Terms — Insert at Cursor` | Yes | Variant | Inserts the visible terms table into the active editor buffer. |
 | `vocab.topics` | `Kiro: Vocabulary Topics` | Yes | No | Reports declared, available, not declared, and unknown topics along with vocabulary validation findings. |
+| `check.spec` | `Kiro: Check Spec` | Yes | Yes | Runs EARS, declared-term, and contradiction checks for the target spec. |
+| `check.spec.insert` | `Kiro: Check Spec — Insert at Cursor` | Yes | Variant | Inserts the complete spec check report into the active editor buffer. |
+| `check.ears` | `Kiro: Check EARS Shape` | Yes | No | Checks acceptance criteria for EARS compliance and displays pattern breakdown. |
+| `check.terms` | `Kiro: Check Terms` | Yes | No | Resolves declared terms in spec topics and suggests visible undeclared terms. |
+| `check.contradictions` | `Kiro: Check Contradictions` | Yes | No | Evaluates incompatible criteria pairs for joint satisfiability with witness states. |
 
-*Note*: For spec-addressable commands like `ws.current`, `vocab.term`, `vocab.list`, and `vocab.topics`, dynamic per-spec variants (`<command>.<spec>`, e.g., `vocab.term.demo`, `vocab.list.plugin-core`) are registered automatically for each known spec in the active project within the command budget.
+*Note*: For spec-addressable commands like `ws.current`, `vocab.term`, `vocab.list`, `vocab.topics`, `check.spec`, `check.ears`, `check.terms`, and `check.contradictions`, dynamic per-spec variants (`<command>.<spec>`, e.g., `check.spec.demo`, `check.ears.plugin-core`) are registered automatically for each known spec in the active project within the command budget.
 
 ---
 
@@ -155,6 +160,23 @@ The visualization capability produces pure cross-document structural views of a 
 - **Option Syntax & Rules**:
   - Options follow the spec name: e.g. `viz.graph <spec> text` or `viz.tasks demo text`.
   - Options cannot be passed from the IDE's Search Everywhere UI, which triggers commands without arguments.
+
+---
+
+## 5.4 Spec Constraints & Quality Checks (`check.*`)
+
+The constraints checking capability validates specifications against formal consistency, vocabulary grounding, and EARS requirements:
+
+- **Programmatic Argument Forms**:
+  - `check.spec [spec]`: Runs all three checks (EARS with pattern reporting off, term scope resolution with suggestions on, and contradiction search). Shows title with finding counts, scope line, three check status lines, and sorted findings.
+  - `check.spec.insert` or `check.spec [spec] insert`: Inserts the complete check report into the active editor buffer at the cursor.
+  - `check.ears [spec]`: Runs the EARS check with pattern reporting enabled. Displays the criteria count, finding count, the `Patterns:` breakdown line, and individual criteria findings.
+  - `check.terms [spec]`: Runs scoped term resolution and term suggestions. Displays declared term breakdown (resolved, deprecated, mismatched, undeclared, ambiguous, suggested) followed by findings.
+  - `check.contradictions [spec]`: Runs the bounded BDD contradiction search over guarded criteria and declared conflicts. Displays guarded criteria count, candidate pairs considered, contradictions found, refused pairs, and active variable/node caps, followed by witness states.
+- **Graceful Degradation**:
+  - **No Annotations**: Documents without annotations produce no warning or error findings; `CHECK_COVERAGE` info finding reports coverage statistics.
+  - **Undeclared Topics / Missing Vocabulary**: When `spec.json` declares no topics or `.kiro/vocabulary.toml` is missing or invalid, commands complete successfully with explanatory status lines, pass-through vocabulary findings, `CHECK_UNSCOPED` (if annotations exist), and a guidance pointer (`See docs/vocabulary.md or run Kiro: Vocabulary Topics.`).
+  - **No Findings**: Commands explicitly display `No findings.` rather than an empty notification body.
 
 ---
 

@@ -106,3 +106,28 @@ category = "Kiro"
 id = "vocab.topics"
 title = "Kiro: Vocabulary Topics"
 category = "Kiro"
+
+[[contributes.commands]]
+id = "check.spec"
+title = "Kiro: Check Spec"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "check.spec.insert"
+title = "Kiro: Check Spec — Insert at Cursor"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "check.ears"
+title = "Kiro: Check EARS Shape"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "check.terms"
+title = "Kiro: Check Terms"
+category = "Kiro"
+
+[[contributes.commands]]
+id = "check.contradictions"
+title = "Kiro: Check Contradictions"
+category = "Kiro"

@@ -113,7 +113,7 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [ ] 6. Plugin: the `check` feature module
-- [ ] 6.1 Implement the check feature module and the four commands
+- [x] 6.1 Implement the check feature module and the four commands
   - Prerequisite: `plugins/kiro` is implemented per the plugin-core spec (feature-module contract, command context, presentation, fake host, manifest test, build script) and the `../openidea` checkout providing the host WIT is present for the sandbox build; explicit integration touch: the crate-root module declaration
   - Command declarations (spec, ears, terms, contradictions; all spec-addressable with the spec as first argument token; spec insert-capable) and the feature-module implementation dispatching on the command name
   - Report execution: resolve the spec with plugin-core's error passed through, run the workspace form of the checks with the per-command configuration (all checks with patterns off; EARS with patterns on; terms only; contradictions only); one debug log line per call
@@ -123,7 +123,7 @@
   - _Depends: 4.1_
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.9_
 
-- [ ] 6.2 Register the module in the plugin package
+- [x] 6.2 Register the module in the plugin package
   - Insert `check::Check` at its canonical position in the plugin's module table (`ws, nav, viz, vocab, check`); the manifest gains the five static declarations in registry order with the design's titles; the README documents the four commands, the programmatic argument form, the per-spec variants and the degradation
   - Explicit integration touches: verify the plugin-core design document's Allowed Dependencies line already covers the engine's checks module (each feature module declares its own kiro-core imports in its design) and that its command budget worked example already carries the full figures (25 + 17·n), both amended during cross-spec review
   - Observable: the existing manifest consistency test passes with the five new declarations and the existing activation test registers exactly those

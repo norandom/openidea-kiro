@@ -21,6 +21,7 @@ pub fn modules() -> Vec<Box<dyn FeatureModule>> {
         Box::new(crate::nav::Nav),
         Box::new(crate::viz::Viz),
         Box::new(crate::vocab::Vocab),
+        Box::new(crate::check::Check),
     ]
 }
 
@@ -305,7 +306,7 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(logs, vec!["kiro activated: 20 commands"]);
+        assert_eq!(logs, vec!["kiro activated: 25 commands"]);
     }
 
     #[test]

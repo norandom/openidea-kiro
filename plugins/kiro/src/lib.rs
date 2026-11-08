@@ -53,6 +53,7 @@
 #![deny(unsafe_code)]
 
 pub mod args;
+pub mod check;
 pub mod commands;
 pub mod context;
 pub mod host;
