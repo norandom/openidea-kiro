@@ -112,7 +112,7 @@
   - _Depends: 3.3_
   - _Requirements: 1.6, 2.3, 2.4, 2.6, 4.3, 4.4, 4.5, 4.8, 4.9, 5.1, 5.2, 5.6, 6.3, 7.1, 7.2, 7.3, 7.4, 7.8, 8.1, 8.4, 9.4, 10.2_
 
-- [ ] 4.2 (P) Write the package README
+- [x] 4.2 (P) Write the package README
   - Sections: the three build routes (host build script with the absolute package path, PowerShell script, plain cargo); Windows dev-plugin installation (create the open project's `.openidea\plugins` directory, create the junction to the package, trust the project, open Settings › Plugins or run Reload Plugins); which project to open (the one whose `.kiro` tree should be read: this repository for its own specs, the host repository when testing the host); installation from disk and re-installing after rebuilds; the reload step; the command table with spec-addressable and insert-capable flags; the three-tier output contract (notification = summary with `<id>.insert` trailer when clipped, `.insert` = full payload in editor buffer, `kiro-cli` JSON = durable record); the argument grammar for programmatic callers; the host limits (16 KiB notification, 1 MiB insertion, 256 commands, 5 s)
   - Observable: the README exists in the package with every section above and the commands it lists equal the manifest's static list
   - _Boundary: PluginScaffold_
