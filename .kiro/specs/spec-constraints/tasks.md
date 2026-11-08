@@ -81,7 +81,7 @@
   - _Depends: 3.1, 3.2_
   - _Requirements: 4.10, 5.1, 5.3, 5.4, 5.5, 5.7_
 
-- [ ] 4. Runner and engine tests
+- [x] 4. Runner and engine tests
 - [x] 4.1 Implement the check runner, configuration and report
   - Configuration with the design's defaults, the single-check constructor, severity overrides limited to this spec's codes; the report with per-check status, summaries, topics and vocabulary status; orchestration in the design's order: missing requirements document, EARS, the scoped decision with skip reasons in the stated precedence, pass-through of exactly the four upstream findings once, the unscoped finding when annotations are present, term scope and findings, finitisation and search, one `CHECK_COVERAGE` info finding (`line: None`) on the requirements document whenever the term or contradiction check ran carrying the counts of requirement 1.8, overrides, sorting
   - The workspace form loading the vocabulary before the feature so one cached read serves the call
@@ -90,7 +90,7 @@
   - _Depends: 2.1, 2.2, 3.3_
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 3.8, 3.9_
 
-- [ ] 4.2 Write the fixture-driven and self-corpus engine tests
+- [x] 4.2 Write the fixture-driven and self-corpus engine tests
   - Fixture-driven tests through an in-memory source and workspace: the known-good tree with zero warning/error findings and only `CHECK_COVERAGE` under the default configuration (plus pattern reports with patterns on); the known-bad specs (`broken` and `wide`) with their exact code multisets (including `CHECK_COVERAGE`) and the two witness strings; the refused spec; the unscoped spec (`none`, with `TOPICS_UNDECLARED` + `CHECK_UNSCOPED` and no `CHECK_COVERAGE`); the trees without and with a corrupted vocabulary; the regression document; single-check statuses; a severity override
   - The self corpus: this repository's own requirements documents, spec metadata and the committed seed vocabulary embedded through a manual list, asserting no warning or error about a requirements document from the term or contradiction checks; determinism across two runs of every fixture
   - Observable: the test file passes natively with every fixture's expected-findings header reproduced exactly
@@ -98,7 +98,7 @@
   - _Depends: 1.2, 4.1_
   - _Requirements: 1.6, 1.8, 8.2, 8.6_
 
-- [ ] 4.3 Write the generated-model cross-check, no-panic and timing tests
+- [x] 4.3 Write the generated-model cross-check, no-panic and timing tests
   - A fixed-seed generator of small models (at most twelve one-hot values) whose decision-diagram verdicts are compared with brute-force enumeration through the typed-guard evaluator on sixty-four models; fixed-seed garbage requirements documents and guard strings through the runner and the guard parser never panic
   - Release-only timing: the EARS and term checks over one thousand generated criteria, and the search over two hundred generated guarded criteria on thirty-two terms (enum terms with up to eight values, int terms split at up to eight constants) within the default caps, each under one second
   - Observable: the tests pass natively, the timing assertions are compiled only in release builds, and the engine library still builds for the sandbox target
