@@ -42,8 +42,8 @@
   - _Depends: 1.1_
   - _Requirements: 1.5, 3.4, 3.5, 3.6, 3.7, 3.8, 6.3, 9.1_
 
-- [ ] 3. Core: the check gate
-- [ ] 3.1 Implement the report envelope and the text and JSON reporters
+- [x] 3. Core: the check gate
+- [x] 3.1 Implement the report envelope and the text and JSON reporters
   - The gate report envelope (specs checked, vocabulary outcome, roadmap findings, per-spec results with the engine's check report plus merged findings, counts, fail-on, exit) and the vocabulary report; the text form with its four sections (vocabulary line and findings, roadmap findings when any, per-spec scope line and the three status lines reproduced from the IDE's check notification wording followed by the engine's finding lines or "No findings.", the summary line with counts, fail-on and verdict); the JSON form with the schema version, spec list, per-spec topics, vocabulary status and per-check status, counts, fail-on, verdict and the findings serialised by the engine's own derive; vocabulary report text and JSON
   - No timestamps, no absolute paths, newline-only line endings; two renderings of equal reports are byte-equal
   - Observable: unit tests pin the scope and status line wording with literal strings from the spec-constraints design, the summary line, the JSON key order, and byte-equality across two renderings
@@ -51,7 +51,7 @@
   - _Depends: 1.1_
   - _Requirements: 3.9, 4.1, 4.2, 4.3, 4.4, 4.5, 5.1, 5.2, 5.3, 8.1_
 
-- [ ] 3.2 Implement the check command
+- [x] 3.2 Implement the check command
   - Selection against the discovered specs (unknown feature or empty discovery fail with the discovered names or the root), one workspace over the filesystem adapter with discovered and roadmap names known, roadmap findings once, vocabulary loaded once with its findings kept in their own section, then per selected spec the engine's check run and the spec's structural findings merged (vocabulary-file pass-through copies dropped by file name) and sorted; counts and verdict over every finding; printing of the chosen report form and exit by verdict; a stdout write failure exits 2; under verbose, the discovered spec names are printed on standard error
   - Explicit integration touch: adds only its own dispatch arm to the entry point
   - Observable: running the command over the known-good check tree prints a passing report and exits 0, over the known-bad tree prints the contradiction lines and exits 1, and `--format json` output parses with the documented keys

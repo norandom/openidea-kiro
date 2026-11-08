@@ -269,6 +269,16 @@ pub fn write_output(path: &Path, text: &str) -> Result<(), Failure> {
     })
 }
 
+/// Recursively creates a directory and all of its parent components.
+pub fn create_dir_all(path: &Path) -> Result<(), Failure> {
+    std::fs::create_dir_all(path).map_err(|e| {
+        Failure::new(format!(
+            "failed to create directory `{}`: {e}",
+            display_path(path)
+        ))
+    })
+}
+
 /// Formats a path with forward slashes on all platforms.
 #[must_use]
 pub fn display_path(path: &Path) -> String {
