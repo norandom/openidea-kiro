@@ -1,7 +1,7 @@
 # Implementation Plan
 
 - [ ] 1. Foundation: package scaffold and host seam
-- [ ] 1.1 Create the plugin package scaffold and exclude it from the root workspace
+- [x] 1.1 Create the plugin package scaffold and exclude it from the root workspace
   - Prerequisite: `crates/kiro-core` is implemented and builds (kiro-core spec), and `rustup target add wasm32-wasip2` has been run
   - Package manifest with its own standalone workspace, both library crate types (component plus native library for tests), the engine dependency by path, the bindings generator as a wasm32-only target dependency, the TOML parser as a dev-dependency, the host's release profile (size optimisation, link-time optimisation, symbol stripping, single codegen unit, abort on panic) and the same lint table as the engine with unsafe code denied
   - Crate root with crate-level docs placeholder, every `pub mod` declaration of the File Structure Plan (host, registry, args, host_source, present, context, module, ws, commands) backed by a documented empty stub (ownership of each stub passes to its component task), and the wasm32-only bindings module declared but empty until 3.5

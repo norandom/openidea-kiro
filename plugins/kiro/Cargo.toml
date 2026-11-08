@@ -1,0 +1,38 @@
+[package]
+name = "openidea-plugin-kiro"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone workspace excluded from root workspace
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+kiro-core = { path = "../../crates/kiro-core" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wit-bindgen = "0.63"
+
+[dev-dependencies]
+toml = "0.8"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
+codegen-units = 1
+panic = "abort"
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+todo = "deny"
+unimplemented = "deny"
