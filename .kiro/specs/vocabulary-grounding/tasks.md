@@ -28,7 +28,7 @@
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 4.9_
 
 - [ ] 2. Core engine: parse, validate, load, query
-- [ ] 2.1 Implement the strict vocabulary file parser
+- [x] 2.1 Implement the strict vocabulary file parser
   - Private raw types with span wrappers for the schema version, topic tables and the mandatory term table; unknown keys accepted; a BOM stripped before parsing
   - Any deserialisation error (including a missing term table) or an id violating the id rule becomes one structural finding carrying the line of the first problem, computed from the byte offset
   - Observable: unit tests show the structural finding's line for a syntax error, a wrong-typed field, a missing term table and an invalid id; BOM and CRLF inputs parse; the line computation clamps at the end of the text; arbitrary text never panics
