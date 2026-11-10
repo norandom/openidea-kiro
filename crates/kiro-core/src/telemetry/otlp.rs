@@ -195,7 +195,16 @@ const fn severity_label(severity: Severity) -> &'static str {
     }
 }
 
-fn log_record(finding: &Finding, time: u64) -> Value {
+/// A finding with further attributes for its record, such as the hint,
+/// the tag and the owning component and tasks of a code finding.
+#[derive(Debug, Clone)]
+pub struct LogEntry<'a> {
+    pub finding: &'a Finding,
+    pub extra: Vec<(&'static str, String)>,
+}
+
+fn log_record(entry: &LogEntry<'_>, time: u64) -> Value {
+    let finding = entry.finding;
     let mut attributes = vec![
         string_attr("kiro.code", finding.code),
         string_attr("kiro.severity", severity_label(finding.severity)),
@@ -210,6 +219,9 @@ fn log_record(finding: &Finding, time: u64) -> Value {
             u64::try_from(line).unwrap_or(u64::MAX),
         ));
     }
+    for (key, value) in &entry.extra {
+        attributes.push(string_attr(key, value));
+    }
     json!({
         "timeUnixNano": time.to_string(),
         "severityNumber": severity_number(finding.severity),
@@ -220,19 +232,19 @@ fn log_record(finding: &Finding, time: u64) -> Value {
 }
 
 fn logs_line(
-    findings: &[Finding],
+    entries: &[LogEntry<'_>],
     resource_value: &Value,
     run: &RunIdentity,
     max_records: usize,
 ) -> (String, usize) {
     // Errors first, then warnings, then information; the given order within.
-    let mut ordered: Vec<&Finding> = findings.iter().collect();
-    ordered.sort_by_key(|finding| severity_rank(finding.severity));
+    let mut ordered: Vec<&LogEntry<'_>> = entries.iter().collect();
+    ordered.sort_by_key(|entry| severity_rank(entry.finding.severity));
     let dropped = ordered.len().saturating_sub(max_records);
     let records: Vec<Value> = ordered
         .into_iter()
         .take(max_records)
-        .map(|finding| log_record(finding, run.end_unix_nanos))
+        .map(|entry| log_record(entry, run.end_unix_nanos))
         .collect();
     let line = json!({
         "resourceLogs": [{
@@ -260,14 +272,14 @@ fn phase_span_id(root: [u8; 8], index: usize) -> [u8; 8] {
 fn traces_line(
     resource_value: &Value,
     run: &RunIdentity,
-    findings: &[Finding],
+    entries: &[LogEntry<'_>],
     dropped: usize,
 ) -> String {
     let count = |severity: Severity| {
         u64::try_from(
-            findings
+            entries
                 .iter()
-                .filter(|finding| finding.severity == severity)
+                .filter(|entry| entry.finding.severity == severity)
                 .count(),
         )
         .unwrap_or(u64::MAX)
@@ -324,12 +336,31 @@ pub fn otlp_lines(
     run: &RunIdentity,
     max_records: usize,
 ) -> OtlpLines {
+    let entries: Vec<LogEntry<'_>> = findings
+        .iter()
+        .map(|finding| LogEntry {
+            finding,
+            extra: Vec::new(),
+        })
+        .collect();
+    otlp_lines_from(snapshot, &entries, identity, run, max_records)
+}
+
+/// Like [`otlp_lines`], with further attributes on the finding records.
+#[must_use]
+pub fn otlp_lines_from(
+    snapshot: &MetricSnapshot,
+    entries: &[LogEntry<'_>],
+    identity: &ResourceIdentity,
+    run: &RunIdentity,
+    max_records: usize,
+) -> OtlpLines {
     let resource_value = resource(identity);
-    let (logs, dropped_records) = logs_line(findings, &resource_value, run, max_records);
+    let (logs, dropped_records) = logs_line(entries, &resource_value, run, max_records);
     OtlpLines {
         metrics: metrics_line(snapshot, &resource_value, run, dropped_records),
         logs,
-        traces: traces_line(&resource_value, run, findings, dropped_records),
+        traces: traces_line(&resource_value, run, entries, dropped_records),
         dropped_records,
     }
 }

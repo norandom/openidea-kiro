@@ -13,7 +13,9 @@ use super::config::CodeConfig;
 use super::facts::{CodeFacts, Completeness, CoverageCell, EntityKey, Scope, metrics};
 use super::limits::{Judgement, judge};
 use super::ratchet::{Before, Earlier, Pairing, pair};
-use super::report::{self, Change, CodeFinding, CodeReport, Coverage, NetDelta, SpecSummary, Tag};
+use super::report::{
+    self, Change, CodeFinding, CodeReport, Coverage, Measure, NetDelta, SpecSummary, Tag,
+};
 use crate::finding::{Finding, Severity, codes};
 use crate::source::Feature;
 
@@ -438,6 +440,36 @@ impl<'a> Run<'a> {
         specs
     }
 
+    /// Highest value and total of every ratcheted routine metric over the
+    /// judged files of each spec.
+    fn measures(&self) -> Vec<Measure> {
+        let mut by_key: BTreeMap<(Option<String>, &str), Measure> = BTreeMap::new();
+        for observation in &self.input.facts.observations {
+            let entity = &observation.entity;
+            let metric = observation.metric.name.as_str();
+            if entity.scope != Scope::Routine
+                || !RATCHETED.contains(&metric)
+                || !self.judged(&entity.path)
+            {
+                continue;
+            }
+            let spec = self.owners(&entity.path).feature;
+            let entry = by_key
+                .entry((spec.clone(), metric))
+                .or_insert_with(|| Measure {
+                    spec,
+                    metric: metric.to_string(),
+                    highest: observation.value,
+                    total: 0.0,
+                    routines: 0,
+                });
+            entry.highest = entry.highest.max(observation.value);
+            entry.total += observation.value;
+            entry.routines = entry.routines.saturating_add(1);
+        }
+        by_key.into_values().collect()
+    }
+
     /// Signed statement and line deltas over the accounting scope, or why
     /// they cannot be computed. A total is given only when both sides are
     /// complete; a missing side is never counted as zero.
@@ -557,11 +589,13 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
         Attribution::default(),
     ));
 
+    let measures = run.measures();
     CodeReport {
         findings: run.findings,
         coverage: run.coverage,
         specs,
         changes,
         net,
+        measures,
     }
 }

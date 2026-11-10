@@ -10,6 +10,13 @@ Every metric the gate may emit is listed here. The table is generated from `crat
 
 | Metric | Unit | Attributes | Source | Meaning |
 | --- | --- | --- | --- | --- |
+| `kiro.code.breaches` | count | `kiro.spec`, `kiro.code`, `kiro.severity` | code | Code findings that are not pre-existing, by finding code and severity |
+| `kiro.code.changed` | count | `kiro.metric`, `kiro.status` | code | Routine metrics that differ from the before side: improved or worsened |
+| `kiro.code.files` | count | `kiro.status` | code | Selected files by state: measured, failed, unmeasured, ignored |
+| `kiro.code.highest` | value | `kiro.spec`, `kiro.metric` | code | Highest value of a routine metric over the judged files of a spec |
+| `kiro.code.pre_existing` | count | `kiro.spec` | code | Breaches that existed before and did not worsen |
+| `kiro.code.routines` | count | `kiro.spec` | code | Routines measured in the judged files of a spec |
+| `kiro.code.total` | value | `kiro.spec`, `kiro.metric` | code | Sum of a routine metric over the judged files of a spec |
 | `kiro.run.duration` | milliseconds | `kiro.phase` | run | Duration of one phase of a gate run |
 | `kiro.run.findings.dropped` | count | none | run | Finding records left out because the per-run maximum was reached |
 | `kiro.spec.approved` | value | `kiro.spec`, `kiro.document` | status | 1 when the document of a spec is approved, otherwise 0 |
@@ -36,7 +43,7 @@ Phase and approval are sent as value 1 with the state in an attribute, so that a
 
 ### Reserved prefixes
 
-`kiro.code.` (code-constraints), `kiro.clone.` (clone-constraints), `kiro.locality.` (code-locality-data) and `kiro.evidence.` (verification-evidence) are reserved for metrics those specs define when they ship.
+Each analyzer spec owns a prefix: `kiro.code.` (code-constraints, defined above), and `kiro.clone.` (clone-constraints), `kiro.locality.` (code-locality-data) and `kiro.evidence.` (verification-evidence), which are reserved until those specs ship. `kiro-cli code check --telemetry-dir <DIR>` writes the `kiro.code.*` points of the run; its finding records also carry `kiro.tag`, `kiro.hint`, `kiro.metric`, `kiro.component`, `kiro.task` and `kiro.pre_existing`. Files no spec maps carry the spec `(none)`.
 
 ## Names in OpenObserve
 

@@ -276,6 +276,10 @@ pub struct CodeCheckArgs {
     #[arg(long)]
     pub summary: bool,
 
+    /// Telemetry output of this run.
+    #[command(flatten)]
+    pub telemetry: TelemetryArgs,
+
     /// Also print the highest value of every metric
     #[arg(long)]
     pub show_highest: bool,

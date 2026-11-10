@@ -683,3 +683,110 @@ fn export_needs_a_selection() {
     assert_eq!(out.code, 2);
     assert!(out.stderr.contains("--all"));
 }
+
+// ------------------------------------------------------------- code checks
+
+/// Nesting 4 (limit 3) in the file the minimal fixture maps to component Core.
+const DEEP: &str = "pub fn owner(paths: &[&str], wanted: &str) -> Option<usize> {
+    for (index, path) in paths.iter().enumerate() {
+        if !path.is_empty() {
+            let mut rest = *path;
+            while let Some(stripped) = rest.strip_prefix('/') {
+                if stripped == wanted {
+                    return Some(index);
+                }
+                rest = stripped;
+            }
+        }
+    }
+    None
+}
+";
+
+#[test]
+fn a_code_check_writes_its_metric_points_and_findings_with_hint_and_owners() {
+    let (_temp, path, telemetry) = minimal_project();
+    std::fs::create_dir_all(path.join("src")).unwrap();
+    std::fs::write(path.join("src").join("demo.rs"), DEEP).unwrap();
+    let project = path.to_str().unwrap();
+    let dir = telemetry.path().to_str().unwrap();
+
+    let plain = run_cli(&["--project", project, "code", "check", "--task", "demo:1.1"]);
+    let out = run_cli(&[
+        "--project",
+        project,
+        "code",
+        "check",
+        "--task",
+        "demo:1.1",
+        "--telemetry-dir",
+        dir,
+    ]);
+    assert_eq!(out.code, plain.code);
+    assert_eq!(out.stdout, plain.stdout, "the report is byte-identical");
+    assert_eq!(out.stderr, "");
+
+    let written = read_written(telemetry.path());
+    // Values a reader can check against the source above: one routine,
+    // nesting 4, one breach, one measured file.
+    assert_eq!(gauge(&written, "kiro.code.routines", "demo"), Some(1.0));
+    assert_eq!(gauge(&written, "kiro.code.breaches", "demo"), Some(1.0));
+    let names: Vec<&str> = written.metrics[0].resource_metrics[0].scope_metrics[0]
+        .metrics
+        .iter()
+        .map(|metric| metric.name.as_str())
+        .collect();
+    for name in [
+        "kiro.code.highest",
+        "kiro.code.total",
+        "kiro.code.files",
+        "kiro.run.duration",
+    ] {
+        assert!(names.contains(&name), "{name} missing in {names:?}");
+    }
+    assert!(
+        !names.iter().any(|name| name.starts_with("kiro.spec.")),
+        "no spec source in this run"
+    );
+
+    let records = &written.logs[0].resource_logs[0].scope_logs[0].log_records;
+    let breach = records
+        .iter()
+        .find(|record| {
+            text_of(&record.attributes, "kiro.code").as_deref() == Some("CODE_ROUTINE_LIMIT")
+        })
+        .unwrap();
+    assert_eq!(
+        text_of(&breach.attributes, "kiro.tag").as_deref(),
+        Some("simplify")
+    );
+    assert!(
+        text_of(&breach.attributes, "kiro.hint")
+            .unwrap()
+            .starts_with("return early")
+    );
+    assert_eq!(
+        text_of(&breach.attributes, "kiro.metric").as_deref(),
+        Some("nesting")
+    );
+    assert_eq!(
+        text_of(&breach.attributes, "kiro.component").as_deref(),
+        Some("Core")
+    );
+    assert_eq!(
+        text_of(&breach.attributes, "kiro.task").as_deref(),
+        Some("1.1,2")
+    );
+    assert_eq!(
+        text_of(&breach.attributes, "kiro.spec").as_deref(),
+        Some("demo")
+    );
+    assert_eq!(
+        text_of(&breach.attributes, "kiro.pre_existing").as_deref(),
+        Some("false")
+    );
+
+    let spans = &written.traces[0].resource_spans[0].scope_spans[0].spans;
+    let phases: Vec<&str> = spans.iter().map(|span| span.name.as_str()).collect();
+    assert_eq!(phases, ["kiro.gate", "discover", "measure", "render"]);
+}

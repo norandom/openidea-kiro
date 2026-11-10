@@ -193,7 +193,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Requirements: 5.3, 5.4, 5.7, 6.5, 7.1, 9.1, 11.6_
 
 - [ ] 7. Report improvements, keep source meaning and prove the ratchet
-- [ ] 7.1 Render the hook summary and provide metric points
+- [x] 7.1 Render the hook summary and provide metric points
   - Build the ASCII summary (at most 25 lines, fixed order, improved and worsened metrics with before and after values, net delta or unavailable) and the metric points as views of the report model.
   - Add --summary to code check; implement the quality-telemetry provider contract for the code report and register its names in that catalogue; write no metric file.
   - Done when summary, points, text and JSON agree on the same fixtures, summary bytes are printable ASCII with LF only, and the verdict is the same with telemetry off, on and failing.

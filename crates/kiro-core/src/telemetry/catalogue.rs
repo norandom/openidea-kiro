@@ -46,6 +46,55 @@ const SPEC: &[&str] = &["kiro.spec"];
 /// Every metric, sorted by name.
 pub const METRICS: &[MetricInfo] = &[
     MetricInfo {
+        name: "kiro.code.breaches",
+        unit: Unit::Count,
+        attributes: &["kiro.spec", "kiro.code", "kiro.severity"],
+        source: "code",
+        meaning: "Code findings that are not pre-existing, by finding code and severity",
+    },
+    MetricInfo {
+        name: "kiro.code.changed",
+        unit: Unit::Count,
+        attributes: &["kiro.metric", "kiro.status"],
+        source: "code",
+        meaning: "Routine metrics that differ from the before side: improved or worsened",
+    },
+    MetricInfo {
+        name: "kiro.code.files",
+        unit: Unit::Count,
+        attributes: &["kiro.status"],
+        source: "code",
+        meaning: "Selected files by state: measured, failed, unmeasured, ignored",
+    },
+    MetricInfo {
+        name: "kiro.code.highest",
+        unit: Unit::Value,
+        attributes: &["kiro.spec", "kiro.metric"],
+        source: "code",
+        meaning: "Highest value of a routine metric over the judged files of a spec",
+    },
+    MetricInfo {
+        name: "kiro.code.pre_existing",
+        unit: Unit::Count,
+        attributes: SPEC,
+        source: "code",
+        meaning: "Breaches that existed before and did not worsen",
+    },
+    MetricInfo {
+        name: "kiro.code.routines",
+        unit: Unit::Count,
+        attributes: SPEC,
+        source: "code",
+        meaning: "Routines measured in the judged files of a spec",
+    },
+    MetricInfo {
+        name: "kiro.code.total",
+        unit: Unit::Value,
+        attributes: &["kiro.spec", "kiro.metric"],
+        source: "code",
+        meaning: "Sum of a routine metric over the judged files of a spec",
+    },
+    MetricInfo {
         name: "kiro.run.duration",
         unit: Unit::Milliseconds,
         attributes: &["kiro.phase"],

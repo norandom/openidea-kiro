@@ -159,12 +159,17 @@ fn catalogue_is_sorted_unique_and_uses_only_listed_attributes() {
         for key in info.attributes {
             assert!(ATTRIBUTE_KEYS.contains(key), "{} uses {key}", info.name);
         }
+        // A metric under a reserved prefix belongs to the spec that owns the
+        // prefix: its source is the word between `kiro.` and the next dot.
         for (prefix, owner) in RESERVED_PREFIXES {
-            assert!(
-                !info.name.starts_with(prefix),
-                "{} lies under the prefix reserved for {owner}",
-                info.name
-            );
+            if info.name.starts_with(prefix) {
+                let source = prefix.trim_start_matches("kiro.").trim_end_matches('.');
+                assert_eq!(
+                    info.source, source,
+                    "{} lies under the prefix of {owner}",
+                    info.name
+                );
+            }
         }
         assert_eq!(lookup(info.name), Some(info));
     }

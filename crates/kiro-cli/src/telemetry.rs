@@ -136,3 +136,52 @@ pub fn emit(
     let run = timer.finish(git.revision.as_deref(), verdict_word(report.exit));
     write(&plan.dir, &lines(report, features, &identity, &run))
 }
+
+/// Writes the telemetry of a finished code check: the code metric points,
+/// one record per finding with its hint, tag, component and tasks, and
+/// the run's trace.
+pub fn emit_code(
+    plan: &Plan,
+    root: &fs::ProjectRoot,
+    environment: &crate::telemetry_io::TelemetryEnvironment,
+    report: &kiro_core::code::CodeReport,
+    verdict: Exit,
+    timer: crate::telemetry_io::RunTimer,
+) -> Result<(), Failure> {
+    let git = crate::telemetry_io::GitIdentity::read(root);
+    let identity = crate::telemetry_io::resource_identity(environment, &git, &plan.kind);
+    let run = timer.finish(git.revision.as_deref(), verdict_word(verdict));
+    let entries: Vec<kiro_core::telemetry::LogEntry<'_>> = report
+        .findings
+        .iter()
+        .map(|entry| {
+            let mut extra = vec![
+                ("kiro.tag", entry.tag.label().to_string()),
+                ("kiro.hint", entry.hint.clone()),
+                ("kiro.pre_existing", entry.pre_existing.to_string()),
+            ];
+            if let Some(metric) = &entry.metric {
+                extra.push(("kiro.metric", metric.clone()));
+            }
+            if !entry.owners.components.is_empty() {
+                extra.push(("kiro.component", entry.owners.components.join(",")));
+            }
+            if !entry.owners.tasks.is_empty() {
+                extra.push(("kiro.task", entry.owners.tasks.join(",")));
+            }
+            kiro_core::telemetry::LogEntry {
+                finding: &entry.finding,
+                extra,
+            }
+        })
+        .collect();
+    let snapshot = snapshot(&[report], &["code"]);
+    let lines = kiro_core::telemetry::otlp_lines_from(
+        &snapshot,
+        &entries,
+        &identity,
+        &run,
+        DEFAULT_MAX_RECORDS,
+    );
+    write(&plan.dir, &lines)
+}

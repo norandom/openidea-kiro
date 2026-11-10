@@ -226,7 +226,14 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
     let fail_on = resolve_gate(&args.gate, &session.environment)?;
     let selection = code::selection(args)?;
     let root = session.root()?;
+    let telemetry_plan = telemetry::plan(
+        &root,
+        args.telemetry.telemetry_dir.as_deref(),
+        &session.telemetry_environment,
+    )?;
+    let mut timer = RunTimer::start();
     let discovered = fs::discover_features(&root)?;
+    timer.phase("discover");
     let run = code::run(
         &root,
         session.source(&root),
@@ -234,6 +241,7 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
         &selection,
         args.show_highest,
     )?;
+    timer.phase("measure");
     let verdict = exit::verdict(fail_on, run.report.blocking_findings());
     let output = match settings.format {
         ReportFormat::Text if args.summary => code_summary(&run, fail_on, verdict),
@@ -241,6 +249,21 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
         ReportFormat::Json => kiro_core::code::report::json(&run.report),
     };
     write_report(&settings.destination, output.as_bytes())?;
+    timer.phase("render");
+    // Telemetry is written after the report and the exit decision; a
+    // failure is reported and changes neither.
+    if let Some(plan) = &telemetry_plan
+        && let Err(failure) = telemetry::emit_code(
+            plan,
+            &root,
+            &session.telemetry_environment,
+            &run.report,
+            verdict,
+            timer,
+        )
+    {
+        eprintln!("{failure}");
+    }
     Ok(verdict)
 }
 

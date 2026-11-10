@@ -12,6 +12,7 @@ pub mod facts;
 pub mod limits;
 pub mod ratchet;
 pub mod report;
+pub mod telemetry;
 
 pub use attribution::{
     Attribution, SelectionError, attribute, matches_any, spec_paths, task_paths,
@@ -26,4 +27,4 @@ pub use facts::{
 };
 pub use limits::{Judgement, highest, judge};
 pub use ratchet::{Before, Earlier, Pairing, Trust, pair};
-pub use report::{Change, CodeFinding, CodeReport, Coverage, NetDelta, SpecSummary, Tag};
+pub use report::{Change, CodeFinding, CodeReport, Coverage, Measure, NetDelta, SpecSummary, Tag};

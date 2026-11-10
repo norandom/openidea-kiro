@@ -108,3 +108,7 @@ The exporter probe and both JSON probes live in `D:\BuildArtifacts\openidea-kiro
   - The runtime dependency graph of `kiro-cli` gained only the workspace crate `kiro-cli-common`; no external package.
 - Still unverified: Linux and macOS runs (task 6.1), Collector behaviour when a file is removed or rotated while read, and the dashboards (tasks 5.2 to 5.4).
 - Verification on Windows: 434 workspace tests pass, clippy with warnings denied, format check, wasm build of the core, `cargo deny check`.
+
+## Code metric points (2026-11-10, night)
+
+code-constraints now contributes through the provider contract: `impl MetricProvider for CodeReport` (source `code`) with seven `kiro.code.*` metrics in the catalogue and in `docs/telemetry.md`. `kiro-cli code check --telemetry-dir` writes them. Finding records of a code check carry tag, hint, metric, component, tasks and the pre-existing flag, which closes the gap noted for criterion 4.2 as far as code findings go; spec findings still have no hint or owners. Deviation from code-constraints 13.3: metric points carry the spec but not component and task, which would multiply the series; those two are on the finding records. Not shipped to OpenObserve yet: the new streams and fields were decoded in tests only.

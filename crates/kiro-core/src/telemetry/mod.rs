@@ -16,7 +16,8 @@ pub use catalogue::{
 };
 pub use model::{Attr, MetricPoint, MetricProvider, MetricSnapshot, SourceCoverage, Unit};
 pub use otlp::{
-    DEFAULT_MAX_RECORDS, OtlpLines, Phase, ResourceIdentity, RunIdentity, SCOPE_NAME, otlp_lines,
+    DEFAULT_MAX_RECORDS, LogEntry, OtlpLines, Phase, ResourceIdentity, RunIdentity, SCOPE_NAME,
+    otlp_lines, otlp_lines_from,
 };
 pub use spec::{SpecInput, SpecMetrics};
 

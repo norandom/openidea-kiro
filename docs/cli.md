@@ -134,6 +134,7 @@ Exactly one selection is required.
 - `--all`: Judge every file a measurement profile covers.
 - `--changed <REV>`: Judge the tracked files that differ from this revision and compare them with it (the ratchet).
 - `--summary`: Print the hook summary instead of the text report: at most 25 lines of plain ASCII.
+- `--telemetry-dir <DIR>`: Also append the telemetry of this run (code metric points, finding records with hint and owners, the run trace) to files in this directory outside the project. Falls back to `KIRO_TELEMETRY_DIR`. The report and the exit code are unaffected.
 - `--show-highest`: Also print the highest value of every metric, for a first look at a grown repository.
 - `--format <text|json>`: Report output format. (Default: `text`).
 - `--output <PATH>`: Write the report to this file instead of standard output.

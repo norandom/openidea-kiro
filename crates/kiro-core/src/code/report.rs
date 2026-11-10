@@ -148,6 +148,19 @@ pub struct SpecSummary {
     pub info: usize,
 }
 
+/// Highest value and total of one routine metric over the judged files of
+/// one spec, for the trend of a code base.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Measure {
+    /// `None` for files no spec maps.
+    pub spec: Option<String>,
+    pub metric: String,
+    pub highest: f64,
+    pub total: f64,
+    /// Number of routines measured.
+    pub routines: usize,
+}
+
 /// The result of one code check.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeReport {
@@ -157,6 +170,8 @@ pub struct CodeReport {
     /// Paired routine metrics that differ from the before side.
     pub changes: Vec<Change>,
     pub net: NetDelta,
+    /// Highest and total of every routine metric per spec.
+    pub measures: Vec<Measure>,
 }
 
 impl CodeReport {
