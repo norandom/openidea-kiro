@@ -214,12 +214,37 @@ fn comparison(node: &SgNode<'_>, table: &Table, path: &str, out: &mut Vec<Compar
     }
 }
 
+/// The file being read and the table of its language.
+struct Source<'a> {
+    table: &'a Table,
+    path: &'a str,
+}
+
+/// The comparisons one arm stands for: its literals against the subject
+/// of the match.
+fn arm_literals(arm: &SgNode<'_>, subject: &str, source: &Source<'_>, out: &mut Vec<Comparison>) {
+    let pattern = arm
+        .field("pattern")
+        .or_else(|| arm.field("value"))
+        .or_else(|| arm.children().find(|inner| inner.is_named()));
+    let Some(pattern) = pattern else {
+        return;
+    };
+    for literal in literals(&pattern, source.table) {
+        out.push(Comparison {
+            path: source.path.to_string(),
+            line: line(arm),
+            subject: subject.to_string(),
+            literal,
+        });
+    }
+}
+
 fn match_arms(
     node: &SgNode<'_>,
     subject_field: &str,
     arm_kind: &str,
-    table: &Table,
-    path: &str,
+    source: &Source<'_>,
     out: &mut Vec<Comparison>,
 ) {
     let Some(subject) = node
@@ -231,25 +256,30 @@ fn match_arms(
     let mut stack: Vec<SgNode<'_>> = node.children().collect();
     while let Some(child) = stack.pop() {
         if child.kind() == arm_kind {
-            let pattern = child
-                .field("pattern")
-                .or_else(|| child.field("value"))
-                .or_else(|| child.children().find(|inner| inner.is_named()));
-            if let Some(pattern) = pattern {
-                for literal in literals(&pattern, table) {
-                    out.push(Comparison {
-                        path: path.to_string(),
-                        line: line(&child),
-                        subject: subject.clone(),
-                        literal,
-                    });
-                }
-            }
+            arm_literals(&child, &subject, source, out);
         } else if child.kind() != node.kind() {
             // Arms sit one or two levels down; a nested match is its own.
             stack.extend(child.children());
         }
     }
+}
+
+/// The definition a binding node stands for, if it is one.
+fn binding(node: &SgNode<'_>, table: &Table, path: &str) -> Option<Binding> {
+    let name = field(node, table.name_fields)?;
+    let value = field(node, table.value_fields)?;
+    let span = value
+        .end_pos()
+        .line()
+        .saturating_sub(value.start_pos().line());
+    // Only a plain name is a definition; a destructuring is not.
+    let plain = name.children().next().is_none();
+    (plain && span < MAX_INITIALIZER_LINES).then(|| Binding {
+        path: path.to_string(),
+        line: line(node),
+        name: name.text().to_string(),
+        initializer: collapsed(&value.text()),
+    })
 }
 
 /// Collects the bindings and comparisons of one parsed file.
@@ -263,35 +293,19 @@ pub fn extract(
     let Some(table) = table(profile) else {
         return;
     };
+    let source = Source { table, path };
     let mut stack = vec![root.clone()];
     while let Some(node) = stack.pop() {
         let kind = node.kind();
         if has(table.bindings, &kind) && at_module_level(&node, table) {
-            let name = field(&node, table.name_fields);
-            let value = field(&node, table.value_fields);
-            if let (Some(name), Some(value)) = (name, value) {
-                let span = value
-                    .end_pos()
-                    .line()
-                    .saturating_sub(value.start_pos().line());
-                // Only a plain name is a definition; a destructuring is not.
-                let plain = name.children().next().is_none();
-                if plain && span < MAX_INITIALIZER_LINES {
-                    bindings.push(Binding {
-                        path: path.to_string(),
-                        line: line(&node),
-                        name: name.text().to_string(),
-                        initializer: collapsed(&value.text()),
-                    });
-                }
-            }
+            bindings.extend(binding(&node, table, path));
         }
         if has(table.comparisons, &kind) {
             comparison(&node, table, path, comparisons);
         }
         for (match_kind, subject_field, arm_kind) in table.matches {
             if kind == *match_kind {
-                match_arms(&node, subject_field, arm_kind, table, path, comparisons);
+                match_arms(&node, subject_field, arm_kind, &source, comparisons);
             }
         }
         stack.extend(node.children());

@@ -14,7 +14,7 @@ use std::collections::BTreeMap;
 use std::path::Path;
 use std::process::ExitCode;
 
-use kiro_code::{measure, profile_for, read_bundle};
+use kiro_code::{SourceBundle, measure, profile_for, read_bundle};
 use kiro_core::code::config::CodeConfig;
 
 /// Nearest-rank percentile of a sorted, non-empty list.
@@ -31,18 +31,8 @@ fn number(value: f64) -> String {
     }
 }
 
-fn report(root: &Path, config: &CodeConfig) -> Result<(), String> {
-    let canonical = root
-        .canonicalize()
-        .map_err(|error| format!("{}: {error}", root.display()))?;
-    let bundle = read_bundle(&canonical, &|path| profile_for(path).is_some())
-        .map_err(|error| error.to_string())?;
-    let facts = measure(&bundle);
-    let name = canonical
-        .file_name()
-        .map(|name| name.to_string_lossy().into_owned())
-        .unwrap_or_default();
-
+/// Says on standard error how many files of which language were read.
+fn announce(name: &str, bundle: &SourceBundle) {
     let mut files: BTreeMap<&str, usize> = BTreeMap::new();
     for file in &bundle.files {
         if let Some(profile) = profile_for(&file.path) {
@@ -64,9 +54,25 @@ fn report(root: &Path, config: &CodeConfig) -> Result<(), String> {
             eprintln!("  {}", file.path);
         }
     }
+}
+
+/// The values of one metric and its built-in limit.
+type Values = (Vec<f64>, Option<f64>);
+
+fn report(root: &Path, config: &CodeConfig) -> Result<(), String> {
+    let canonical = root
+        .canonicalize()
+        .map_err(|error| format!("{}: {error}", root.display()))?;
+    let bundle = read_bundle(&canonical, &|path| profile_for(path).is_some())
+        .map_err(|error| error.to_string())?;
+    let facts = measure(&bundle);
+    let name = canonical
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    announce(&name, &bundle);
 
     // (language, scope, metric) -> values and the limit.
-    type Values = (Vec<f64>, Option<f64>);
     let mut groups: BTreeMap<(&str, String, &str), Values> = BTreeMap::new();
     for observation in &facts.observations {
         let Some(profile) = profile_for(&observation.entity.path) else {

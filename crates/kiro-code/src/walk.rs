@@ -59,6 +59,39 @@ fn relative(root: &Path, path: &Path) -> Option<String> {
     }
 }
 
+/// Whether the walk visits an entry: not an excluded directory and not a
+/// nested repository.
+fn is_walked(entry: &ignore::DirEntry) -> bool {
+    let excluded = entry
+        .file_name()
+        .to_str()
+        .is_some_and(|name| DEFAULT_EXCLUDED_DIRS.contains(&name));
+    let is_dir = entry.file_type().is_some_and(|kind| kind.is_dir());
+    // A directory below the root with its own `.git` is another
+    // repository or a worktree: Git does not count its files as
+    // part of this project, and neither does the walk.
+    let nested = is_dir && entry.depth() > 0 && entry.path().join(".git").exists();
+    !(nested || excluded && is_dir)
+}
+
+/// The walk over the project tree.
+fn project_walk(root: &Path) -> ignore::Walk {
+    // The `ignore` crate walks and applies the project's `.gitignore` and
+    // `.ignore` files. Only files inside the root decide: the user's global
+    // Git settings and ignore files above the root are not read, so the
+    // same tree gives the same bundle on every machine, with or without a
+    // `.git` directory.
+    ignore::WalkBuilder::new(root)
+        .hidden(false)
+        .parents(false)
+        .git_global(false)
+        .git_exclude(false)
+        .require_git(false)
+        .follow_links(false)
+        .filter_entry(is_walked)
+        .build()
+}
+
 /// Reads every file under `root` for which `wanted` is true.
 ///
 /// `root` must be canonical. `wanted` receives the project-relative path
@@ -69,32 +102,7 @@ pub fn read_bundle(
     wanted: &dyn Fn(&str) -> bool,
 ) -> Result<SourceBundle, BundleError> {
     let mut bundle = SourceBundle::default();
-    // The `ignore` crate walks and applies the project's `.gitignore` and
-    // `.ignore` files. Only files inside the root decide: the user's global
-    // Git settings and ignore files above the root are not read, so the
-    // same tree gives the same bundle on every machine, with or without a
-    // `.git` directory.
-    let walk = ignore::WalkBuilder::new(root)
-        .hidden(false)
-        .parents(false)
-        .git_global(false)
-        .git_exclude(false)
-        .require_git(false)
-        .follow_links(false)
-        .filter_entry(|entry| {
-            let excluded = entry
-                .file_name()
-                .to_str()
-                .is_some_and(|name| DEFAULT_EXCLUDED_DIRS.contains(&name));
-            let is_dir = entry.file_type().is_some_and(|kind| kind.is_dir());
-            // A directory below the root with its own `.git` is another
-            // repository or a worktree: Git does not count its files as
-            // part of this project, and neither does the walk.
-            let nested = is_dir && entry.depth() > 0 && entry.path().join(".git").exists();
-            !(nested || excluded && is_dir)
-        })
-        .build();
-    for entry in walk {
+    for entry in project_walk(root) {
         let entry =
             entry.map_err(|error| BundleError(format!("cannot walk the project: {error}")))?;
         let path: PathBuf = entry.into_path();

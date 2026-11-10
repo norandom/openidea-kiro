@@ -404,6 +404,76 @@ fn is_statement(node: &SgNode<'_>, profile: &Profile) -> bool {
     }
 }
 
+/// The arms of a match beyond the first; zero for every other node.
+fn extra_match_arms(node: &SgNode<'_>, profile: &Profile) -> usize {
+    let Some((match_kind, arm_kind)) = profile.match_kind else {
+        return 0;
+    };
+    if node.kind() != match_kind {
+        return 0;
+    }
+    let arms = node
+        .children()
+        .flat_map(|body| body.children().collect::<Vec<_>>())
+        .filter(|arm| arm.kind() == arm_kind)
+        .count();
+    arms.saturating_sub(1)
+}
+
+/// Whether a node is a boolean expression with a short-circuit operator.
+fn is_short_circuit(node: &SgNode<'_>, profile: &Profile) -> bool {
+    has(profile.boolean_exprs, &node.kind())
+        && node
+            .children()
+            .any(|child| !child.is_named() && has(profile.boolean_ops, &child.kind()))
+}
+
+/// What one node adds to the cyclomatic complexity of its routine.
+fn decisions_of(node: &SgNode<'_>, profile: &Profile) -> usize {
+    let branch = usize::from(has(profile.decisions, &node.kind()));
+    let short_circuit = usize::from(is_short_circuit(node, profile));
+    branch
+        .saturating_add(extra_match_arms(node, profile))
+        .saturating_add(short_circuit)
+}
+
+/// Whether a node is a code token: a leaf that is no comment and does not
+/// lie inside one of the `silent` line ranges.
+fn is_code_token(node: &SgNode<'_>, profile: &Profile, silent: &[(usize, usize)]) -> bool {
+    if node.children().next().is_some() || has(profile.comments, &node.kind()) {
+        return false;
+    }
+    let (start, end) = (node.start_pos().line(), node.end_pos().line());
+    !silent.iter().any(|(from, to)| start >= *from && end <= *to)
+}
+
+/// The code tokens of one routine: the lines they stand on and their
+/// FNV-1a hash.
+struct CodeTokens {
+    lines: BTreeSet<usize>,
+    hash: u64,
+}
+
+impl CodeTokens {
+    fn new() -> Self {
+        Self {
+            lines: BTreeSet::new(),
+            hash: 0xcbf2_9ce4_8422_2325,
+        }
+    }
+
+    fn add(&mut self, token: &SgNode<'_>) {
+        self.lines
+            .extend(token.start_pos().line()..=token.end_pos().line());
+        // The fingerprint covers every code token of the routine,
+        // so layout and comments do not change it.
+        for byte in token.text().bytes().chain(std::iter::once(0)) {
+            self.hash ^= u64::from(byte);
+            self.hash = self.hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    }
+}
+
 fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
     let nodes = routine_nodes(function, profile);
     // Line ranges that hold no code: comments and docstrings.
@@ -414,44 +484,14 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
         .collect();
     let mut cyclomatic: usize = 1;
     let mut statements: usize = 0;
-    let mut lines: BTreeSet<usize> = BTreeSet::new();
-    let mut body_hash: u64 = 0xcbf2_9ce4_8422_2325;
+    let mut tokens = CodeTokens::new();
     for node in &nodes {
-        let kind = node.kind();
-        if has(profile.decisions, &kind) {
-            cyclomatic = cyclomatic.saturating_add(1);
-        }
-        if let Some((match_kind, arm_kind)) = profile.match_kind
-            && kind == match_kind
-        {
-            let arms = node
-                .children()
-                .flat_map(|body| body.children().collect::<Vec<_>>())
-                .filter(|arm| arm.kind() == arm_kind)
-                .count();
-            cyclomatic = cyclomatic.saturating_add(arms.saturating_sub(1));
-        }
-        if has(profile.boolean_exprs, &kind)
-            && node
-                .children()
-                .any(|child| !child.is_named() && has(profile.boolean_ops, &child.kind()))
-        {
-            cyclomatic = cyclomatic.saturating_add(1);
-        }
+        cyclomatic = cyclomatic.saturating_add(decisions_of(node, profile));
         if is_statement(node, profile) {
             statements = statements.saturating_add(1);
         }
-        if node.children().next().is_none() && !has(profile.comments, &kind) {
-            let (start, end) = (node.start_pos().line(), node.end_pos().line());
-            if !silent.iter().any(|(from, to)| start >= *from && end <= *to) {
-                lines.extend(start..=end);
-                // The fingerprint covers every code token of the routine,
-                // so layout and comments do not change it.
-                for byte in node.text().bytes().chain(std::iter::once(0)) {
-                    body_hash ^= u64::from(byte);
-                    body_hash = body_hash.wrapping_mul(0x0000_0100_0000_01b3);
-                }
-            }
+        if is_code_token(node, profile, &silent) {
+            tokens.add(node);
         }
     }
     let (parameters, parameter_text) = parameters(function, profile);
@@ -460,9 +500,9 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
         parameter_text,
         cyclomatic,
         nesting: nesting_depth(function, profile, 0),
-        code_lines: lines.len(),
+        code_lines: tokens.lines.len(),
         statements,
-        body_hash,
+        body_hash: tokens.hash,
     }
 }
 
@@ -545,7 +585,21 @@ struct Emitter<'a> {
     fingerprints: Vec<Fingerprint>,
 }
 
-impl Emitter<'_> {
+impl<'a> Emitter<'a> {
+    fn new(path: &'a str, profile: &Profile) -> Self {
+        Self {
+            path,
+            producer: ProducerId {
+                name: PRODUCER.to_string(),
+                version: env!("CARGO_PKG_VERSION").to_string(),
+                grammar: format!("{GRAMMAR}, {}", profile.name),
+            },
+            ordinals: BTreeMap::new(),
+            observations: Vec::new(),
+            fingerprints: Vec::new(),
+        }
+    }
+
     fn key(&mut self, scope: Scope, name: &str, parameters: &str) -> EntityKey {
         let slot = self
             .ordinals
@@ -574,6 +628,176 @@ impl Emitter<'_> {
             line: at,
         });
     }
+
+    /// Emits the observations and the fingerprint of one routine and
+    /// returns its cyclomatic complexity.
+    fn routine(&mut self, node: &SgNode<'_>, profile: &Profile) -> usize {
+        let values = measure_routine(node, profile);
+        let name = qualified(node, profile);
+        let at = line(node.start_pos().line());
+        let entity = self.key(Scope::Routine, &name, &values.parameter_text);
+        self.emit(&entity, metrics::PARAMETERS, count(values.parameters), at);
+        self.emit(&entity, metrics::CYCLOMATIC, count(values.cyclomatic), at);
+        self.emit(&entity, metrics::NESTING, count(values.nesting), at);
+        self.emit(&entity, metrics::CODE_LINES, count(values.code_lines), at);
+        self.emit(&entity, metrics::STATEMENTS, count(values.statements), at);
+        self.fingerprints.push(Fingerprint {
+            entity: entity.clone(),
+            hash: format!("{:016x}", values.body_hash),
+        });
+        values.cyclomatic
+    }
+
+    /// Emits the member counts of every type declared in this file.
+    fn types(&mut self, members: &BTreeMap<String, Members>, profile: &Profile) {
+        for (name, counted) in members {
+            // Members of a type declared elsewhere (an impl for a foreign type)
+            // are not attributed to a type entity of this file.
+            if counted.declared_at == 0 {
+                continue;
+            }
+            let at = counted.declared_at;
+            let entity = self.key(Scope::Type, name, "");
+            self.emit(&entity, metrics::METHODS, count(counted.methods), at);
+            if !profile.fields.is_empty() {
+                self.emit(&entity, metrics::FIELDS, count(counted.fields), at);
+            }
+        }
+    }
+
+    /// Emits the observations of the file itself.
+    fn file(&mut self, tally: &FileTally, code_lines: usize) {
+        let path = self.path;
+        let file = self.key(Scope::File, path, "");
+        self.emit(&file, metrics::CODE_LINES, count(code_lines), 1);
+        self.emit(&file, metrics::FUNCTIONS, count(tally.functions), 1);
+        self.emit(&file, metrics::TYPES, count(tally.types), 1);
+        if tally.functions > 0 {
+            self.emit(
+                &file,
+                metrics::MAX_CYCLOMATIC,
+                count(tally.max_cyclomatic),
+                1,
+            );
+        }
+    }
+}
+
+/// Methods and fields of one type name. `declared_at` is the line of the
+/// type's declaration, or 0 while only members were seen.
+#[derive(Default)]
+struct Members {
+    methods: usize,
+    fields: usize,
+    declared_at: u32,
+}
+
+/// What the walk over a file adds up.
+#[derive(Default)]
+struct FileTally {
+    functions: usize,
+    types: usize,
+    max_cyclomatic: usize,
+    /// Members per type name; Rust inherent impls in the same file add
+    /// their methods to the type they implement.
+    members: BTreeMap<String, Members>,
+}
+
+/// Every node of a tree in document order.
+fn document_order<'r>(root: &SgNode<'r>) -> Vec<SgNode<'r>> {
+    let mut all: Vec<SgNode<'r>> = Vec::new();
+    let mut stack = vec![root.clone()];
+    while let Some(node) = stack.pop() {
+        let mut children: Vec<_> = node.children().collect();
+        children.reverse();
+        stack.extend(children);
+        all.push(node);
+    }
+    all
+}
+
+/// The type a container stands for, qualified. A module is no type, and a
+/// Rust trait implementation (`impl Trait for Type`) is not counted: only
+/// the type's own declaration and its inherent impls are.
+fn owning_type(container: &SgNode<'_>, profile: &Profile) -> Option<String> {
+    if container.kind() == "mod_item" || container.field("trait").is_some() {
+        return None;
+    }
+    let name = container_name(container)?;
+    Some(qualified_as(container, name, profile))
+}
+
+/// The type a member belongs to: the nearest container decides, and a
+/// routine in between means the node is no member of a type.
+fn member_owner(node: &SgNode<'_>, profile: &Profile) -> Option<String> {
+    let mut current = node.parent();
+    while let Some(parent) = current {
+        if is_routine(&parent, profile) {
+            return None;
+        }
+        if has(profile.containers, &parent.kind()) || has(profile.types, &parent.kind()) {
+            return owning_type(&parent, profile);
+        }
+        current = parent.parent();
+    }
+    None
+}
+
+/// Counts a method or a field for the type it belongs to.
+fn count_member(node: &SgNode<'_>, profile: &Profile, members: &mut BTreeMap<String, Members>) {
+    let kind = node.kind();
+    let is_method = is_routine(node, profile) || has(profile.method_signatures, &kind);
+    let is_field = has(profile.fields, &kind)
+        && !node
+            .children()
+            .any(|child| has(profile.value_functions, &child.kind()));
+    if !is_method && !is_field {
+        return;
+    }
+    let Some(owner) = member_owner(node, profile) else {
+        return;
+    };
+    let entry = members.entry(owner).or_default();
+    if is_method {
+        entry.methods = entry.methods.saturating_add(1);
+    } else {
+        entry.fields = entry.fields.saturating_add(1);
+    }
+}
+
+/// Walks a tree that parsed, emits every routine and adds up the file.
+fn measure_tree(root: &SgNode<'_>, profile: &Profile, emitter: &mut Emitter<'_>) -> FileTally {
+    let mut tally = FileTally::default();
+    // Document order, so ordinals are stable.
+    for node in &document_order(root) {
+        if is_routine(node, profile) {
+            tally.functions = tally.functions.saturating_add(1);
+            let cyclomatic = emitter.routine(node, profile);
+            tally.max_cyclomatic = tally.max_cyclomatic.max(cyclomatic);
+        }
+        if has(profile.types, &node.kind()) {
+            tally.types = tally.types.saturating_add(1);
+            let name = qualified(node, profile);
+            tally.members.entry(name).or_default().declared_at = line(node.start_pos().line());
+        }
+        count_member(node, profile, &mut tally.members);
+    }
+    tally
+}
+
+fn coverage(
+    path: &str,
+    state: Completeness,
+    reason: Option<String>,
+    at: Option<u32>,
+) -> CoverageCell {
+    CoverageCell {
+        path: path.to_string(),
+        metric: None,
+        state,
+        reason,
+        line: at,
+    }
 }
 
 /// The first place a tree does not parse: 1-based line.
@@ -598,25 +822,20 @@ fn first_error(root: &SgNode<'_>) -> Option<u32> {
 /// a tree with holes.
 pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
     let Some(profile) = profile_for(path) else {
-        facts.coverage.push(CoverageCell {
-            path: path.to_string(),
-            metric: None,
-            state: Completeness::Unavailable,
-            reason: Some("no measurement profile for this file type".to_string()),
-            line: None,
-        });
+        let reason = "no measurement profile for this file type".to_string();
+        facts.coverage.push(coverage(
+            path,
+            Completeness::Unavailable,
+            Some(reason),
+            None,
+        ));
         return;
     };
     // Line endings are normalized so that a CRLF working tree and LF blobs
     // measure alike.
     let normalized = text.replace("\r\n", "\n");
-    let failed = |reason: String, at: Option<u32>| CoverageCell {
-        path: path.to_string(),
-        metric: None,
-        state: Completeness::Failed,
-        reason: Some(reason),
-        line: at,
-    };
+    let failed =
+        |reason: String, at: Option<u32>| coverage(path, Completeness::Failed, Some(reason), at);
     let tree = match StrDoc::try_new(&normalized, profile.lang).map(AstGrep::doc) {
         Ok(tree) => tree,
         Err(error) => {
@@ -634,132 +853,16 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
         return;
     }
 
-    let mut emitter = Emitter {
-        path,
-        producer: ProducerId {
-            name: PRODUCER.to_string(),
-            version: env!("CARGO_PKG_VERSION").to_string(),
-            grammar: format!("{GRAMMAR}, {}", profile.name),
-        },
-        ordinals: BTreeMap::new(),
-        observations: Vec::new(),
-        fingerprints: Vec::new(),
-    };
-
-    // Document order, so ordinals are stable.
-    let mut all: Vec<SgNode<'_>> = Vec::new();
-    let mut stack = vec![root.clone()];
-    while let Some(node) = stack.pop() {
-        let mut children: Vec<_> = node.children().collect();
-        children.reverse();
-        stack.extend(children);
-        all.push(node);
-    }
-
-    let mut functions: usize = 0;
-    let mut types: usize = 0;
-    let mut max_cyclomatic: usize = 0;
-    // Methods and fields per type name; Rust inherent impls in the same
-    // file add their methods to the type they implement.
-    let mut members: BTreeMap<String, (usize, usize, u32)> = BTreeMap::new();
-
-    for node in &all {
-        let kind = node.kind();
-        if is_routine(node, profile) {
-            functions = functions.saturating_add(1);
-            let values = measure_routine(node, profile);
-            max_cyclomatic = max_cyclomatic.max(values.cyclomatic);
-            let name = qualified(node, profile);
-            let at = line(node.start_pos().line());
-            let entity = emitter.key(Scope::Routine, &name, &values.parameter_text);
-            emitter.emit(&entity, metrics::PARAMETERS, count(values.parameters), at);
-            emitter.emit(&entity, metrics::CYCLOMATIC, count(values.cyclomatic), at);
-            emitter.emit(&entity, metrics::NESTING, count(values.nesting), at);
-            emitter.emit(&entity, metrics::CODE_LINES, count(values.code_lines), at);
-            emitter.emit(&entity, metrics::STATEMENTS, count(values.statements), at);
-            emitter.fingerprints.push(Fingerprint {
-                entity: entity.clone(),
-                hash: format!("{:016x}", values.body_hash),
-            });
-        }
-        if has(profile.types, &kind) {
-            types = types.saturating_add(1);
-            let name = qualified(node, profile);
-            let entry = members
-                .entry(name)
-                .or_insert((0, 0, line(node.start_pos().line())));
-            entry.2 = line(node.start_pos().line());
-        }
-        let is_method = is_routine(node, profile) || has(profile.method_signatures, &kind);
-        let is_field = has(profile.fields, &kind)
-            && !node
-                .children()
-                .any(|child| has(profile.value_functions, &child.kind()));
-        if is_method || is_field {
-            // The nearest container decides which type the member belongs to.
-            let mut current = node.parent();
-            while let Some(parent) = current {
-                if is_routine(&parent, profile) {
-                    break;
-                }
-                if has(profile.containers, &parent.kind()) || has(profile.types, &parent.kind()) {
-                    // A module is no type, and a Rust trait implementation
-                    // (`impl Trait for Type`) is not counted: only the type's
-                    // own declaration and its inherent impls are.
-                    if parent.kind() != "mod_item"
-                        && parent.field("trait").is_none()
-                        && let Some(name) = container_name(&parent)
-                    {
-                        let owner = qualified_as(&parent, name, profile);
-                        let entry = members.entry(owner).or_insert((0, 0, 0));
-                        if is_method {
-                            entry.0 = entry.0.saturating_add(1);
-                        } else {
-                            entry.1 = entry.1.saturating_add(1);
-                        }
-                    }
-                    break;
-                }
-                current = parent.parent();
-            }
-        }
-    }
-
-    for (name, (methods, fields, at)) in &members {
-        // Members of a type declared elsewhere (an impl for a foreign type)
-        // are not attributed to a type entity of this file.
-        if *at == 0 {
-            continue;
-        }
-        let entity = emitter.key(Scope::Type, name, "");
-        emitter.emit(&entity, metrics::METHODS, count(*methods), *at);
-        if !profile.fields.is_empty() {
-            emitter.emit(&entity, metrics::FIELDS, count(*fields), *at);
-        }
-    }
-
-    let file = emitter.key(Scope::File, path, "");
-    emitter.emit(
-        &file,
-        metrics::CODE_LINES,
-        count(file_code_lines(&root, profile)),
-        1,
-    );
-    emitter.emit(&file, metrics::FUNCTIONS, count(functions), 1);
-    emitter.emit(&file, metrics::TYPES, count(types), 1);
-    if functions > 0 {
-        emitter.emit(&file, metrics::MAX_CYCLOMATIC, count(max_cyclomatic), 1);
-    }
+    let mut emitter = Emitter::new(path, profile);
+    let tally = measure_tree(&root, profile, &mut emitter);
+    emitter.types(&tally.members, profile);
+    emitter.file(&tally, file_code_lines(&root, profile));
 
     facts.observations.append(&mut emitter.observations);
     facts.fingerprints.append(&mut emitter.fingerprints);
-    facts.coverage.push(CoverageCell {
-        path: path.to_string(),
-        metric: None,
-        state: Completeness::Complete,
-        reason: None,
-        line: None,
-    });
+    facts
+        .coverage
+        .push(coverage(path, Completeness::Complete, None, None));
 }
 
 /// The parser language of a path, for analyzers that share the parse stack.

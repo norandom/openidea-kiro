@@ -89,6 +89,41 @@ fn parse_name_status(raw: &[u8], changes: &mut ChangeSet) {
     changes.renames.sort();
 }
 
+/// Resolves a revision to its full commit id. A text that Git would take
+/// as an option is refused before Git runs.
+fn resolve(root: &Path, revision: &str) -> Result<String, GitError> {
+    if revision.is_empty() || revision.starts_with('-') {
+        return Err(GitError(format!("`{revision}` is not a revision")));
+    }
+    let commit = format!("{revision}^{{commit}}");
+    let resolved = git(root, &["rev-parse", "--verify", "--quiet", &commit]).map_err(|_| {
+        GitError(format!(
+            "revision `{revision}` was not found; in a shallow clone, fetch more history first"
+        ))
+    })?;
+    Ok(String::from_utf8_lossy(&resolved).trim().to_string())
+}
+
+/// The paths the changed and deleted files had at the revision, sorted.
+fn old_paths(changes: &ChangeSet) -> Vec<String> {
+    let renamed_to: Vec<&str> = changes
+        .renames
+        .iter()
+        .map(|(_, new)| new.as_str())
+        .collect();
+    let mut old_paths: Vec<String> = changes
+        .changed
+        .iter()
+        .filter(|path| !renamed_to.contains(&path.as_str()))
+        .cloned()
+        .chain(changes.renames.iter().map(|(old, _)| old.clone()))
+        .chain(changes.deleted.iter().cloned())
+        .collect();
+    old_paths.sort();
+    old_paths.dedup();
+    old_paths
+}
+
 /// Reads the changes of the tracked files under `root` against `revision`
 /// and the before text of every changed or deleted file `wanted` accepts.
 ///
@@ -101,17 +136,8 @@ pub fn read_before(
     revision: &str,
     wanted: &dyn Fn(&str) -> bool,
 ) -> Result<ChangeSet, GitError> {
-    if revision.is_empty() || revision.starts_with('-') {
-        return Err(GitError(format!("`{revision}` is not a revision")));
-    }
-    let commit = format!("{revision}^{{commit}}");
-    let resolved = git(root, &["rev-parse", "--verify", "--quiet", &commit]).map_err(|_| {
-        GitError(format!(
-            "revision `{revision}` was not found; in a shallow clone, fetch more history first"
-        ))
-    })?;
     let mut changes = ChangeSet {
-        revision: String::from_utf8_lossy(&resolved).trim().to_string(),
+        revision: resolve(root, revision)?,
         ..ChangeSet::default()
     };
     // `--relative` limits the diff to `root` and reports paths relative to it.
@@ -129,22 +155,7 @@ pub fn read_before(
     )?;
     parse_name_status(&raw, &mut changes);
 
-    let renamed_to: Vec<&str> = changes
-        .renames
-        .iter()
-        .map(|(_, new)| new.as_str())
-        .collect();
-    let mut old_paths: Vec<String> = changes
-        .changed
-        .iter()
-        .filter(|path| !renamed_to.contains(&path.as_str()))
-        .cloned()
-        .chain(changes.renames.iter().map(|(old, _)| old.clone()))
-        .chain(changes.deleted.iter().cloned())
-        .collect();
-    old_paths.sort();
-    old_paths.dedup();
-    for path in old_paths {
+    for path in old_paths(&changes) {
         if !wanted(&path) {
             continue;
         }
