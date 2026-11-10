@@ -11,6 +11,7 @@ pub mod config;
 pub mod evaluate;
 pub mod facts;
 pub mod limits;
+pub mod locality;
 pub mod ratchet;
 pub mod report;
 pub mod telemetry;

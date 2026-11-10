@@ -147,6 +147,27 @@ Status: first rule of spec `clone-constraints`.
 - The coverage line ends with what was searched, for example `duplicate blocks: 158 files searched, 96 blocks of at least 12 lines, 0 frequent windows skipped`.
 - The length of 12 lines and the severity cannot be configured yet, and duplicates are not compared with a before side: an old copy and a new one look the same.
 
+## Scattered definitions and scattered state
+
+Status: first rules of spec `code-locality-data`. Both count across the whole project and report for the selected files.
+
+**`CODE_SCATTERED_DEFINITION`** (warning). The same name is bound to the same initializer text at module level in more than 3 files, for example `TIMEOUT_MS = 30_000` in four modules. The hint is `collect:` define it once in the module that owns it and import it.
+
+- Module level means: Rust `const` and `static` items at the top of a file or inside `mod`; Python assignments at the top of a module; TypeScript and JavaScript `const`, `let` and `var` at the top of a file, exported or not. A definition inside a routine does not count.
+- Name and value are keyed together: the same name with different values is not a repetition. When one name carries two or more values that are each scattered, `CODE_DEFINITION_AMBIGUOUS` (information, `name:`) says so; the groups are never merged.
+- The comparison is textual, with whitespace collapsed. A value that refers to another name is compared as written; nothing is evaluated. An initializer longer than 12 lines and a destructuring assignment are not definitions.
+- The names `log`, `logger`, `pytestmark` and `__all__` are ignored: every module legitimately has its own.
+
+**`CODE_SCATTERED_STATE`** (information). One subject is compared with at least 2 distinct literal values, and the comparisons stand in more than 3 files, for example `order.status == "paid"` in one file and `order.status == "open"` in three others. The hint is `collect:` declare the values once, as an enumeration or named constants, and put the decisions on them in one place.
+
+- A comparison is an equality or inequality with a string literal on either side, membership in a literal tuple, list or set (Python), and the arms of a `match` or the cases of a `switch`. In Rust an enum path such as `Mode::Fast` is a literal too.
+- A subject is its spelling. Two unrelated variables named `status` are one subject here, and one concept spelled `order.status` and `o.status` is two. This is why the rule is information and never blocks: read it as a pointer, not as a verdict.
+- The receiver (`self`, `this`) is never a subject: `match self` in two types is not one state.
+- A subject whose comparisons all stand in one file is not reported: that state already has an owner.
+- The rule cannot see a state carried in booleans, in a number compared with `<`, in a literal that reaches the comparison through a variable, or in dispatch through a table or polymorphism.
+
+The thresholds (3 files, 2 values) and the ignored names cannot be configured yet. Neither rule is compared with a before side. Positional data access and vocabulary grounding of column names are not built.
+
 ## Findings
 
 | Code | Severity | Meaning |
@@ -156,11 +177,14 @@ Status: first rule of spec `clone-constraints`.
 | `CODE_FILE_LIMIT` | warning | A file metric is above its limit |
 | `CODE_RATCHET` | error or warning | A routine metric rose against the before side: error above its limit, warning within it |
 | `CODE_DUPLICATE_BLOCK` | warning | A run of at least 12 code lines also stands at another location |
+| `CODE_SCATTERED_DEFINITION` | warning | The same module-level definition stands in more than 3 files |
+| `CODE_DEFINITION_AMBIGUOUS` | info | One name carries several scattered values; they were not merged |
+| `CODE_SCATTERED_STATE` | info | One subject is compared with literal values across more than 3 files |
 | `CODE_PARSE_FAILED` | error | A selected file does not parse; no rule was judged on it |
 | `CODE_FILE_UNOWNED` | info | A selected file with findings is mapped by no spec |
 | `CODE_COVERAGE` | info | What the run measured and what it left out; always present |
 
-Every finding carries a hint that opens with one tag: `simplify:`, `split:`, `shrink:` or `fix:` today (`delete:`, `collect:` and `name:` belong to rules that are not built yet). The JSON report carries tag and hint as separate fields, together with metric, value, limit, the entity and the owning component and tasks. It has no timestamps and no absolute paths, so two runs over the same tree are byte-identical.
+Every finding carries a hint that opens with one tag: `simplify:`, `split:`, `delete:`, `shrink:`, `collect:`, `name:` or `fix:`. The JSON report carries tag and hint as separate fields, together with metric, value, limit, the entity and the owning component and tasks. It has no timestamps and no absolute paths, so two runs over the same tree are byte-identical.
 
 ## Ownership
 
@@ -171,5 +195,5 @@ A file belongs to the spec whose design lists it in its File Structure Plan, to 
 - Whether the standard library, the platform or an installed dependency would have replaced a piece of code is never checked.
 - A file that was not measured was not judged. Read the `CODE_COVERAGE` line: it counts selected, measured, failed and unmeasured files.
 - Without a before side nothing is compared: existing breaches and new ones look the same. The coverage line names the before side.
-- Copies that were renamed or reshaped, scattered definitions and state, and positional data access are not detected yet.
+- Copies that were renamed or reshaped and positional data access are not detected yet.
 - A routine within every limit can still be wrong or unclear.

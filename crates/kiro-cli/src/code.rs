@@ -7,6 +7,9 @@
 //! connects them.
 
 use kiro_core::code::clones::{DEFAULT_MIN_LINES, duplicate_blocks, duplicate_findings};
+use kiro_core::code::locality::{
+    DEFAULT_MAX_FILES, DEFAULT_MIN_STATES, definition_findings, state_findings,
+};
 use kiro_core::code::{
     Before, CodeConfig, CodeFacts, CodeReport, EvaluateInput, FACTS_SCHEMA_VERSION, evaluate,
     highest, matches_any, report, spec_paths, task_paths,
@@ -299,21 +302,38 @@ pub fn run(
         },
     };
 
-    // Duplicate blocks are searched over the whole project: a copy counts
-    // wherever the original stands.
+    // The rules that count across files search the whole project: a copy
+    // or a repeated definition counts wherever the original stands. Every
+    // file is parsed once for all of them.
     let project = kiro_code::read_bundle(root.path(), &measurable)
         .map_err(|error| Failure::new(error.to_string()))?;
-    let lines = kiro_code::clones::bundle_lines(&project);
-    let (blocks, searched) = duplicate_blocks(&lines, DEFAULT_MIN_LINES);
-    let extensions = duplicate_findings(&blocks, &|path| {
-        selected.iter().any(|selected_path| selected_path == path)
-    });
-    let extension_notes = vec![format!(
-        "duplicate blocks: {} files searched, {} blocks of at least {DEFAULT_MIN_LINES} lines, {} frequent windows skipped",
-        searched.files,
-        blocks.len(),
-        searched.skipped_windows
-    )];
+    let scan = kiro_code::scan::scan(&project);
+    let is_selected = |path: &str| selected.iter().any(|selected_path| selected_path == path);
+    let (blocks, searched) = duplicate_blocks(&scan.lines, DEFAULT_MIN_LINES);
+    let mut extensions = duplicate_findings(&blocks, &is_selected);
+    let definitions = definition_findings(&scan.locality, &is_selected, DEFAULT_MAX_FILES);
+    let states = state_findings(
+        &scan.locality,
+        &is_selected,
+        DEFAULT_MAX_FILES,
+        DEFAULT_MIN_STATES,
+    );
+    let extension_notes = vec![
+        format!(
+            "duplicate blocks: {} files searched, {} blocks of at least {DEFAULT_MIN_LINES} lines, {} frequent windows skipped",
+            searched.files,
+            blocks.len(),
+            searched.skipped_windows
+        ),
+        format!(
+            "locality: {} files searched, {} module-level definitions, {} literal comparisons",
+            scan.locality.files,
+            scan.locality.bindings.len(),
+            scan.locality.comparisons.len()
+        ),
+    ];
+    extensions.extend(definitions);
+    extensions.extend(states);
 
     let mut report = evaluate(&EvaluateInput {
         facts: &facts,

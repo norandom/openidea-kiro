@@ -773,3 +773,9 @@ pub fn language_of(path: &str) -> Option<SupportLang> {
 pub fn comment_kinds(path: &str) -> Option<&'static [&'static str]> {
     profile_for(path).map(|profile| profile.comments)
 }
+
+/// The profile name of a path's language, such as `rust` or `python`.
+#[must_use]
+pub fn profile_name(path: &str) -> Option<&'static str> {
+    profile_for(path).map(|profile| profile.name)
+}

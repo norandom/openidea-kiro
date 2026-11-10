@@ -195,6 +195,9 @@
 //! | CODE_CONFIG_INVALID | error | The code-rules configuration is invalid |
 //! | CODE_RATCHET | warning | A routine metric rose against the before side |
 //! | CODE_DUPLICATE_BLOCK | warning | A run of code lines also stands at another location |
+//! | CODE_SCATTERED_DEFINITION | warning | The same module-level definition stands in more files than allowed |
+//! | CODE_DEFINITION_AMBIGUOUS | info | One name carries several scattered values; they were not merged |
+//! | CODE_SCATTERED_STATE | info | One subject is compared with literal values across more files than allowed |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -272,6 +275,9 @@
 //!     ("CODE_CONFIG_INVALID", Severity::Error, "The code-rules configuration is invalid"),
 //!     ("CODE_RATCHET", Severity::Warning, "A routine metric rose against the before side"),
 //!     ("CODE_DUPLICATE_BLOCK", Severity::Warning, "A run of code lines also stands at another location"),
+//!     ("CODE_SCATTERED_DEFINITION", Severity::Warning, "The same module-level definition stands in more files than allowed"),
+//!     ("CODE_DEFINITION_AMBIGUOUS", Severity::Info, "One name carries several scattered values; they were not merged"),
+//!     ("CODE_SCATTERED_STATE", Severity::Info, "One subject is compared with literal values across more files than allowed"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {

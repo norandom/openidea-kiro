@@ -7,12 +7,12 @@
 
 use std::collections::BTreeMap;
 
-use ast_grep_core::AstGrep;
 use ast_grep_core::tree_sitter::StrDoc;
+use ast_grep_core::{AstGrep, Node};
+use ast_grep_language::SupportLang;
 use kiro_core::code::clones::{FileLines, LineHash};
 
 use crate::measure::{comment_kinds, language_of};
-use crate::walk::SourceBundle;
 
 fn fnv(hash: u64, bytes: &[u8]) -> u64 {
     let mut hash = hash;
@@ -23,17 +23,16 @@ fn fnv(hash: u64, bytes: &[u8]) -> u64 {
     hash
 }
 
-/// The code lines of one source text, or `None` when no profile covers the
-/// file or it does not parse: such a file takes no part in the search.
+/// The code lines of a parsed file, or `None` when the tree has a hole.
 #[must_use]
-pub fn file_lines(path: &str, text: &str) -> Option<FileLines> {
-    let lang = language_of(path)?;
-    let comments = comment_kinds(path)?;
-    let normalized = text.replace("\r\n", "\n");
-    let tree = StrDoc::try_new(&normalized, lang).map(AstGrep::doc).ok()?;
+pub fn lines_of(
+    root: &Node<'_, StrDoc<SupportLang>>,
+    comments: &[&str],
+    path: &str,
+) -> Option<FileLines> {
     let mut by_line: BTreeMap<usize, u64> = BTreeMap::new();
     // Document order: children are pushed reversed so they pop in order.
-    let mut stack = vec![tree.root()];
+    let mut stack = vec![root.clone()];
     while let Some(node) = stack.pop() {
         if node.is_error() || node.is_missing() {
             return None;
@@ -69,13 +68,13 @@ pub fn file_lines(path: &str, text: &str) -> Option<FileLines> {
     })
 }
 
-/// The code lines of every file of a bundle that a profile covers and
-/// that parses.
+/// The code lines of one source text, or `None` when no profile covers the
+/// file or it does not parse: such a file takes no part in the search.
 #[must_use]
-pub fn bundle_lines(bundle: &SourceBundle) -> Vec<FileLines> {
-    bundle
-        .files
-        .iter()
-        .filter_map(|file| file_lines(&file.path, &file.text))
-        .collect()
+pub fn file_lines(path: &str, text: &str) -> Option<FileLines> {
+    let lang = language_of(path)?;
+    let comments = comment_kinds(path)?;
+    let normalized = text.replace("\r\n", "\n");
+    let tree = StrDoc::try_new(&normalized, lang).map(AstGrep::doc).ok()?;
+    lines_of(&tree.root(), comments, path)
 }

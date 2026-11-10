@@ -431,6 +431,21 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Warning,
         description: "A run of code lines also stands at another location",
     },
+    CodeInfo {
+        code: "CODE_SCATTERED_DEFINITION",
+        severity: Severity::Warning,
+        description: "The same module-level definition stands in more files than allowed",
+    },
+    CodeInfo {
+        code: "CODE_DEFINITION_AMBIGUOUS",
+        severity: Severity::Info,
+        description: "One name carries several scattered values; they were not merged",
+    },
+    CodeInfo {
+        code: "CODE_SCATTERED_STATE",
+        severity: Severity::Info,
+        description: "One subject is compared with literal values across more files than allowed",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -505,6 +520,9 @@ pub mod codes {
     pub const CODE_CONFIG_INVALID: &str = "CODE_CONFIG_INVALID";
     pub const CODE_RATCHET: &str = "CODE_RATCHET";
     pub const CODE_DUPLICATE_BLOCK: &str = "CODE_DUPLICATE_BLOCK";
+    pub const CODE_SCATTERED_DEFINITION: &str = "CODE_SCATTERED_DEFINITION";
+    pub const CODE_DEFINITION_AMBIGUOUS: &str = "CODE_DEFINITION_AMBIGUOUS";
+    pub const CODE_SCATTERED_STATE: &str = "CODE_SCATTERED_STATE";
 }
 
 /// The twenty check finding codes introduced by the constraints engine.
@@ -565,8 +583,8 @@ mod tests {
     }
 
     #[test]
-    fn catalogue_has_70_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 70);
+    fn catalogue_has_73_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 73);
         assert_eq!(CHECK_CODES.len(), 20);
         let all = [
             codes::SPEC_DOC_MISSING,
@@ -639,8 +657,11 @@ mod tests {
             codes::CODE_CONFIG_INVALID,
             codes::CODE_RATCHET,
             codes::CODE_DUPLICATE_BLOCK,
+            codes::CODE_SCATTERED_DEFINITION,
+            codes::CODE_DEFINITION_AMBIGUOUS,
+            codes::CODE_SCATTERED_STATE,
         ];
-        assert_eq!(all.len(), 70);
+        assert_eq!(all.len(), 73);
         for c in all {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),

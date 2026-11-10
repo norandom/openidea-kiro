@@ -59,7 +59,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 1.3_
   - _Requirements: 1.1, 2.1, 2.3, 3.1, 3.2, 4.2_
 
-- [ ] 2.2 Extract supported module-level definitions
+- [x] 2.2 Extract supported module-level definitions
   - Extract Rust const/static, Python module assignments and TS/JS top-level bindings from shared texts.
   - Apply whitespace-only normalization and the 12-line initializer cap; record unreadable cases without evaluating referenced values.
   - Done when language fixtures capture expected name/value/ranges and long or malformed definitions cannot enter groups.
@@ -68,7 +68,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Requirements: 1.1, 1.4, 1.6, 4.2_
 
 - [ ] 3. Deliver the scattered-definition consolidation slice
-- [ ] 3.1 Group definitions by name and initializer
+- [x] 3.1 Group definitions by name and initializer
   - Count distinct files per name/value, apply idiom ignores and report selected files with up to three other locations.
   - Keep different values separate and add ambiguity information when each value group reaches the required population.
   - Done when threshold/equality, unrelated values and ignore fixtures yield exact hints without merging unrelated definitions.
@@ -84,7 +84,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 3.1_
   - _Requirements: 1.2, 1.4, 4.1, 4.2_
 
-- [ ] 3.3 Prove consolidation removes the real-binary finding
+- [x] 3.3 Prove consolidation removes the real-binary finding
   - Run a four-file repeated-definition fixture, consolidate the declaration and repeat the same check.
   - Assert output/exit/file effects through shared evidence and include a disabled-rule variant that breaks the journey.
   - Done when current L1 evidence proves consolidation without state or data-rule prerequisites.
