@@ -97,6 +97,38 @@ reason = "fixtures are measured by tests, not judged"
 - An unknown key, metric or severity, a limit that is not a number, a missing reason or an invalid path stops the command with `CODE_CONFIG_INVALID` and exit code 2 before anything is measured. All problems are listed at once, each with its key.
 - `kiro-cli code config` prints every effective limit, scope and ignore with its origin (`default` or `file`) and reason, and a digest of the effective configuration. The digest also appears in the coverage line of every check.
 
+
+### Settings of the rules that count across files
+
+Duplicate blocks, similar routines, scattered definitions, scattered state and positional data access are set under `[rules.<name>]` in the same file:
+
+```toml
+[rules.duplicate_block]
+min_lines = 20
+reason = "generated tables repeat short runs"
+
+[rules.similar_family]
+severity = "off"
+reason = "not adopted yet"
+
+[rules.scattered_definition]
+ignored_names = ["VERSION"]
+reason = "every package states its own version"
+```
+
+| Rule | Built-in severity | Settings and built-in values |
+| --- | --- | --- |
+| `duplicate_block` | warning | `min_lines` 12 |
+| `similar_family` | warning | `threshold` 0.9, `min_statements` 6, `ignored_names` (added to the built-in ones) |
+| `scattered_definition` | warning | `max_files` 3, `ignored_names` (added to the built-in ones) |
+| `scattered_state` | info | `max_files` 3, `min_states` 2 |
+| `positional_access` | warning | none |
+
+- Every rule takes `severity`: `error`, `warning`, `info` or `off`. A rule that is off does not run, and the coverage line says `off (configuration)` for it.
+- **A reason is required** when a setting makes a rule report less than the built-in one: a weaker severity, a higher number, an added ignored name. A stricter setting needs none.
+- A key that a rule does not have, an unknown rule and a value out of range stop the command like every other configuration error.
+- `kiro-cli code config` prints one line per rule with its effective values and reason.
+
 Changing this file is a human decision. An agent that meets a finding repairs the code; it does not relax a limit, add an ignore or widen a scope to get a pass.
 
 ## The ratchet: only regression blocks
@@ -153,7 +185,7 @@ Status: first rule of spec `clone-constraints`.
 - A renamed identifier, a reordered statement or a line broken differently changes the line and ends the run. Copies that were renamed or reshaped are the subject of the similar-routine rule below.
 - A block that occurs at more than 64 locations is not expanded; the coverage line counts such windows.
 - The coverage line ends with what was searched, for example `duplicate blocks: 158 files searched, 96 blocks of at least 12 lines, 0 frequent windows skipped`.
-- The length of 12 lines and the severity cannot be configured yet, and duplicates are not compared with a before side: an old copy and a new one look the same.
+- The length of 12 lines and the severity are set under `[rules.duplicate_block]`. Duplicates are not compared with a before side: an old copy and a new one look the same.
 
 ## Similar routines
 
@@ -162,7 +194,7 @@ Status: first rule of spec `clone-constraints`.
 - **What is compared.** Routines of at least 6 statements, within one language (TypeScript with and without JSX is one language). Each routine is reduced to its shape: the sequence of its tokens with every identifier replaced by one placeholder and every string or number literal by another. Keywords, operators, punctuation, booleans and built-in type names stay. Comments and routines nested inside are left out.
 - **The similarity** of two shapes is `2 * M / (len(a) + len(b))`, where `M` is the matched length computed by the `difflib-fast` library (the matching of Python's `difflib` without its junk heuristic). This project writes no scorer. The ratio depends on the order of its arguments, so each pair is scored once in a fixed order: the shorter shape first, on equal length the smaller one.
 - **Refused before scoring.** The matched length can exceed neither the shorter shape nor the tokens both shapes have in common, counted with multiplicity. A pair whose ceiling lies below 0.9 is not scored. Both ceilings are exact upper bounds: a test over every pair of strings up to five characters over three letters shows that no ratio exceeds them, so no family is lost.
-- **Not members.** Routines named `main`, `new`, `default`, `fmt` or `__init__`: their likeness is the convention. A routine nested in another member of its family. After a routine is taken out, the families are computed again, so a removed routine never holds two others together.
+- **Not members.** Routines named `main`, `new`, `default` or `fmt`, test hooks (`setUp`, `tearDown`, `setup`, `teardown`, `setup_method`, `teardown_method`, `setup_class`, `teardown_class`) and every Python name with two underscores on each side: their likeness is the convention. A routine nested in another member of its family. After a routine is taken out, the families are computed again, so a removed routine never holds two others together.
 - **Budget.** At most 2,000,000 pairs are scored in one run. When the budget runs out the coverage line says so; missing families are then no proof that there are none.
 
 What the rule finds and what it does not, measured on three labeled pairs:
@@ -175,7 +207,7 @@ What the rule finds and what it does not, measured on three labeled pairs:
 
 The same behaviour written in another shape is not found, and the rule does not claim that two members behave the same. A finder based on embeddings could see such rewrites; its output would be a periodic report for a person or an agent to read, never a reason to refuse a change.
 
-The threshold, the statement floor and the ignored names cannot be configured yet. Families are not compared with a before side.
+The threshold, the statement floor and further ignored names are set under `[rules.similar_family]`. Families are not compared with a before side.
 
 ## Scattered definitions and scattered state
 
@@ -196,7 +228,7 @@ Status: first rules of spec `code-locality-data`. Both count across the whole pr
 - A subject whose comparisons all stand in one file is not reported: that state already has an owner.
 - The rule cannot see a state carried in booleans, in a number compared with `<`, in a literal that reaches the comparison through a variable, or in dispatch through a table or polymorphism.
 
-The thresholds (3 files, 2 values) and the ignored names cannot be configured yet. Neither rule is compared with a before side. Vocabulary grounding of column names and scattered schema are not built.
+The thresholds (3 files, 2 values) and further ignored names are set under `[rules.scattered_definition]` and `[rules.scattered_state]`. Neither rule is compared with a before side. Vocabulary grounding of column names and scattered schema are not built.
 
 ## Data addressed by position
 

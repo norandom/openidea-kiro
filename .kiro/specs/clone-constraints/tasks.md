@@ -75,7 +75,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Requirements: 1.1, 1.7, 2.3, 2.4_
 
 - [ ] 3. Deliver the first duplicate journey
-- [ ] 3.1 Integrate clone configuration and results into the base gate
+- [x] 3.1 Integrate clone configuration and results into the base gate
   - Request additive module/catalogue/config and orchestration registrations through base owners, serializing shared files.
   - Pass private extension results to common reports/coverage without changing numeric baselines or source walking.
   - Done when the real code command reports enabled clones and disabled/unavailable coverage explicitly.

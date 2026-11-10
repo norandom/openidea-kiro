@@ -21,7 +21,7 @@ fn write(root: &Path, relative: &str, text: &str) {
     std::fs::write(path, text).unwrap();
 }
 
-/// A routine of eight statements that reads the non-empty lines of a text.
+/// A routine of nine statements that reads the non-empty lines of a text.
 fn reader(name: &str, text: &str, item: &str, out: &str) -> String {
     format!(
         "pub fn {name}(source: &str) -> Vec<String> {{
@@ -175,5 +175,99 @@ fn a_short_routine_and_another_language_are_not_compared() {
             .contains("similar routines: 2 of 4 routines compared, 0 pairs scored"),
         "{}",
         out.stdout
+    );
+}
+
+/// A project with a renamed copy in two files, and the family rule set
+/// by `rule`, the body of `[rules.similar_family]`.
+fn copies_with_rule(rule: &str) -> (tempfile::TempDir, std::path::PathBuf) {
+    let (temp, root) = setup_tree(&core_fixture_path("minimal"));
+    write(
+        &root,
+        "src/demo.rs",
+        &reader("load_users", "text", "trimmed", "users"),
+    );
+    write(
+        &root,
+        "src/ui.rs",
+        &reader("read_orders", "content", "entry", "orders"),
+    );
+    if !rule.is_empty() {
+        write(
+            &root,
+            ".kiro/code-rules.toml",
+            &format!("[rules.similar_family]\n{rule}"),
+        );
+    }
+    (temp, root)
+}
+
+#[test]
+fn turning_a_rule_off_needs_a_reason() {
+    let (_on, with_rule) = copies_with_rule("");
+    assert_eq!(run_cli_in(&with_rule, CORE_TASK).code, 1);
+
+    // Without a reason the configuration is refused before anything runs.
+    let (_temp, root) = copies_with_rule("severity = \"off\"\n");
+    let refused = run_cli_in(&root, CORE_TASK);
+    assert_eq!(refused.code, 2, "{}", refused.stdout);
+    assert!(
+        refused.stderr.contains(
+            "rules.similar_family: reports less than the built-in rule and needs a reason"
+        ),
+        "{}{}",
+        refused.stdout,
+        refused.stderr
+    );
+}
+
+#[test]
+fn a_rule_turned_off_reports_nothing_and_says_so() {
+    let (_temp, root) = copies_with_rule("severity = \"off\"\nreason = \"not adopted yet\"\n");
+    let off = run_cli_in(&root, CORE_TASK);
+    assert_eq!(off.code, 0, "{}", off.stdout);
+    assert!(!off.stdout.contains("CODE_SIMILAR_FAMILY"));
+    assert!(
+        off.stdout.contains("similar routines: off (configuration)"),
+        "{}",
+        off.stdout
+    );
+}
+
+#[test]
+fn a_higher_floor_leaves_smaller_routines_out() {
+    // The two routines have nine statements each.
+    let (_temp, root) =
+        copies_with_rule("min_statements = 10\nreason = \"small routines repeat\"\n");
+    let floor = run_cli_in(&root, CORE_TASK);
+    assert_eq!(floor.code, 0, "{}", floor.stdout);
+    assert!(
+        floor
+            .stdout
+            .contains("similar routines: 0 of 2 routines compared"),
+        "{}",
+        floor.stdout
+    );
+}
+
+#[test]
+fn a_rule_set_to_error_blocks_at_the_default_threshold() {
+    let (_temp, root) = copies_with_rule("severity = \"error\"\n");
+    let strict = run_cli_in(&root, &["code", "check", "--task", "demo:1.1"]);
+    assert_eq!(strict.code, 1, "{}", strict.stdout);
+    assert!(
+        strict
+            .stdout
+            .contains("src/demo.rs:1: ERROR CODE_SIMILAR_FAMILY"),
+        "{}",
+        strict.stdout
+    );
+    let shown = run_cli_in(&root, &["code", "config"]);
+    assert!(
+        shown
+            .stdout
+            .contains("rule similar_family: error, threshold 0.9, min_statements 6\n"),
+        "{}",
+        shown.stdout
     );
 }

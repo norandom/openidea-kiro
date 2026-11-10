@@ -7,15 +7,9 @@
 //! connects them.
 
 use kiro_code::{ChangeSet, SourceBundle};
-use kiro_core::code::clones::{DEFAULT_MIN_LINES, duplicate_blocks, duplicate_findings};
-use kiro_core::code::data::positional_findings;
-use kiro_core::code::families::{FamilyFacts, IGNORED_NAMES, families, family_findings};
-use kiro_core::code::locality::{
-    DEFAULT_MAX_FILES, DEFAULT_MIN_STATES, definition_findings, state_findings,
-};
 use kiro_core::code::{
-    Before, CodeConfig, CodeFacts, CodeFinding, CodeReport, EvaluateInput, FACTS_SCHEMA_VERSION,
-    evaluate, highest, matches_any, report, spec_paths, task_paths,
+    Before, CodeConfig, CodeFacts, CodeReport, EvaluateInput, FACTS_SCHEMA_VERSION, evaluate,
+    highest, matches_any, report, spec_paths, task_paths,
 };
 use kiro_core::source::{Feature, Workspace};
 use serde::{Deserialize, Serialize};
@@ -327,82 +321,6 @@ fn before_side(
     Ok((Some(side), None))
 }
 
-/// What the rules that count across files found, and what they covered.
-struct CrossFile {
-    findings: Vec<CodeFinding>,
-    /// One line per rule family, for the coverage line.
-    notes: Vec<String>,
-}
-
-/// Judges the rules that count across files. They search the whole
-/// project: a copy or a repeated definition counts wherever the original
-/// stands. Every file is parsed once for all of them.
-fn cross_file(root: &ProjectRoot, selected: &[String]) -> Result<CrossFile, Failure> {
-    let project = kiro_code::read_bundle(root.path(), &measurable)
-        .map_err(|error| Failure::new(error.to_string()))?;
-    let scan = kiro_code::scan::scan(&project);
-    let is_selected = |path: &str| selected.iter().any(|selected_path| selected_path == path);
-    let (blocks, searched) = duplicate_blocks(&scan.lines, DEFAULT_MIN_LINES);
-    let mut findings = duplicate_findings(&blocks, &is_selected);
-    let definitions = definition_findings(&scan.locality, &is_selected, DEFAULT_MAX_FILES);
-    let states = state_findings(
-        &scan.locality,
-        &is_selected,
-        DEFAULT_MAX_FILES,
-        DEFAULT_MIN_STATES,
-    );
-    let notes = vec![
-        format!(
-            "duplicate blocks: {} files searched, {} blocks of at least {DEFAULT_MIN_LINES} lines, {} frequent windows skipped",
-            searched.files,
-            blocks.len(),
-            searched.skipped_windows
-        ),
-        format!(
-            "locality: {} files searched, {} module-level definitions, {} literal comparisons",
-            scan.locality.files,
-            scan.locality.bindings.len(),
-            scan.locality.comparisons.len()
-        ),
-        similar_routines(&scan.families, &is_selected, &mut findings),
-        format!(
-            "data access: {} files searched, {} positional accesses; column names were not grounded (no data topic is configured)",
-            scan.data.files,
-            scan.data.accesses.len()
-        ),
-    ];
-    findings.extend(definitions);
-    findings.extend(states);
-    findings.extend(positional_findings(&scan.data, &is_selected));
-    Ok(CrossFile { findings, notes })
-}
-
-/// Adds the findings of the similar-routine families and returns what
-/// the comparison covered. An incomplete comparison is said so: absent
-/// families are then no proof that there are none.
-fn similar_routines(
-    facts: &FamilyFacts,
-    is_selected: &dyn Fn(&str) -> bool,
-    findings: &mut Vec<CodeFinding>,
-) -> String {
-    let found = families(facts, IGNORED_NAMES);
-    findings.extend(family_findings(facts, &found, is_selected));
-    let coverage = &facts.coverage;
-    let incomplete = if coverage.complete {
-        ""
-    } else {
-        "; the pair budget ran out, families may be missing"
-    };
-    format!(
-        "similar routines: {} of {} routines compared, {} pairs scored, {} refused before scoring, {} families{incomplete}",
-        coverage.eligible,
-        coverage.routines,
-        coverage.scored_pairs,
-        coverage.pruned_pairs,
-        found.len()
-    )
-}
-
 /// Puts the reason there is no before side into the report, unless the
 /// report already gives it.
 fn explain_missing_before(report: &mut CodeReport, reason: String) {
@@ -459,7 +377,7 @@ pub fn run(
     }
     let selected = selected_paths(&bundle);
     let (before_side, no_before) = before_side(root, changes, &selected)?;
-    let cross_file = cross_file(root, &selected)?;
+    let cross_file = crate::cross::judge(root, &selected, config.rules())?;
 
     let mut report = evaluate(&EvaluateInput {
         facts: &facts,

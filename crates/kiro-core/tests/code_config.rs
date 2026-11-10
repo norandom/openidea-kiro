@@ -234,8 +234,8 @@ fn unknown_keys_and_malformed_toml_are_rejected() {
     );
     assert!(!unknown[0].message.contains('\n'));
 
-    let top = parse_config(Some("[rules]\nx = 1\n")).unwrap_err();
-    assert!(top[0].message.contains("rules"), "{}", top[0].message);
+    let top = parse_config(Some("[settings]\nx = 1\n")).unwrap_err();
+    assert!(top[0].message.contains("settings"), "{}", top[0].message);
 
     let not_a_number =
         parse_config(Some("[limits.routine.cyclomatic]\nmax = \"ten\"\n")).unwrap_err();

@@ -142,8 +142,9 @@ fn an_ignored_name_takes_no_part_and_cannot_bridge() {
         &[(0, 1, 0.95), (1, 2, 0.95), (3, 4, 0.99)],
     );
     assert!(families(&facts, IGNORED_NAMES).is_empty());
-    // With nothing ignored the bridge holds.
-    assert_eq!(members(&families(&facts, &[])), [vec![0, 1, 2], vec![3, 4]]);
+    // With no names ignored the bridge holds; a Python name with two
+    // underscores on each side is still never compared.
+    assert_eq!(members(&families(&facts, &[])), [vec![0, 1, 2]]);
 }
 
 #[test]
@@ -206,4 +207,22 @@ fn separate_groups_are_separate_families_in_a_stable_order() {
     let mut reversed = facts.clone();
     reversed.edges.reverse();
     assert_eq!(families(&reversed, IGNORED_NAMES), found);
+}
+
+#[test]
+fn test_hooks_are_ignored_by_default_and_other_names_can_be_added() {
+    let facts = facts(
+        vec![
+            routine("tests/a.py", 1, 16, "TestA.setUp"),
+            routine("tests/b.py", 1, 16, "TestB.setUp"),
+            routine("src/a.rs", 1, 16, "visit_item"),
+            routine("src/b.rs", 1, 16, "visit_block"),
+        ],
+        &[(0, 1, 1.0), (2, 3, 0.95)],
+    );
+    assert_eq!(members(&families(&facts, IGNORED_NAMES)), [[2, 3]]);
+    // A project adds a name of its own.
+    let mut ignored = IGNORED_NAMES.to_vec();
+    ignored.push("visit_item");
+    assert!(families(&facts, &ignored).is_empty());
 }

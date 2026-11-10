@@ -29,7 +29,12 @@ pub struct ProjectScan {
 
 /// Scans one file. A file that no profile covers or that does not parse
 /// contributes nothing: no rule is judged on a tree with holes.
-fn scan_file(file: &SourceText, out: &mut ProjectScan, shapes: &mut ShapeCollector) {
+fn scan_file(
+    file: &SourceText,
+    min_statements: u32,
+    out: &mut ProjectScan,
+    shapes: &mut ShapeCollector,
+) {
     let (Some(lang), Some(comments), Some(profile)) = (
         language_of(&file.path),
         comment_kinds(&file.path),
@@ -54,23 +59,48 @@ fn scan_file(file: &SourceText, out: &mut ProjectScan, shapes: &mut ShapeCollect
         &mut out.locality.comparisons,
     );
     out.locality.files = out.locality.files.saturating_add(1);
-    shapes.add_file(&root, profile, comments, &file.path, DEFAULT_MIN_STATEMENTS);
+    shapes.add_file(&root, profile, comments, &file.path, min_statements);
     if crate::data_access::covers(profile.name) {
         crate::data_access::extract(&root, profile.name, &file.path, &mut out.data.accesses);
         out.data.files = out.data.files.saturating_add(1);
     }
 }
 
-/// Scans every file of the bundle that a profile covers.
+/// What the similar-routine comparison takes from the configuration.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ScanSettings {
+    /// Fewest statements of a routine that is compared.
+    pub min_statements: u32,
+    /// Lowest similarity that connects two routines.
+    pub threshold: f64,
+}
+
+impl Default for ScanSettings {
+    fn default() -> Self {
+        Self {
+            min_statements: DEFAULT_MIN_STATEMENTS,
+            threshold: DEFAULT_THRESHOLD,
+        }
+    }
+}
+
+/// Scans every file of the bundle that a profile covers, with the
+/// built-in settings.
 #[must_use]
 pub fn scan(bundle: &SourceBundle) -> ProjectScan {
+    scan_with(bundle, &ScanSettings::default())
+}
+
+/// Scans every file of the bundle that a profile covers.
+#[must_use]
+pub fn scan_with(bundle: &SourceBundle, settings: &ScanSettings) -> ProjectScan {
     let mut out = ProjectScan::default();
     let mut shapes = ShapeCollector::default();
     for file in &bundle.files {
-        scan_file(file, &mut out, &mut shapes);
+        scan_file(file, settings.min_statements, &mut out, &mut shapes);
     }
     out.locality.bindings.sort();
     out.locality.comparisons.sort();
-    out.families = shapes.finish(DEFAULT_THRESHOLD);
+    out.families = shapes.finish(settings.threshold);
     out
 }

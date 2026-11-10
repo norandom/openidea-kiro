@@ -12,6 +12,7 @@ use clap::Parser;
 pub mod check;
 pub mod cli;
 pub mod code;
+pub mod cross;
 pub mod exit;
 pub mod fs;
 pub mod import;

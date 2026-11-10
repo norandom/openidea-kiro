@@ -19,9 +19,23 @@ use crate::finding::{Finding, Severity, codes};
 pub const DEFAULT_THRESHOLD: f64 = 0.9;
 /// Fewest statements of a routine that is compared.
 pub const DEFAULT_MIN_STATEMENTS: u32 = 6;
-/// Routine names that are not compared: every type has its own, and their
-/// likeness is the convention, not a copy.
-pub const IGNORED_NAMES: &[&str] = &["main", "new", "default", "fmt", "__init__"];
+/// Routine names that are not compared: every type or test class has its
+/// own, and their likeness is the convention, not a copy. A Python name
+/// with two underscores on each side is never compared either.
+pub const IGNORED_NAMES: &[&str] = &[
+    "main",
+    "new",
+    "default",
+    "fmt",
+    "setUp",
+    "tearDown",
+    "setup",
+    "teardown",
+    "setup_method",
+    "teardown_method",
+    "setup_class",
+    "teardown_class",
+];
 /// Most other members named in one finding.
 const MAX_OTHERS: usize = 3;
 
@@ -78,6 +92,10 @@ pub struct FamilyFacts {
 pub struct Family {
     pub members: Vec<usize>,
     pub weakest: f64,
+}
+
+fn is_dunder(name: &str) -> bool {
+    name.len() > 4 && name.starts_with("__") && name.ends_with("__")
 }
 
 fn last_segment(name: &str) -> &str {
@@ -178,7 +196,10 @@ pub fn families(facts: &FamilyFacts, ignored: &[&str]) -> Vec<Family> {
     let mut alive: Vec<bool> = facts
         .routines
         .iter()
-        .map(|routine| !ignored.contains(&last_segment(&routine.name)))
+        .map(|routine| {
+            let name = last_segment(&routine.name);
+            !is_dunder(name) && !ignored.contains(&name)
+        })
         .collect();
     let groups = loop {
         let groups = components(facts, &alive);

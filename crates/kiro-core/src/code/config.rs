@@ -36,6 +36,7 @@ use std::collections::BTreeMap;
 use serde::Deserialize;
 
 use super::facts::{Scope, is_valid_path, metrics};
+use super::rules::{RawRules, RuleSettings};
 use crate::finding::Severity;
 
 /// Project-relative path of the configuration file.
@@ -191,6 +192,7 @@ pub struct CodeConfig {
     file: BTreeMap<LimitKey, Override>,
     scopes: Vec<ScopeRule>,
     ignores: Vec<IgnoreRule>,
+    rules: RuleSettings,
 }
 
 fn built_in() -> BTreeMap<LimitKey, Limit> {
@@ -234,6 +236,7 @@ impl Default for CodeConfig {
             file: BTreeMap::new(),
             scopes: Vec::new(),
             ignores: Vec::new(),
+            rules: RuleSettings::default(),
         }
     }
 }
@@ -284,6 +287,8 @@ struct RawFile {
     scopes: Vec<RawScope>,
     #[serde(default)]
     ignores: Vec<RawIgnore>,
+    #[serde(default)]
+    rules: RawRules,
 }
 
 fn has_reason(reason: Option<&String>) -> bool {
@@ -469,6 +474,7 @@ pub fn parse(text: Option<&str>) -> Result<CodeConfig, Vec<ConfigError>> {
         });
     }
 
+    let rules = RuleSettings::parse(&raw.rules, &mut parser.errors);
     if !parser.errors.is_empty() {
         return Err(parser.errors);
     }
@@ -477,6 +483,7 @@ pub fn parse(text: Option<&str>) -> Result<CodeConfig, Vec<ConfigError>> {
         file,
         scopes,
         ignores,
+        rules,
     })
 }
 
@@ -544,6 +551,12 @@ impl CodeConfig {
         best.map(|(_, limit, rule_path)| (limit, rule_path))
     }
 
+    /// The settings of the rules that count across files.
+    #[must_use]
+    pub fn rules(&self) -> &RuleSettings {
+        &self.rules
+    }
+
     /// The ignore rule that covers `path`, if any.
     #[must_use]
     pub fn ignored(&self, path: &str) -> Option<&IgnoreRule> {
@@ -585,6 +598,7 @@ impl CodeConfig {
                 ));
             }
         }
+        out.push_str(&self.rules.effective_text());
         for rule in &self.ignores {
             out.push_str(&format!(
                 "ignore {} reason: {}\n",

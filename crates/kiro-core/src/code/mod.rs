@@ -16,6 +16,7 @@ pub mod limits;
 pub mod locality;
 pub mod ratchet;
 pub mod report;
+pub mod rules;
 pub mod telemetry;
 
 pub use attribution::{
