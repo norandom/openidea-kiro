@@ -18,7 +18,9 @@ use std::collections::{BTreeMap, BTreeSet};
 pub use attribution::{
     Attribution, SelectionError, attribute, matches_any, spec_paths, task_paths,
 };
-pub use config::{CodeConfig, Limit, LimitSource};
+pub use config::{
+    CONFIG_PATH, CodeConfig, ConfigError, IgnoreRule, Limit, LimitSource, parse as parse_config,
+};
 pub use facts::{
     CodeFacts, Completeness, CoverageCell, EntityKey, FACTS_SCHEMA_VERSION, MetricId, Observation,
     ProducerId, Scope, metrics,
@@ -120,13 +122,21 @@ fn line_of(finding: Finding, line: u32) -> Finding {
 #[must_use]
 pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
     let selected: BTreeSet<&str> = input.selected.iter().map(String::as_str).collect();
-    let is_selected = |path: &str| selected.contains(path);
     let mut findings: Vec<CodeFinding> = Vec::new();
     let mut coverage = Coverage {
         selected: input.selected.len(),
         before_side: "none: no baseline and no revision given, so nothing is ratcheted".to_string(),
+        // A file the configuration ignores is measured but not judged.
+        ignored: input
+            .selected
+            .iter()
+            .filter(|path| input.config.ignored(path).is_some())
+            .cloned()
+            .collect(),
         ..Coverage::default()
     };
+    let ignored: BTreeSet<&str> = coverage.ignored.iter().map(String::as_str).collect();
+    let is_selected = |path: &str| selected.contains(path) && !ignored.contains(path);
 
     // Ownership and file state are resolved once per selected file.
     let ownership: BTreeMap<&str, Attribution> = input
@@ -287,12 +297,14 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
     // 5. What the run measured: always reported, so a clean report is never
     //    mistaken for a checked one.
     let message = format!(
-        "{} files selected: {} measured, {} failed to parse, {} not measured (no profile for the language), {} mapped by no spec; before side: {}",
+        "{} files selected: {} measured, {} failed to parse, {} not measured (no profile for the language), {} ignored by configuration, {} mapped by no spec; configuration {}; before side: {}",
         coverage.selected,
         coverage.measured,
         coverage.failed.len(),
         coverage.unmeasured.len(),
+        coverage.ignored.len(),
         coverage.unowned,
+        input.config.digest(),
         coverage.before_side
     );
     findings.push(CodeFinding {

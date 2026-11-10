@@ -47,7 +47,7 @@ pub struct CodeFinding {
     pub metric: Option<String>,
     pub value: Option<f64>,
     pub limit: Option<f64>,
-    pub limit_source: Option<&'static str>,
+    pub limit_source: Option<String>,
     pub entity: Option<EntityKey>,
     pub owners: Attribution,
 }
@@ -63,6 +63,8 @@ pub struct Coverage {
     pub failed: Vec<String>,
     /// Selected files in a language no profile covers.
     pub unmeasured: Vec<String>,
+    /// Selected files the configuration excludes from judgement.
+    pub ignored: Vec<String>,
     /// Selected files mapped by no spec.
     pub unowned: usize,
     /// The side the ratchet compares with, or why there is none.
@@ -249,6 +251,7 @@ pub fn json(report: &CodeReport) -> String {
             "failed": report.coverage.failed,
             "unmeasured": report.coverage.unmeasured,
             "unowned": report.coverage.unowned,
+            "ignored": report.coverage.ignored,
             "before_side": report.coverage.before_side,
         },
         "summary": { "errors": errors, "warnings": warnings, "info": info },

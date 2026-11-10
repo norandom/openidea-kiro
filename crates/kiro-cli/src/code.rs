@@ -92,6 +92,20 @@ fn load_specs(source: FsSource, discovered: Vec<String>) -> Vec<Feature> {
         .collect()
 }
 
+/// Loads `.kiro/code-rules.toml`; the built-in limits apply when it is
+/// absent. Every problem is reported at once, before anything is measured.
+pub fn load_config(root: &ProjectRoot) -> Result<CodeConfig, Failure> {
+    let text = crate::fs::read_optional(&root.join(kiro_core::code::CONFIG_PATH))?;
+    kiro_core::code::parse_config(text.as_deref()).map_err(|errors| {
+        let problems: Vec<String> = errors.iter().map(ToString::to_string).collect();
+        Failure::new(format!(
+            "CODE_CONFIG_INVALID {}: {}",
+            kiro_core::code::CONFIG_PATH,
+            problems.join("; ")
+        ))
+    })
+}
+
 /// The result of a run: the report and, on request, the highest values.
 pub struct CodeRun {
     pub report: CodeReport,
@@ -107,6 +121,8 @@ pub fn run(
     selection: &CodeSelection,
     show_highest: bool,
 ) -> Result<CodeRun, Failure> {
+    // The configuration is validated before anything is read or measured.
+    let config = load_config(root)?;
     let features = load_specs(source, discovered);
     let specs: Vec<&Feature> = features.iter().collect();
 
@@ -156,7 +172,6 @@ pub fn run(
     selected.sort();
     selected.dedup();
 
-    let config = CodeConfig::default();
     let report = evaluate(&EvaluateInput {
         facts: &facts,
         config: &config,

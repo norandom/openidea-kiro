@@ -60,6 +60,13 @@ pub const PROFILES: &[CommandProfile] = &[
         exceptions: &[],
     },
     CommandProfile {
+        id: "code config",
+        reports: false,
+        gates: false,
+        artifact: false,
+        exceptions: &[],
+    },
+    CommandProfile {
         id: "graph",
         reports: false,
         gates: false,
@@ -229,6 +236,8 @@ pub fn selection_of(all: bool, features: &[String]) -> Result<Selection, Failure
 pub enum CodeCommand {
     /// Measure the selected files and judge them against the limits
     Check(CodeCheckArgs),
+    /// Print every effective limit, scope and ignore with its origin and reason
+    Config,
 }
 
 /// Arguments for `code check`. Exactly one selection is required.

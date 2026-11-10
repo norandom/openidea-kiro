@@ -365,3 +365,111 @@ fn show_highest_reads_as_a_distribution() {
             .contains("  routine nesting: 4 at src/demo.rs:1 (owner)")
     );
 }
+
+// ------------------------------------------------------------ configuration
+
+#[test]
+fn a_configured_error_severity_blocks_at_the_default_threshold() {
+    let (_temp, root) = project(VIOLATING);
+    write(
+        &root,
+        ".kiro/code-rules.toml",
+        "[limits.routine.nesting]\nseverity = \"error\"\n",
+    );
+    let out = run_cli_in(&root, &["code", "check", "--task", "demo:1.1"]);
+    assert_eq!(out.code, 1, "{}", out.stdout);
+    assert!(
+        out.stdout
+            .contains("ERROR CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (file)")
+    );
+}
+
+#[test]
+fn an_invalid_configuration_stops_before_anything_is_measured() {
+    let (_temp, root) = project("pub fn broken( {\n");
+    write(
+        &root,
+        ".kiro/code-rules.toml",
+        "[limits.routine.nesting]\nmax = 9\n\n[limits.routine.speed]\nmax = 1\n",
+    );
+    for args in [&["code", "check", "--all"][..], &["code", "config"][..]] {
+        let out = run_cli_in(&root, args);
+        assert_eq!(out.code, 2, "{args:?}");
+        assert_eq!(out.stdout, "", "nothing was measured or printed");
+        assert!(
+            out.stderr
+                .starts_with("CODE_CONFIG_INVALID .kiro/code-rules.toml: ")
+        );
+        assert!(out.stderr.contains(
+            "limits.routine.nesting: is looser than the built-in limit and needs a reason"
+        ));
+        assert!(
+            out.stderr
+                .contains("limits.routine.speed: unknown routine metric")
+        );
+        assert_eq!(out.stderr.lines().count(), 1);
+    }
+}
+
+#[test]
+fn a_scope_relaxes_and_an_ignore_excludes_with_reasons() {
+    let (_temp, root) = project(VIOLATING);
+    write(
+        &root,
+        ".kiro/code-rules.toml",
+        "[[scopes]]\npaths = [\"src/demo.rs\"]\nreason = \"path walking is one loop\"\n[scopes.limits.routine.nesting]\nmax = 4\n",
+    );
+    let scoped = run_cli_in(&root, TASK);
+    assert_eq!(scoped.code, 0, "{}", scoped.stdout);
+    assert!(!scoped.stdout.contains("CODE_ROUTINE_LIMIT"));
+
+    write(
+        &root,
+        ".kiro/code-rules.toml",
+        "[[ignores]]\npaths = [\"src/\"]\nreason = \"legacy tree\"\n",
+    );
+    let ignored = run_cli_in(&root, TASK);
+    assert_eq!(ignored.code, 0);
+    assert!(ignored.stdout.contains("1 ignored by configuration"));
+    assert!(!ignored.stdout.contains("CODE_ROUTINE_LIMIT"));
+}
+
+#[test]
+fn code_config_prints_every_effective_value_with_its_origin() {
+    let (_temp, root) = project(REPAIRED);
+    let default = run_cli_in(&root, &["code", "config"]);
+    assert_eq!(default.code, 0);
+    assert!(
+        default
+            .stdout
+            .contains("routine nesting: max 3, warning (default)\n")
+    );
+    assert_eq!(
+        default
+            .stdout
+            .lines()
+            .filter(|line| line.contains("(default)"))
+            .count(),
+        12
+    );
+
+    write(
+        &root,
+        ".kiro/code-rules.toml",
+        "[limits.routine.parameters]\nmax = 7\nreason = \"builders\"\n\n[[ignores]]\npaths = [\"gen/\"]\nreason = \"generated\"\n",
+    );
+    let configured = run_cli_in(&root, &["code", "config"]);
+    assert!(
+        configured
+            .stdout
+            .contains("routine parameters: max 7, warning (file) reason: builders\n")
+    );
+    assert!(
+        configured
+            .stdout
+            .contains("ignore gen/ reason: generated\n")
+    );
+    let digest = |text: &str| text.lines().last().unwrap().to_string();
+    assert!(digest(&configured.stdout).starts_with("digest "));
+    assert_ne!(digest(&configured.stdout), digest(&default.stdout));
+}

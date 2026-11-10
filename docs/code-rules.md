@@ -1,6 +1,6 @@
 # Code rules
 
-Status: first slice (spec `code-constraints`). `kiro-cli code check` measures routines, types and files and judges them against absolute limits, with spec ownership. The ratchet against a previous state, the configuration file, duplicate detection and the locality rules are not implemented yet; this page says so wherever it matters.
+Status: first slice (spec `code-constraints`). `kiro-cli code check` measures routines, types and files and judges them against absolute, configurable limits, with spec ownership. The ratchet against a previous state, duplicate detection and the locality rules are not implemented yet; this page says so wherever it matters.
 
 The rules exist because a code base written task by task degrades in ways no single task review catches: routines grow, files collect unrelated responsibilities. The gate reports each breach with the spec, component and tasks that own the file and with one edit that resolves it.
 
@@ -53,7 +53,43 @@ A value equal to its limit passes; only a greater value is reported.
 | File | `types` | 8 |
 | File | `max_cyclomatic` | 10 |
 
-The numbers are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. They have not been calibrated on this measurement yet. Until they are, **every limit reports as a warning**: `code check` exits 0 at the default `--fail-on error` and 1 at `--fail-on warning`. The limits cannot be changed yet; the configuration file `.kiro/code-rules.toml` is not implemented.
+The numbers are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. They have not been calibrated on this measurement yet. Until they are, **every limit reports as a warning**: `code check` exits 0 at the default `--fail-on error` and 1 at `--fail-on warning`.
+
+## Configuration
+
+The limits, their severities, path scopes and ignores live in one committed file, `.kiro/code-rules.toml`. Without the file the built-in limits apply.
+
+```toml
+[limits.routine.cyclomatic]
+max = 12
+reason = "state machines in the parser"     # required: looser than the built-in 10
+
+[limits.routine.nesting]
+severity = "error"                           # stricter than the built-in: no reason needed
+
+[limits.file.types]
+severity = "off"
+reason = "type-heavy model modules"
+
+[[scopes]]
+paths = ["crates/kiro-core/src/checks/"]     # a directory, or a single file
+reason = "finitization is one algorithm"
+[scopes.limits.routine.code_lines]
+max = 120
+
+[[ignores]]
+paths = ["crates/kiro-code/fixtures/"]
+reason = "fixtures are measured by tests, not judged"
+```
+
+- Severities are `error`, `warning`, `info` and `off`.
+- A scope overrides limits for the files under its paths. The most specific matching path wins; on a tie the later scope wins. A directory path covers whole path segments only.
+- An ignored file is still measured and counted in the coverage line, but not judged.
+- **A reason is required** on every scope, on every ignore, and on every limit that is looser than the built-in one (a higher maximum, or a more permissive severity).
+- An unknown key, metric or severity, a limit that is not a number, a missing reason or an invalid path stops the command with `CODE_CONFIG_INVALID` and exit code 2 before anything is measured. All problems are listed at once, each with its key.
+- `kiro-cli code config` prints every effective limit, scope and ignore with its origin (`default` or `file`) and reason, and a digest of the effective configuration. The digest also appears in the coverage line of every check.
+
+Changing this file is a human decision. An agent that meets a finding repairs the code; it does not relax a limit, add an ignore or widen a scope to get a pass.
 
 ## Findings
 

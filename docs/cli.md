@@ -145,6 +145,12 @@ kiro-cli code check --task my-feature:2.1 --fail-on warning
 
 ---
 
+### `code config`
+
+Print every effective code limit, scope and ignore with its origin and reason, and the digest of the effective configuration. An invalid `.kiro/code-rules.toml` is a failure (exit code 2) that lists every problem. See [Code rules](code-rules.md#configuration).
+
+---
+
 ### `telemetry export`
 
 Build the metric snapshot of the selected specs: phase, approvals, task progress, findings by code, term and contradiction counts, and traceability gaps. The metrics are listed in the [telemetry catalogue](telemetry.md).

@@ -29,7 +29,7 @@ fn judge_value(
     population: Option<f64>,
     out: &mut Vec<Judgement>,
 ) {
-    let Some((limit, source)) = config.limit(entity.scope, metric) else {
+    let Some((limit, source)) = config.limit_for(entity.scope, metric, &entity.path) else {
         return;
     };
     if let Some(minimum) = limit.minimum_population {

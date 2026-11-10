@@ -88,6 +88,7 @@ fn run(cli: &Cli) -> Result<Exit, Failure> {
         Command::Graph(args) => run_graph(&session, args),
         Command::Tasks(args) => run_tasks(&session, args),
         Command::Code(CodeCommand::Check(args)) => run_code_check(&session, args),
+        Command::Code(CodeCommand::Config) => run_code_config(&session),
         Command::Telemetry(TelemetryCommand::Export(args)) => run_telemetry_export(&session, args),
         Command::Vocab(VocabCommand::Validate(args)) => run_vocab_validate(&session, args),
         Command::Vocab(VocabCommand::Import(args)) => run_vocab_import(&session, args),
@@ -239,6 +240,15 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
     };
     write_report(&settings.destination, output.as_bytes())?;
     Ok(verdict)
+}
+
+/// Prints the effective code configuration with origins and reasons.
+fn run_code_config(session: &Session) -> Result<Exit, Failure> {
+    let root = session.root()?;
+    let config = code::load_config(&root)?;
+    print!("{}", config.effective_text());
+    println!("digest {}", config.digest());
+    Ok(Exit::Clean)
 }
 
 fn run_telemetry_export(session: &Session, args: &TelemetryExportArgs) -> Result<Exit, Failure> {

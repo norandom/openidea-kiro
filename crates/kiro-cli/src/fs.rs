@@ -291,6 +291,19 @@ pub fn display_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
 
+/// Reads an optional project file: `None` when it does not exist, a
+/// failure when it exists and cannot be read as UTF-8 text.
+pub fn read_optional(path: &Path) -> Result<Option<String>, Failure> {
+    match std::fs::read_to_string(path) {
+        Ok(text) => Ok(Some(text)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(Failure::new(format!(
+            "failed to read `{}`: {error}",
+            display_path(path)
+        ))),
+    }
+}
+
 /// Resolves a telemetry directory and refuses one inside the project.
 ///
 /// A relative path is taken from the current directory. The directory need

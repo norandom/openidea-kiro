@@ -69,7 +69,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 1.4_
   - _Requirements: 1.3, 1.5, 5.1, 5.9, 11.1, 11.2, 11.7_
 
-- [ ] 2.2 Resolve effective configuration and reason-bearing overrides
+- [x] 2.2 Resolve effective configuration and reason-bearing overrides
   - Implement defaults, scoped precedence/ties, ignores, source preferences and required metrics with strict catalogue validation.
   - Require reasons for scopes, ignores and relaxations; expose effective provenance and a stable digest before any measurement.
   - Done when missing configuration uses calibrated defaults and malformed/unknown/unreasoned settings produce positioned configuration errors.
