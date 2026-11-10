@@ -17,6 +17,8 @@ ast-grep-language = { version = "=0.51.1", default-features = false, features = 
     "tree-sitter-typescript",
     "tree-sitter-javascript",
 ] }
+# Already in the tree through ast-grep-language; honors .gitignore in the walk.
+ignore = "0.4.34"
 
 [dev-dependencies]
 serde_json = "1"

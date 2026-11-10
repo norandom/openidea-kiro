@@ -179,3 +179,20 @@ fn the_json_report_carries_the_locality_findings() {
     assert_eq!(found[0]["feature"], "demo");
     assert_eq!(found[0]["severity"], "warning");
 }
+
+#[test]
+fn a_copy_under_an_ignored_directory_does_not_count() {
+    let (_temp, root) = project();
+    for file in ["src/demo.rs", "src/ui.rs", "src/net.rs", ".copy/src/job.rs"] {
+        write(&root, file, "pub const TIMEOUT_MS: u64 = 30_000;\n");
+    }
+    let counted = run_cli_in(&root, CORE_TASK);
+    assert_eq!(counted.code, 1, "{}", counted.stdout);
+    assert!(counted.stdout.contains("CODE_SCATTERED_DEFINITION"));
+
+    write(&root, ".gitignore", "/.copy/\n");
+    let ignored = run_cli_in(&root, CORE_TASK);
+    assert_eq!(ignored.code, 0, "{}", ignored.stdout);
+    assert!(!ignored.stdout.contains("CODE_SCATTERED_DEFINITION"));
+    assert!(ignored.stdout.contains("locality: 3 files searched"));
+}

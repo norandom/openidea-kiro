@@ -19,6 +19,8 @@ Exit codes follow the spec gate: 0 for no finding at the threshold, 1 for a find
 
 Languages: Rust (`.rs`), Python (`.py`, `.pyi`), TypeScript (`.ts`, `.mts`, `.cts`, `.tsx`) and JavaScript (`.js`, `.mjs`, `.cjs`, `.jsx`). Parsing is done by `ast-grep-core` with the tree-sitter grammars; this project writes no parser. A file in another language is listed as not measured and nothing is said about its content.
 
+Files: everything under the project root except `.git`, `target`, `node_modules` and `dist`, and except what the project's `.gitignore` and `.ignore` files exclude. Only ignore files inside the root count; the user's global Git settings do not, so the result is the same on every machine. An untracked file that is not ignored is read. A directory below the root that has its own `.git` (a nested repository or a worktree) is not read.
+
 | Scope | Metric | Definition |
 | --- | --- | --- |
 | Routine | `parameters` | Declared parameters without the receiver (`self`, `cls`, `this`) |
@@ -53,7 +55,7 @@ A value equal to its limit passes; only a greater value is reported.
 | File | `types` | 8 |
 | File | `max_cyclomatic` | 10 |
 
-The numbers are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. They have not been calibrated on this measurement yet. Until they are, **every limit reports as a warning**: `code check` exits 0 at the default `--fail-on error` and 1 at `--fail-on warning`.
+The numbers are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. Their position in the distributions of five repositories is recorded in `.kiro/specs/code-constraints/research.md` (calibration record, 2026-11-10); the decision to let any of them block is open. Until it is taken, **every limit reports as a warning**: `code check` exits 0 at the default `--fail-on error` and 1 at `--fail-on warning`.
 
 ## Configuration
 
