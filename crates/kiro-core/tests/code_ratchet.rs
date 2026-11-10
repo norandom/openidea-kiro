@@ -9,7 +9,8 @@
     clippy::unwrap_used,
     clippy::indexing_slicing,
     clippy::panic,
-    clippy::expect_used
+    clippy::expect_used,
+    clippy::bool_assert_comparison
 )]
 
 use kiro_core::Severity;
