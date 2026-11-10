@@ -55,7 +55,13 @@ A value equal to its limit passes; only a greater value is reported.
 | File | `types` | 8 |
 | File | `max_cyclomatic` | 10 |
 
-The numbers are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. Their position in the distributions of five repositories is recorded in `.kiro/specs/code-constraints/research.md` (calibration record, 2026-11-10); the decision to let any of them block is open. Until it is taken, **every limit reports as a warning**: `code check` exits 0 at the default `--fail-on error` and 1 at `--fail-on warning`.
+The numbers are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. Their position in the distributions of five repositories is recorded in `.kiro/specs/code-constraints/research.md` (calibration record, 2026-11-10).
+
+**What blocks.** The five routine limits `cyclomatic`, `nesting`, `code_lines`, `statements` and `parameters` are calibrated for Rust and Python: there a breach is an **error** and `code check` exits 1 at the default `--fail-on error`. Every other limit is a **warning**: the same five in TypeScript and JavaScript (one repository was too little to calibrate them), `lines_per_statement`, and all type and file limits. Use `--fail-on warning` to block on those too.
+
+A severity named in the configuration replaces this default for every language; naming a weaker one for a calibrated metric needs a reason.
+
+An error on code that already existed blocks only when there is nothing to compare with. With a before side (`--changed <rev>` or a baseline, see the ratchet below) it is marked pre-existing and does not block; only a new breach or a regression does.
 
 ## Configuration
 

@@ -138,7 +138,7 @@ Exactly one selection is required.
 - `--show-highest`: Also print the highest value of every metric, for a first look at a grown repository.
 - `--format <text|json>`: Report output format. (Default: `text`).
 - `--output <PATH>`: Write the report to this file instead of standard output.
-- `--fail-on <error|warning>`: Severity threshold that triggers exit code 1. (Default: `error`). Limits report as warnings until they are calibrated, so use `--fail-on warning` to block on them.
+- `--fail-on <error|warning>`: Severity threshold that triggers exit code 1. (Default: `error`). The routine limits are errors in Rust and Python; every other limit is a warning, so use `--fail-on warning` to block on those too.
 
 #### Example
 

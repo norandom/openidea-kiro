@@ -139,7 +139,7 @@ fn existing_debt_does_not_block_a_change_that_leaves_it_alone() {
     assert_eq!(out.code, 0, "{}", out.stdout);
     assert!(
         out.stdout.contains(
-            "WARNING CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (default); pre-existing, was 4 before"
+            "ERROR CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (default); pre-existing, was 4 before"
         ),
         "{}",
         out.stdout
@@ -176,10 +176,10 @@ fn a_regression_blocks_even_at_the_default_threshold_and_a_repair_passes() {
     );
     assert!(failing.stdout.contains("fail-on error: fail"));
 
-    // Without a before side the same change is only a warning: the journey
-    // depends on the ratchet.
+    // Without a before side the limit alone decides: the debt blocks as
+    // a limit finding, and nothing is said about a regression.
     let no_ratchet = run_cli_in(&root, &["code", "check", "--files", "src/demo.rs"]);
-    assert_eq!(no_ratchet.code, 0);
+    assert_eq!(no_ratchet.code, 1);
     assert!(!no_ratchet.stdout.contains("CODE_RATCHET"));
 
     write(&root, "src/demo.rs", REPAIRED);
@@ -240,7 +240,7 @@ fn a_routine_moved_to_a_new_file_keeps_its_debt_status() {
     assert_eq!(out.code, 0, "{}", out.stdout);
     assert!(
         out.stdout.contains(
-            "src/owner.rs:1: WARNING CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (default); pre-existing, was 4 before"
+            "src/owner.rs:1: ERROR CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (default); pre-existing, was 4 before"
         ),
         "{}",
         out.stdout
@@ -282,7 +282,7 @@ fn renamed_and_deleted_files_are_accounted() {
     assert_eq!(out.code, 0, "{}", out.stdout);
     assert!(
         out.stdout
-            .contains("src/core.rs:1: WARNING CODE_ROUTINE_LIMIT")
+            .contains("src/core.rs:1: ERROR CODE_ROUTINE_LIMIT")
     );
     assert!(out.stdout.contains("pre-existing, was 4 before"));
     // The deleted file held one routine of one statement on six lines.

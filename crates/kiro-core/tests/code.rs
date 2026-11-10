@@ -108,8 +108,8 @@ fn a_value_equal_to_its_limit_passes_and_one_above_it_breaches() {
         [("over_limit", "cyclomatic"), ("over_limit", "parameters")]
     );
     assert!(
-        judged.iter().all(|j| j.severity == Severity::Warning),
-        "uncalibrated"
+        judged.iter().all(|j| j.severity == Severity::Error),
+        "routine limits block in Rust"
     );
     assert_eq!(judged[0].limit, 10.0);
     assert_eq!(judged[0].line, 7);
@@ -376,7 +376,7 @@ fn evaluation_orders_findings_and_always_reports_coverage() {
         .map(|s| (s.spec.as_deref(), s.files))
         .collect();
     assert_eq!(summary, [(Some("demo"), 2), (None, 2)]);
-    assert_eq!(result.counts(), (1, 2, 2));
+    assert_eq!(result.counts(), (3, 0, 2));
 
     // Two renderings of the same report are byte-identical.
     assert_eq!(report::text(&result), report::text(&result));

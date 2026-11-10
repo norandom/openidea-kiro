@@ -539,3 +539,23 @@ Limits of this record:
 - Test code is included and not separated.
 - The share above a limit says how many findings a limit produces. It does not say that a routine above the limit is harder for an agent to change; no outcome was measured.
 - No severity was changed. Task 1.4 stays open: the decision to block is the owner's, and the calibration is not persisted as an executable fixture.
+
+### Addendum: lesscode replaces Contour, and the blocking decision (2026-11-10, late)
+
+The owner replaced `../Contour` with `../lesscode` (no C++ profile will be built). lesscode: 654 files (447 Python, 129 Rust, 73 TypeScript, 5 JavaScript).
+
+| Population | Routines | cyclomatic > 10 | nesting > 3 | code_lines > 60 | statements > 40 | parameters > 5 |
+|---|---|---|---|---|---|---|
+| lesscode, Python | 2231 | 5.8% | 2.0% | 1.9% | 2.2% | 1.5% |
+| lesscode, Rust | 1450 | 3.7% | 2.9% | 4.1% | 0.9% | 1.0% |
+| lesscode, TypeScript | 173 | 1.2% | 0.0% | 0.0% | 0.0% | 2.3% |
+
+Percentiles (p95 / p99 / maximum): Python cyclomatic 12 / 21 / 62, code_lines 37 / 76 / 162; Rust cyclomatic 9 / 18 / 53, code_lines 57 / 117 / 296. lesscode Python is the one population where a routine limit (cyclomatic) lies below the 95th percentile.
+
+**Owner decisions on this record:**
+
+1. The five routine limits block in Rust and Python. Implemented as the default severity `error` for `cyclomatic`, `nesting`, `code_lines`, `statements` and `parameters` in `.rs`, `.py` and `.pyi` files (`calibrated` in `crates/kiro-core/src/code/config.rs`). A severity named in the configuration replaces it; a weaker one needs a reason.
+2. The file limit `max_cyclomatic` stays, as a warning.
+3. TypeScript and JavaScript, `lines_per_statement`, and the type and file limits stay warnings.
+
+**Consequence measured on this repository:** without a before side `code check --all` reports 231 errors. Against `main` (`code check --changed main`) the branch `feat/code-quality-port` has 56 blocking findings: routines written for this port that are above the limits, and one regression.

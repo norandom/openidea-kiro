@@ -100,7 +100,7 @@ fn a_task_owned_violation_fails_is_repaired_and_passes() {
     assert_eq!(failing.stderr, "");
     assert!(
         failing.stdout.contains(
-            "src/demo.rs:1: WARNING CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (default)"
+            "src/demo.rs:1: ERROR CODE_ROUTINE_LIMIT routine `owner`: nesting is 4, limit 3 (default)"
         ),
         "{}",
         failing.stdout
@@ -158,18 +158,35 @@ fn the_task_selects_only_the_files_of_its_boundary() {
 }
 
 #[test]
-fn limits_are_warnings_until_calibrated_so_the_default_gate_passes() {
+fn routine_limits_block_by_default_only_in_the_calibrated_languages() {
     let (_temp, root) = project(VIOLATING);
-    let out = run_cli_in(&root, &["code", "check", "--task", "demo:1.1"]);
-    assert_eq!(
-        out.code, 0,
-        "uncalibrated limits do not block at --fail-on error"
-    );
+    // Rust is calibrated: the routine limit is an error.
+    let rust = run_cli_in(&root, &["code", "check", "--task", "demo:1.1"]);
+    assert_eq!(rust.code, 1, "{}", rust.stdout);
     assert!(
-        out.stdout.contains("CODE_ROUTINE_LIMIT"),
-        "but they are reported"
+        rust.stdout
+            .contains("src/demo.rs:1: ERROR CODE_ROUTINE_LIMIT routine `owner`: nesting is 4"),
+        "{}",
+        rust.stdout
     );
-    assert!(out.stdout.contains("fail-on error: pass"));
+    assert!(rust.stdout.contains("fail-on error: fail"));
+
+    // TypeScript is not: the same shape is reported and does not block.
+    write(
+        &root,
+        "web/owner.ts",
+        "export function owner(a: boolean, b: boolean, c: boolean, d: boolean): number {\n  if (a) {\n    if (b) {\n      if (c) {\n        if (d) {\n          return 1;\n        }\n      }\n    }\n  }\n  return 0;\n}\n",
+    );
+    let script = run_cli_in(&root, &["code", "check", "--files", "web/owner.ts"]);
+    assert_eq!(script.code, 0, "{}", script.stdout);
+    assert!(
+        script
+            .stdout
+            .contains("web/owner.ts:1: WARNING CODE_ROUTINE_LIMIT routine `owner`: nesting is 4"),
+        "{}",
+        script.stdout
+    );
+    assert!(script.stdout.contains("fail-on error: pass"));
 }
 
 #[test]
@@ -208,7 +225,7 @@ fn a_file_outside_every_spec_is_reported_as_unowned() {
     assert_eq!(out.code, 1);
     assert!(
         out.stdout
-            .contains("tools/extra.rs:1: WARNING CODE_ROUTINE_LIMIT")
+            .contains("tools/extra.rs:1: ERROR CODE_ROUTINE_LIMIT")
     );
     assert!(
         out.stdout
@@ -286,7 +303,7 @@ fn the_json_report_is_complete_and_identical_across_runs() {
     let args = ["code", "check", "--spec", "demo", "--format", "json"];
     let first = run_cli_in(&root, &args);
     let second = run_cli_in(&root, &args);
-    assert_eq!(first.code, 0);
+    assert_eq!(first.code, 1, "the Rust routine limit blocks");
     assert_eq!(first.stdout, second.stdout, "byte-identical");
     assert!(
         !first.stdout.contains(root.to_str().unwrap()),
@@ -301,7 +318,7 @@ fn the_json_report_is_complete_and_identical_across_runs() {
         .iter()
         .find(|finding| finding["code"] == "CODE_ROUTINE_LIMIT")
         .unwrap();
-    assert_eq!(finding["severity"], "warning");
+    assert_eq!(finding["severity"], "error");
     assert_eq!(finding["feature"], "demo");
     assert_eq!(finding["file"], "src/demo.rs");
     assert_eq!(finding["line"], 1);
@@ -342,7 +359,7 @@ fn only_the_requested_output_is_written() {
             "code.json",
         ],
     );
-    assert_eq!(out.code, 0);
+    assert_eq!(out.code, 1, "the Rust routine limit blocks");
     assert_eq!(out.stdout, "");
     assert_eq!(std::fs::read_dir(&root).unwrap().count(), before + 1);
     assert!(
@@ -439,11 +456,9 @@ fn code_config_prints_every_effective_value_with_its_origin() {
     let (_temp, root) = project(REPAIRED);
     let default = run_cli_in(&root, &["code", "config"]);
     assert_eq!(default.code, 0);
-    assert!(
-        default
-            .stdout
-            .contains("routine nesting: max 3, warning (default)\n")
-    );
+    assert!(default.stdout.contains(
+        "routine nesting: max 3, error in Rust and Python, warning in other languages (default)\n"
+    ));
     assert_eq!(
         default
             .stdout
@@ -462,7 +477,7 @@ fn code_config_prints_every_effective_value_with_its_origin() {
     assert!(
         configured
             .stdout
-            .contains("routine parameters: max 7, warning (file) reason: builders\n")
+            .contains("routine parameters: max 7, error in Rust and Python, warning in other languages (file) reason: builders\n")
     );
     assert!(
         configured

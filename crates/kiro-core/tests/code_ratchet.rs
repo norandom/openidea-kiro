@@ -199,7 +199,7 @@ fn debt_that_did_not_worsen_is_pre_existing_and_does_not_block() {
         outcomes(&same, "old"),
         [(
             "CODE_ROUTINE_LIMIT cyclomatic".to_string(),
-            Severity::Warning,
+            Severity::Error,
             true
         )]
     );
@@ -302,7 +302,7 @@ fn a_new_routine_above_the_limit_is_judged_on_the_limit_alone() {
         outcomes(&result, "fresh"),
         [(
             "CODE_ROUTINE_LIMIT cyclomatic".to_string(),
-            Severity::Warning,
+            Severity::Error,
             false
         )]
     );
@@ -340,7 +340,7 @@ fn a_changed_signature_can_show_regression_but_never_excuses_debt() {
         outcomes(&result, "same_value"),
         [(
             "CODE_ROUTINE_LIMIT cyclomatic".to_string(),
-            Severity::Warning,
+            Severity::Error,
             false
         )]
     );
@@ -412,7 +412,7 @@ fn a_routine_moved_to_another_file_keeps_its_debt_status() {
         outcomes(&result, "big"),
         [(
             "CODE_ROUTINE_LIMIT cyclomatic".to_string(),
-            Severity::Warning,
+            Severity::Error,
             true
         )]
     );
@@ -605,7 +605,7 @@ fn a_file_that_failed_to_parse_before_gives_no_comparison() {
         outcomes(&result, "f"),
         [(
             "CODE_ROUTINE_LIMIT cyclomatic".to_string(),
-            Severity::Warning,
+            Severity::Error,
             false
         )]
     );

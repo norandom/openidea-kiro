@@ -33,7 +33,7 @@ fn an_absent_file_gives_the_built_in_limits() {
     assert_eq!(config, CodeConfig::default());
     assert_eq!(
         limit_of(&config, Scope::Routine, "cyclomatic", "src/a.rs"),
-        Some((10.0, Severity::Warning, "default".to_string()))
+        Some((10.0, Severity::Error, "default".to_string()))
     );
     assert_eq!(config.digest(), CodeConfig::default().digest());
     assert_eq!(config.digest().len(), 16);
@@ -82,7 +82,7 @@ fn file_limits_override_defaults_and_scopes_override_the_file() {
     // Tighter than the default: no reason needed.
     assert_eq!(
         limit_of(&config, Scope::Routine, "cyclomatic", "src/a.rs"),
-        Some((8.0, Severity::Warning, "file".to_string()))
+        Some((8.0, Severity::Error, "file".to_string()))
     );
     assert_eq!(
         limit_of(&config, Scope::Routine, "nesting", "src/a.rs"),
@@ -99,7 +99,7 @@ fn file_limits_override_defaults_and_scopes_override_the_file() {
     // The most specific scope wins; a directory covers only whole segments.
     assert_eq!(
         limit_of(&config, Scope::Routine, "cyclomatic", "src/gen/x.rs"),
-        Some((50.0, Severity::Warning, "scope src/gen/".to_string()))
+        Some((50.0, Severity::Error, "scope src/gen/".to_string()))
     );
     let cyclomatic = |path: &str| {
         limit_of(&config, Scope::Routine, "cyclomatic", path)
@@ -136,11 +136,11 @@ fn file_limits_override_defaults_and_scopes_override_the_file() {
 fn the_effective_configuration_names_origin_and_reason() {
     let effective = parse_config(Some(FULL)).unwrap().effective_text();
     for line in [
-        "routine cyclomatic: max 8, warning (file)\n",
-        "routine parameters: max 7, warning (file) reason: builders take many arguments\n",
+        "routine cyclomatic: max 8, error in Rust and Python, warning in other languages (file)\n",
+        "routine parameters: max 7, error in Rust and Python, warning in other languages (file) reason: builders take many arguments\n",
         "file types: max 8, off (file) reason: type-heavy model modules\n",
-        "routine code_lines: max 60, warning (default)\n",
-        "scope src/gen/: routine cyclomatic: max 50, warning reason: generated code\n",
+        "routine code_lines: max 60, error in Rust and Python, warning in other languages (default)\n",
+        "scope src/gen/: routine cyclomatic: max 50, error in Rust and Python, warning in other languages reason: generated code\n",
         "ignore fixtures/ reason: measured by tests, not judged\n",
     ] {
         assert!(effective.contains(line), "missing {line:?} in\n{effective}");
@@ -333,5 +333,77 @@ fn configured_severity_scope_and_ignore_change_the_judgement() {
             .finding
             .message
             .contains("1 ignored by configuration")
+    );
+}
+
+#[test]
+fn routine_limits_block_only_where_they_are_calibrated() {
+    let config = parse_config(None).unwrap();
+    let severity = |scope, metric, path| limit_of(&config, scope, metric, path).map(|l| l.1);
+    // The five routine metrics in Rust and Python.
+    for metric in [
+        "cyclomatic",
+        "nesting",
+        "code_lines",
+        "statements",
+        "parameters",
+    ] {
+        for path in ["src/a.rs", "tools/a.py", "stubs/a.pyi"] {
+            assert_eq!(
+                severity(Scope::Routine, metric, path),
+                Some(Severity::Error),
+                "{metric} in {path}"
+            );
+        }
+        for path in ["web/a.ts", "web/a.tsx", "web/a.js", "Makefile"] {
+            assert_eq!(
+                severity(Scope::Routine, metric, path),
+                Some(Severity::Warning),
+                "{metric} in {path}"
+            );
+        }
+    }
+    // Everything else stays a warning, in every language.
+    for (scope, metric) in [
+        (Scope::Routine, "lines_per_statement"),
+        (Scope::File, "code_lines"),
+        (Scope::File, "max_cyclomatic"),
+        (Scope::Type, "fields"),
+    ] {
+        assert_eq!(severity(scope, metric, "src/a.rs"), Some(Severity::Warning));
+    }
+}
+
+#[test]
+fn a_named_severity_wins_over_the_calibration_and_a_weaker_one_needs_a_reason() {
+    let errors = parse_config(Some(
+        "[limits.routine.cyclomatic]\nseverity = \"warning\"\n",
+    ))
+    .unwrap_err();
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].key, "limits.routine.cyclomatic");
+    assert!(errors[0].message.contains("needs a reason"));
+
+    let relaxed = parse_config(Some(
+        "[limits.routine.cyclomatic]\nseverity = \"warning\"\nreason = \"adoption phase\"\n",
+    ))
+    .unwrap();
+    assert_eq!(
+        limit_of(&relaxed, Scope::Routine, "cyclomatic", "src/a.rs"),
+        Some((10.0, Severity::Warning, "file".to_string()))
+    );
+
+    // Naming `error` makes the limit block in every language.
+    let strict = parse_config(Some("[limits.routine.cyclomatic]\nseverity = \"error\"\n")).unwrap();
+    assert_eq!(
+        limit_of(&strict, Scope::Routine, "cyclomatic", "web/a.ts"),
+        Some((10.0, Severity::Error, "file".to_string()))
+    );
+
+    // A changed maximum alone keeps the calibrated severity.
+    let tighter = parse_config(Some("[limits.routine.cyclomatic]\nmax = 8\n")).unwrap();
+    assert_eq!(
+        limit_of(&tighter, Scope::Routine, "cyclomatic", "web/a.ts"),
+        Some((8.0, Severity::Warning, "file".to_string()))
     );
 }

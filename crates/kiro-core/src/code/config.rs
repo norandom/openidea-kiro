@@ -8,8 +8,9 @@
 //!
 //! The built-in limits are candidate values carried over from the archived
 //! scitools-hook project, where they were measured with a different
-//! analyzer. They are priors: until a metric definition and language are
-//! calibrated on this project's corpus every limit reports as a warning.
+//! analyzer. A limit blocks only where it is calibrated on this project's
+//! corpus: the five routine metrics in Rust and Python report as errors,
+//! every other limit as a warning.
 //!
 //! ```toml
 //! [limits.routine.cyclomatic]
@@ -51,6 +52,36 @@ pub struct Limit {
     /// The metric is judged only when the entity holds at least this many
     /// statements (the lines-per-statement floor).
     pub minimum_population: Option<u32>,
+    /// `true` when the configuration names the severity. Otherwise the
+    /// severity follows the calibration: see [`calibrated`].
+    pub severity_set: bool,
+}
+
+/// The routine metrics whose limits are calibrated (owner decision
+/// 2026-11-10 on the corpus record in the spec's research.md).
+pub const CALIBRATED_ROUTINE_METRICS: &[&str] = &[
+    metrics::CYCLOMATIC,
+    metrics::NESTING,
+    metrics::CODE_LINES,
+    metrics::STATEMENTS,
+    metrics::PARAMETERS,
+];
+/// File extensions of the calibrated languages: Rust and Python.
+pub const CALIBRATED_EXTENSIONS: &[&str] = &["rs", "py", "pyi"];
+
+/// Whether a limit blocks by default for this metric in this file: a
+/// calibrated routine metric in a calibrated language. Everything else
+/// stays a warning until its own calibration.
+#[must_use]
+pub fn calibrated(scope: Scope, metric: &str, path: &str) -> bool {
+    calibrated_metric(scope, metric)
+        && path
+            .rsplit_once('.')
+            .is_some_and(|(_, extension)| CALIBRATED_EXTENSIONS.contains(&extension))
+}
+
+fn calibrated_metric(scope: Scope, metric: &str) -> bool {
+    scope == Scope::Routine && CALIBRATED_ROUTINE_METRICS.contains(&metric)
 }
 
 impl Limit {
@@ -60,6 +91,16 @@ impl Limit {
             severity: Severity::Warning,
             enabled: true,
             minimum_population: None,
+            severity_set: false,
+        }
+    }
+
+    /// The severity as `code config` shows it for a metric.
+    fn severity_text(&self, scope: Scope, metric: &str) -> &'static str {
+        if !self.severity_set && calibrated_metric(scope, metric) {
+            "error in Rust and Python, warning in other languages"
+        } else {
+            self.severity_word()
         }
     }
 
@@ -296,6 +337,7 @@ impl Parser {
             }
         }
         if let Some(word) = &raw.severity {
+            limit.severity_set = true;
             match word.as_str() {
                 "error" => (limit.severity, limit.enabled) = (Severity::Error, true),
                 "warning" => (limit.severity, limit.enabled) = (Severity::Warning, true),
@@ -337,7 +379,15 @@ impl Parser {
                     continue;
                 };
                 let limit = self.limit(&key, base, entry);
-                let looser = limit.maximum > base.maximum || limit.looseness() > base.looseness();
+                // A calibrated metric blocks by default, so naming any
+                // weaker severity for it is a relaxation.
+                let strictest = if calibrated_metric(scope, static_name) {
+                    0
+                } else {
+                    base.looseness()
+                };
+                let looser = limit.maximum > base.maximum
+                    || (limit.severity_set && limit.looseness() > strictest);
                 if reason_required && looser && !has_reason(entry.reason.as_ref()) {
                     self.error(key, "is looser than the built-in limit and needs a reason");
                 }
@@ -469,7 +519,7 @@ impl CodeConfig {
                 }
             }
         }
-        let (limit, source) = if let Some((_, limit, rule_path)) = best {
+        let (mut limit, source) = if let Some((_, limit, rule_path)) = best {
             (limit, LimitSource::Scope(rule_path.to_string()))
         } else if let Some(entry) = self
             .file
@@ -486,6 +536,9 @@ impl CodeConfig {
                 .map(|(_, limit)| *limit)?;
             (limit, LimitSource::Default)
         };
+        if !limit.severity_set && calibrated(scope, metric, path) {
+            limit.severity = Severity::Error;
+        }
         limit.enabled.then_some((limit, source))
     }
 
@@ -511,7 +564,7 @@ impl CodeConfig {
                 "{} {name}: max {}, {} ({origin})",
                 scope.label(),
                 limit.maximum,
-                limit.severity_word()
+                limit.severity_text(*scope, name)
             ));
             if let Some(reason) = reason {
                 out.push_str(&format!(" reason: {reason}"));
@@ -525,7 +578,7 @@ impl CodeConfig {
                     rule.paths.join(", "),
                     scope.label(),
                     limit.maximum,
-                    limit.severity_word(),
+                    limit.severity_text(*scope, name),
                     rule.reason
                 ));
             }
