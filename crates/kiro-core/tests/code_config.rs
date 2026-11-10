@@ -298,6 +298,8 @@ fn configured_severity_scope_and_ignore_change_the_judgement() {
             specs: &specs,
             before: None,
             before_paths: &[],
+            extensions: &[],
+            extension_notes: &[],
         })
     };
     let limit_files = |report: &kiro_core::code::CodeReport| -> Vec<String> {

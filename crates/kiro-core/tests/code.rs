@@ -335,6 +335,8 @@ fn evaluation_orders_findings_and_always_reports_coverage() {
         specs: &specs,
         before: None,
         before_paths: &[],
+        extensions: &[],
+        extension_notes: &[],
     });
 
     let codes: Vec<(&str, &str)> = result
@@ -393,6 +395,8 @@ fn an_empty_selection_still_reports_what_was_not_measured() {
         specs: &[],
         before: None,
         before_paths: &[],
+        extensions: &[],
+        extension_notes: &[],
     });
     assert_eq!(result.findings.len(), 1);
     assert_eq!(result.findings[0].finding.code, "CODE_COVERAGE");

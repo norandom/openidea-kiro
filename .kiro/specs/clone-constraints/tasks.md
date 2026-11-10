@@ -58,7 +58,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 1.3_
   - _Requirements: 1.1, 1.2, 1.7, 2.2, 2.3, 2.4_
 
-- [ ] 2.2 Extract confirmed normalized-line duplicates
+- [x] 2.2 Extract confirmed normalized-line duplicates
   - Integrate the admitted detector/tokenizer over shared texts, counting code-bearing lines and confirming hash candidates against normalized text.
   - Merge contained windows deterministically and keep parse failures/work limits visible.
   - Done when below/at-12-line, comments/formatting, same-file and self-overlap fixtures produce exact expected ranges.
@@ -83,7 +83,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 2.3_
   - _Requirements: 1.1, 1.7, 2.4_
 
-- [ ] 3.2 Prove introduced-copy detection and removal
+- [x] 3.2 Prove introduced-copy detection and removal
   - Introduce a qualifying copy in an isolated project, assert locations/output/exit under warning-level gating, remove it and rerun.
   - Record shared evidence and a disabled-detector variant that breaks the behavioral assertion.
   - Done when current K1 evidence proves copy/repair without token-family or locality prerequisites.

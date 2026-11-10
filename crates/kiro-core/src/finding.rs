@@ -426,6 +426,11 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Warning,
         description: "A routine metric rose against the before side",
     },
+    CodeInfo {
+        code: "CODE_DUPLICATE_BLOCK",
+        severity: Severity::Warning,
+        description: "A run of code lines also stands at another location",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -499,6 +504,7 @@ pub mod codes {
     pub const CODE_COVERAGE: &str = "CODE_COVERAGE";
     pub const CODE_CONFIG_INVALID: &str = "CODE_CONFIG_INVALID";
     pub const CODE_RATCHET: &str = "CODE_RATCHET";
+    pub const CODE_DUPLICATE_BLOCK: &str = "CODE_DUPLICATE_BLOCK";
 }
 
 /// The twenty check finding codes introduced by the constraints engine.
@@ -559,8 +565,8 @@ mod tests {
     }
 
     #[test]
-    fn catalogue_has_69_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 69);
+    fn catalogue_has_70_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 70);
         assert_eq!(CHECK_CODES.len(), 20);
         let all = [
             codes::SPEC_DOC_MISSING,
@@ -632,8 +638,9 @@ mod tests {
             codes::CODE_COVERAGE,
             codes::CODE_CONFIG_INVALID,
             codes::CODE_RATCHET,
+            codes::CODE_DUPLICATE_BLOCK,
         ];
-        assert_eq!(all.len(), 69);
+        assert_eq!(all.len(), 70);
         for c in all {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),

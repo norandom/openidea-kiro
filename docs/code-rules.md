@@ -133,6 +133,20 @@ kiro-cli code check --changed origin/main --summary
 
 The gate installs no hook. Call it from the hook mechanism you already use.
 
+## Duplicate blocks
+
+Status: first rule of spec `clone-constraints`.
+
+`CODE_DUPLICATE_BLOCK` (warning) reports a run of at least 12 consecutive code lines in a selected file that the project also holds at another location. It names the original with its line range and up to three further locations, and its hint is `delete:` keep one copy and call it.
+
+- A code line is the line's tokens with whitespace and comments removed. Indentation, spacing inside a line, comment lines, trailing comments and blank lines do not hide a copy. Lines without a token are skipped and do not interrupt a run.
+- The search covers every measurable file of the project, also for a task-scoped check: a copy counts wherever the original stands. Findings are reported for the selected files only; when both ends are selected, each is reported from its own side.
+- Two copies in one file count. A run that only overlaps itself does not.
+- A renamed identifier, a reordered statement or a line broken differently changes the line and ends the run. Copies that were renamed or reshaped are the subject of the similar-routine rule, which is not built yet.
+- A block that occurs at more than 64 locations is not expanded; the coverage line counts such windows.
+- The coverage line ends with what was searched, for example `duplicate blocks: 158 files searched, 96 blocks of at least 12 lines, 0 frequent windows skipped`.
+- The length of 12 lines and the severity cannot be configured yet, and duplicates are not compared with a before side: an old copy and a new one look the same.
+
 ## Findings
 
 | Code | Severity | Meaning |
@@ -141,6 +155,7 @@ The gate installs no hook. Call it from the hook mechanism you already use.
 | `CODE_TYPE_LIMIT` | warning | A type holds more methods or fields than its limit |
 | `CODE_FILE_LIMIT` | warning | A file metric is above its limit |
 | `CODE_RATCHET` | error or warning | A routine metric rose against the before side: error above its limit, warning within it |
+| `CODE_DUPLICATE_BLOCK` | warning | A run of at least 12 code lines also stands at another location |
 | `CODE_PARSE_FAILED` | error | A selected file does not parse; no rule was judged on it |
 | `CODE_FILE_UNOWNED` | info | A selected file with findings is mapped by no spec |
 | `CODE_COVERAGE` | info | What the run measured and what it left out; always present |
@@ -156,5 +171,5 @@ A file belongs to the spec whose design lists it in its File Structure Plan, to 
 - Whether the standard library, the platform or an installed dependency would have replaced a piece of code is never checked.
 - A file that was not measured was not judged. Read the `CODE_COVERAGE` line: it counts selected, measured, failed and unmeasured files.
 - Without a before side nothing is compared: existing breaches and new ones look the same. The coverage line names the before side.
-- Duplicated code, scattered definitions and state, and positional data access are not detected yet.
+- Copies that were renamed or reshaped, scattered definitions and state, and positional data access are not detected yet.
 - A routine within every limit can still be wrong or unclear.

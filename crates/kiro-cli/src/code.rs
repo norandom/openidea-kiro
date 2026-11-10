@@ -6,6 +6,7 @@
 //! engine judges limits, the ratchet and ownership. This module only
 //! connects them.
 
+use kiro_core::code::clones::{DEFAULT_MIN_LINES, duplicate_blocks, duplicate_findings};
 use kiro_core::code::{
     Before, CodeConfig, CodeFacts, CodeReport, EvaluateInput, FACTS_SCHEMA_VERSION, evaluate,
     highest, matches_any, report, spec_paths, task_paths,
@@ -298,6 +299,22 @@ pub fn run(
         },
     };
 
+    // Duplicate blocks are searched over the whole project: a copy counts
+    // wherever the original stands.
+    let project = kiro_code::read_bundle(root.path(), &measurable)
+        .map_err(|error| Failure::new(error.to_string()))?;
+    let lines = kiro_code::clones::bundle_lines(&project);
+    let (blocks, searched) = duplicate_blocks(&lines, DEFAULT_MIN_LINES);
+    let extensions = duplicate_findings(&blocks, &|path| {
+        selected.iter().any(|selected_path| selected_path == path)
+    });
+    let extension_notes = vec![format!(
+        "duplicate blocks: {} files searched, {} blocks of at least {DEFAULT_MIN_LINES} lines, {} frequent windows skipped",
+        searched.files,
+        blocks.len(),
+        searched.skipped_windows
+    )];
+
     let mut report = evaluate(&EvaluateInput {
         facts: &facts,
         config: &config,
@@ -311,6 +328,8 @@ pub fn run(
         before_paths: before_side
             .as_ref()
             .map_or(&[][..], |side| side.paths.as_slice()),
+        extensions: &extensions,
+        extension_notes: &extension_notes,
     });
     if let Some(reason) = no_before
         && reason != report.coverage.before_side

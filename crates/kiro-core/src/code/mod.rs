@@ -6,6 +6,7 @@
 //! parses no source code.
 
 pub mod attribution;
+pub mod clones;
 pub mod config;
 pub mod evaluate;
 pub mod facts;

@@ -761,3 +761,15 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
         line: None,
     });
 }
+
+/// The parser language of a path, for analyzers that share the parse stack.
+#[must_use]
+pub fn language_of(path: &str) -> Option<SupportLang> {
+    profile_for(path).map(|profile| profile.lang)
+}
+
+/// The comment node kinds of a path's language.
+#[must_use]
+pub fn comment_kinds(path: &str) -> Option<&'static [&'static str]> {
+    profile_for(path).map(|profile| profile.comments)
+}

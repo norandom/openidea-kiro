@@ -194,6 +194,7 @@
 //! | CODE_COVERAGE | info | What the code gate measured and what it left out |
 //! | CODE_CONFIG_INVALID | error | The code-rules configuration is invalid |
 //! | CODE_RATCHET | warning | A routine metric rose against the before side |
+//! | CODE_DUPLICATE_BLOCK | warning | A run of code lines also stands at another location |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -270,6 +271,7 @@
 //!     ("CODE_COVERAGE", Severity::Info, "What the code gate measured and what it left out"),
 //!     ("CODE_CONFIG_INVALID", Severity::Error, "The code-rules configuration is invalid"),
 //!     ("CODE_RATCHET", Severity::Warning, "A routine metric rose against the before side"),
+//!     ("CODE_DUPLICATE_BLOCK", Severity::Warning, "A run of code lines also stands at another location"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {

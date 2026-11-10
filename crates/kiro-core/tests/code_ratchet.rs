@@ -141,6 +141,8 @@ fn run(before: &CodeFacts, after: &CodeFacts, renames: &[(String, String)]) -> C
             renames,
         }),
         before_paths: &before_paths,
+        extensions: &[],
+        extension_notes: &[],
     })
 }
 

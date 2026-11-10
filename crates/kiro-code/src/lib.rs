@@ -4,6 +4,7 @@
 //! the engine's `CodeFacts`. Parsing is adopted from `ast-grep-core`; this
 //! crate writes no lexer and no parser.
 
+pub mod clones;
 pub mod git;
 pub mod measure;
 pub mod walk;

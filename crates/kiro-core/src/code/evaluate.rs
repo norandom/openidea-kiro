@@ -46,6 +46,12 @@ pub struct EvaluateInput<'a> {
     /// Paths of the before side that belong to the accounting scope: the
     /// old paths of the selected files plus deleted files.
     pub before_paths: &'a [String],
+    /// Findings of extension rules (duplicate blocks, families, locality),
+    /// already worded. The evaluation adds ownership and keeps those of
+    /// judged files; it does not look inside them.
+    pub extensions: &'a [CodeFinding],
+    /// What the extension rules covered, for the coverage line.
+    pub extension_notes: &'a [String],
 }
 
 fn limit_hint(scope: Scope, metric: &str, limit: f64, owners: &Attribution) -> (Tag, String) {
@@ -380,6 +386,23 @@ impl<'a> Run<'a> {
         changes
     }
 
+    /// Extension findings: ownership is added here, and a finding about a
+    /// file that is not judged is dropped.
+    fn extensions(&mut self) {
+        for entry in self.input.extensions {
+            if !self.judged(&entry.finding.file) {
+                continue;
+            }
+            let owners = self.owners(&entry.finding.file);
+            let mut finding = entry.clone();
+            if let Some(feature) = &owners.feature {
+                finding.finding = finding.finding.feature(feature.clone());
+            }
+            finding.owners = owners;
+            self.findings.push(finding);
+        }
+    }
+
     /// Step 4: selected files with a finding that no spec maps, once each.
     fn unowned(&mut self) {
         let unowned: BTreeSet<String> = self
@@ -554,6 +577,7 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
     run.file_states();
     run.limits();
     let changes = run.changes();
+    run.extensions();
     run.unowned();
     run.findings.sort_by(|a, b| {
         (&a.finding.file, a.finding.line, a.finding.code, &a.metric).cmp(&(
@@ -570,7 +594,7 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
     // mistaken for a checked one.
     let coverage = &run.coverage;
     let message = format!(
-        "{} files selected: {} measured, {} failed to parse, {} not measured (no profile for the language), {} ignored by configuration, {} mapped by no spec; configuration {}; before side: {}; {} entities paired; net: {}",
+        "{} files selected: {} measured, {} failed to parse, {} not measured (no profile for the language), {} ignored by configuration, {} mapped by no spec; configuration {}; before side: {}; {} entities paired; net: {}{}",
         coverage.selected,
         coverage.measured,
         coverage.failed.len(),
@@ -580,7 +604,12 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
         input.config.digest(),
         coverage.before_side,
         run.pairing.len(),
-        net.label()
+        net.label(),
+        input
+            .extension_notes
+            .iter()
+            .map(|note| format!("; {note}"))
+            .collect::<String>()
     );
     run.findings.push(plain(
         Finding::new(codes::CODE_COVERAGE, super::config::CONFIG_PATH, message),
