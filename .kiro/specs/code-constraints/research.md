@@ -493,3 +493,49 @@ The first Linux run failed one telemetry test and, because `cargo test` stops at
 - **Not done in M2**: 7.2 (provider selection across several sources: there is one source), `CODE_NET_GROWTH` (no configured maximum yet), strict mode (pre-existing breaches blocking), `CODE_BASELINE_STALE` as a finding (the reason is in the coverage line instead).
 - A hand count of mine was wrong once more: the summary test expected 0 warnings where three metrics had risen within their limits.
 - Process slip: one commit (`d6b2557`) was made before the lint result was read and contained three lint errors in a test file; fixed in the next commit.
+
+## Calibration record: distributions on the owner's corpus (2026-11-10)
+
+Corpus named by the owner: this repository, `../mmhmem`, `../facdrone`, `../mvibe`, `../Contour`. Measured with `cargo run --release -p kiro-code --example distribution -- <root>...`; the repositories were read only. The full table is `D:\BuildArtifacts\openidea-kiro\calibration\dist.md`.
+
+Files measured: openidea-kiro 141 (132 Rust), mmhmem 290 (234 Rust, 53 Python), facdrone 1875 (1874 Python), mvibe 181 (91 Python, 88 TypeScript), Contour 40 (29 Python, 11 Rust).
+
+**Contour is not calibrated.** It is a C++ project: 1462 `.cpp` and 1165 `.hpp` files are tracked and no profile measures them. Only its 40 helper files in Python and Rust were read.
+
+**The first run counted mmhmem twice.** The walk read 204 Rust files under `.claude/worktrees`, a Git worktree of the same project. The walk now skips a directory below the root that has its own `.git`; the Rust file count of mmhmem then equals what Git tracks (234). The numbers below are from the second run.
+
+Share of routines above the limit, for the populations of at least 500 routines:
+
+| Population | Routines | cyclomatic > 10 | nesting > 3 | code_lines > 60 | statements > 40 | parameters > 5 |
+|---|---|---|---|---|---|---|
+| facdrone, Python | 17184 | 0.1% | 0.1% | 0.5% | 0.1% | 0.3% |
+| mmhmem, Rust | 3264 | 0.5% | 0.2% | 0.9% | 0.2% | 0.5% |
+| mvibe, Python | 2072 | 2.1% | 1.6% | 0.4% | 0.9% | 0.8% |
+| openidea-kiro, Rust | 1501 | 3.5% | 2.7% | 6.5% | 1.7% | 0.8% |
+| mvibe, TypeScript | 846 | 6.9% | 2.5% | 1.5% | 2.8% | 0.1% |
+| mmhmem, Python | 551 | 3.8% | 2.5% | 0.7% | 1.3% | 1.3% |
+
+Percentiles of the same populations (p95 / p99 / maximum):
+
+| Population | cyclomatic | nesting | code_lines | statements | parameters |
+|---|---|---|---|---|---|
+| facdrone, Python | 6 / 9 / 21 | 2 / 3 / 5 | 32 / 53 / 211 | 16 / 24 / 58 | 4 / 5 / 11 |
+| mmhmem, Rust | 5 / 9 / 18 | 2 / 3 / 5 | 38 / 59 / 148 | 18 / 27 / 57 | 3 / 5 / 7 |
+| mvibe, Python | 7 / 16 / 89 | 3 / 4 / 6 | 26 / 49 / 160 | 20 / 39 / 152 | 3 / 5 / 12 |
+| openidea-kiro, Rust | 9 / 20 / 62 | 3 / 4 / 7 | 67 / 139 / 328 | 26 / 52 / 122 | 3 / 5 / 7 |
+| mvibe, TypeScript | 12 / 91 / 185 | 2 / 5 / 6 | 23 / 91 / 189 | 23 / 122 / 226 | 3 / 4 / 7 |
+| mmhmem, Python | 9 / 20 / 55 | 3 / 4 / 6 | 28 / 49 / 135 | 23 / 42 / 116 | 3 / 6 / 9 |
+
+What the numbers say:
+
+- **Routine limits, Rust and Python.** In four of the five populations every limit lies at or above the 95th percentile, and in the two largest at or above the 99th. The exception is `code_lines` in this repository (95th percentile 67 against the limit 60). The limits mark outliers, which is what a limit is for. No number argues for a different value.
+- **Routine limits, TypeScript.** One repository, 846 routines, and a long tail: the 95th percentile of cyclomatic is 12 and the 99th is 91. The highest value, 185 in `parseWorkspaceProbe`, was read: it is one dense validation routine with long chains of `||`, so a high count is plausible. The exact number was not recounted by hand. One repository is too little to call the TypeScript limits calibrated.
+- **File `max_cyclomatic`** repeats the routine finding on the file: between 0.7% and 50% of files are above it, 45% of the TypeScript files of mvibe. It adds a second finding for the same cause.
+- **File `functions` at 25** lies near the 90th to 95th percentile (4.9% to 26% of files above in the larger populations).
+- **This repository is the worst Rust population** on every routine metric: `code_lines` above 60 for 6.5% of its routines against 0.9% in mmhmem.
+
+Limits of this record:
+
+- Test code is included and not separated.
+- The share above a limit says how many findings a limit produces. It does not say that a routine above the limit is harder for an agent to change; no outcome was measured.
+- No severity was changed. Task 1.4 stays open: the decision to block is the owner's, and the calibration is not persisted as an executable fixture.

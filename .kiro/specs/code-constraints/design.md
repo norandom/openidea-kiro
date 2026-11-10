@@ -60,7 +60,7 @@ Dependency direction: core contracts → native producers and pure policy → CL
 
 **Build-versus-adopt decision (owner, 2026-11-10):** parsing is always adopted. This project writes no lexer or parser for source code; it writes queries and counting rules over a syntax tree that a library produces. G1 is one joint prototype with clone-constraints and code-locality-data, so that `kiro-code` links one parse stack and one tree-sitter runtime. The adapter normalizes only metrics proven on the hand-counted corpus. A fact the library does not supply may come from a bounded query over the same tree; a mismatched definition remains a separately named metric rather than being relabeled. If no library combination meets the bundled contract on all three platforms, G1 fails and this design is revised before broad tasks begin. This is a finite prototype gate, not a claim that a dependency has already been validated.
 
-The candidate limits are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. They are priors. The calibration corpus is this repository plus `../lesscode/native` and one Python and one TypeScript repository named in the G1 record.
+The candidate limits are starting values carried over from the archived scitools-hook project, where they were measured with a different analyzer. They are priors. The calibration corpus (owner, 2026-11-10) is this repository plus `../facdrone` (Python), `../mmhmem` (Rust, Python), `../mvibe` (Python, TypeScript) and `../Contour` (C++, which no profile measures yet).
 
 ## File Structure Plan
 
