@@ -186,6 +186,13 @@
 //! | IMPORT_TERM_SKIPPED | warning | Importer skipped a source term that yields no id or has no name |
 //! | IMPORT_DUPLICATE_ID | warning | Two source terms derive the same id; first wins |
 //! | IMPORT_MERGE_CONFLICT | warning | Imported term collides with an existing id or label; existing kept |
+//! | CODE_ROUTINE_LIMIT | warning | A routine metric is above its limit |
+//! | CODE_TYPE_LIMIT | warning | A type holds more methods or fields than its limit |
+//! | CODE_FILE_LIMIT | warning | A file metric is above its limit |
+//! | CODE_PARSE_FAILED | error | A selected source file does not parse; no rule was judged on it |
+//! | CODE_FILE_UNOWNED | info | A selected file with findings is mapped by no spec |
+//! | CODE_COVERAGE | info | What the code gate measured and what it left out |
+//! | CODE_CONFIG_INVALID | error | The code-rules configuration is invalid |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -254,6 +261,13 @@
 //!     ("IMPORT_TERM_SKIPPED", Severity::Warning, "Importer skipped a source term that yields no id or has no name"),
 //!     ("IMPORT_DUPLICATE_ID", Severity::Warning, "Two source terms derive the same id; first wins"),
 //!     ("IMPORT_MERGE_CONFLICT", Severity::Warning, "Imported term collides with an existing id or label; existing kept"),
+//!     ("CODE_ROUTINE_LIMIT", Severity::Warning, "A routine metric is above its limit"),
+//!     ("CODE_TYPE_LIMIT", Severity::Warning, "A type holds more methods or fields than its limit"),
+//!     ("CODE_FILE_LIMIT", Severity::Warning, "A file metric is above its limit"),
+//!     ("CODE_PARSE_FAILED", Severity::Error, "A selected source file does not parse; no rule was judged on it"),
+//!     ("CODE_FILE_UNOWNED", Severity::Info, "A selected file with findings is mapped by no spec"),
+//!     ("CODE_COVERAGE", Severity::Info, "What the code gate measured and what it left out"),
+//!     ("CODE_CONFIG_INVALID", Severity::Error, "The code-rules configuration is invalid"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {
@@ -323,6 +337,7 @@
 #![forbid(unsafe_code)]
 
 pub mod checks;
+pub mod code;
 pub mod design;
 pub mod finding;
 pub mod join;
@@ -334,6 +349,7 @@ pub mod roadmap;
 pub mod source;
 pub mod spec;
 pub mod tasks;
+pub mod telemetry;
 pub mod viz;
 pub mod vocab;
 

@@ -1,0 +1,36 @@
+# OpenTelemetry Collector example: ship the files kiro-cli writes to OpenObserve.
+#
+# kiro-cli appends OTLP JSON lines to metrics.jsonl, logs.jsonl and traces.jsonl
+# in the directory given by --telemetry-dir or KIRO_TELEMETRY_DIR. This
+# Collector reads that directory and forwards the three signals. Credentials
+# stay in the Collector's environment; kiro-cli never sees them.
+#
+# Needs the contrib distribution (otel/opentelemetry-collector-contrib),
+# verified with 0.165.0. Environment of the Collector:
+#   KIRO_TELEMETRY_DIR    directory kiro-cli writes to (as the Collector sees it)
+#   OPENOBSERVE_ENDPOINT  for example http://localhost:5080/api/default
+#   OPENOBSERVE_AUTH      for example "Basic <base64 of user:password>"
+
+receivers:
+  otlp_json_file:
+    include:
+      - ${env:KIRO_TELEMETRY_DIR}/*.jsonl
+    start_at: beginning
+
+exporters:
+  otlp_http:
+    endpoint: ${env:OPENOBSERVE_ENDPOINT}
+    headers:
+      Authorization: ${env:OPENOBSERVE_AUTH}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp_json_file]
+      exporters: [otlp_http]
+    logs:
+      receivers: [otlp_json_file]
+      exporters: [otlp_http]
+    traces:
+      receivers: [otlp_json_file]
+      exporters: [otlp_http]

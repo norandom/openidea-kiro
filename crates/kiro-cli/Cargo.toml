@@ -11,6 +11,8 @@ path = "src/main.rs"
 
 [dependencies]
 kiro-core = { path = "../kiro-core" }
+kiro-cli-common = { path = "../kiro-cli-common" }
+kiro-code = { path = "../kiro-code" }
 clap = { version = "4.5", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -20,6 +22,8 @@ toml = "0.8"
 
 [dev-dependencies]
 tempfile = "3"
+# Decodes written OTLP JSON lines in tests only (quality-telemetry 6.2, 6.3).
+opentelemetry-proto = { version = "=0.33.1", default-features = false, features = ["gen-tonic-messages", "with-serde", "metrics", "logs", "trace"] }
 
 [lints.rust]
 unsafe_code = "forbid"

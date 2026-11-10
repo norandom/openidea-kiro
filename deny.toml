@@ -16,6 +16,13 @@ targets = [
 # into the wasm cdylib (design line 48); excluded from the graph so the
 # bans below guard the shipped wasm tree, not test tooling.
 exclude-dev = true
+# kiro-code is the native measurement crate of the code gate (spec
+# code-constraints). It never links into the wasm component: kiro-core does
+# not depend on it. Its parse stack walks directories (ast-grep-language ->
+# ignore -> walkdir), which the sandbox bans below rightly forbid for the
+# shipped wasm tree, so the crate and the dependencies only it uses are
+# left out of this graph.
+exclude = ["kiro-code"]
 
 [advisories]
 yanked = "warn"

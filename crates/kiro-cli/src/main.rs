@@ -7,15 +7,22 @@ use clap::Parser;
 
 pub mod check;
 pub mod cli;
+pub mod code;
 pub mod exit;
 pub mod fs;
 pub mod import;
 pub mod report;
+pub mod telemetry;
+pub mod telemetry_io;
 pub mod viz;
 pub mod vocab;
 
-use cli::{Cli, Command, VocabCommand};
+use cli::{Cli, CodeCommand, Command, TelemetryCommand, VocabCommand};
 use exit::Exit;
+use kiro_cli_common::{
+    EnvironmentValues, resolve_context, resolve_gate, resolve_report, write_report,
+};
+use telemetry_io::{RunTimer, TelemetryEnvironment};
 
 fn main() -> ExitCode {
     let cli = match Cli::try_parse() {
@@ -30,9 +37,35 @@ fn main() -> ExitCode {
         }
     };
 
+    // Shared parameters: command line, then environment, then default.
+    let environment = EnvironmentValues::capture();
+    let context = match resolve_context(&cli.global, &environment) {
+        Ok(c) => c,
+        Err(failure) => {
+            eprintln!("{failure}");
+            return ExitCode::from(Exit::Failure);
+        }
+    };
+    let verbose = context.verbose();
+    let telemetry_environment = TelemetryEnvironment::capture();
+
     match cli.command {
         Command::Check(ref args) => {
-            let root = match fs::resolve_root(&cli.project) {
+            let settings = match resolve_report(&args.report, &environment) {
+                Ok(s) => s,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let fail_on = match resolve_gate(&args.gate, &environment) {
+                Ok(f) => f,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let root = match fs::resolve_root(&context.project) {
                 Ok(r) => r,
                 Err(failure) => {
                     eprintln!("{failure}");
@@ -53,6 +86,18 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
+            let telemetry_plan = match telemetry::plan(
+                &root,
+                args.telemetry.telemetry_dir.as_deref(),
+                &telemetry_environment,
+            ) {
+                Ok(p) => p,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let mut timer = RunTimer::start();
             let discovered = match fs::discover_features(&root) {
                 Ok(d) => d,
                 Err(failure) => {
@@ -60,7 +105,8 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            if cli.verbose {
+            timer.phase("discover");
+            if verbose {
                 eprintln!("discovered specs: {}", discovered.join(", "));
             }
             let specs = match check::select(&selection, &discovered) {
@@ -75,10 +121,12 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            let source = fs::FsSource::new(root.clone(), cli.verbose);
-            let report = check::run(&root, source, discovered, specs, &config, args.fail_on);
+            let source = fs::FsSource::new(root.clone(), verbose);
+            let (report, features) =
+                check::run_with_features(&root, source, discovered, specs, &config, fail_on);
+            timer.phase("check");
 
-            let output = match args.format {
+            let output = match settings.format {
                 cli::ReportFormat::Text => report::text(&report),
                 cli::ReportFormat::Json => match report::json(&report) {
                     Ok(j) => j,
@@ -88,14 +136,29 @@ fn main() -> ExitCode {
                     }
                 },
             };
-            if let Err(e) = std::io::stdout().write_all(output.as_bytes()) {
-                eprintln!("failed to write report to stdout: {e}");
+            if let Err(failure) = write_report(&settings.destination, output.as_bytes()) {
+                eprintln!("{failure}");
                 return ExitCode::from(Exit::Failure);
+            }
+            timer.phase("render");
+            // Telemetry is written after the report and the exit decision;
+            // a failure is reported and changes neither.
+            if let Some(plan) = &telemetry_plan
+                && let Err(failure) = telemetry::emit(
+                    plan,
+                    &root,
+                    &telemetry_environment,
+                    &report,
+                    &features,
+                    timer,
+                )
+            {
+                eprintln!("{failure}");
             }
             ExitCode::from(report.exit)
         }
         Command::Status(ref args) => {
-            let root = match fs::resolve_root(&cli.project) {
+            let root = match fs::resolve_root(&context.project) {
                 Ok(r) => r,
                 Err(failure) => {
                     eprintln!("{failure}");
@@ -109,7 +172,7 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            let source = fs::FsSource::new(root.clone(), cli.verbose);
+            let source = fs::FsSource::new(root.clone(), verbose);
             match viz::status(&root, source, &discovered, &args.spec) {
                 Ok(text) => {
                     print!("{text}");
@@ -122,7 +185,7 @@ fn main() -> ExitCode {
             }
         }
         Command::Graph(ref args) => {
-            let root = match fs::resolve_root(&cli.project) {
+            let root = match fs::resolve_root(&context.project) {
                 Ok(r) => r,
                 Err(failure) => {
                     eprintln!("{failure}");
@@ -136,7 +199,7 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            let source = fs::FsSource::new(root.clone(), cli.verbose);
+            let source = fs::FsSource::new(root.clone(), verbose);
             match viz::graph(&root, source, &discovered, &args.spec, args.table) {
                 Ok(text) => {
                     print!("{text}");
@@ -149,7 +212,7 @@ fn main() -> ExitCode {
             }
         }
         Command::Tasks(ref args) => {
-            let root = match fs::resolve_root(&cli.project) {
+            let root = match fs::resolve_root(&context.project) {
                 Ok(r) => r,
                 Err(failure) => {
                     eprintln!("{failure}");
@@ -163,7 +226,7 @@ fn main() -> ExitCode {
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            let source = fs::FsSource::new(root.clone(), cli.verbose);
+            let source = fs::FsSource::new(root.clone(), verbose);
             match viz::tasks(&root, source, &discovered, &args.spec, args.table) {
                 Ok(text) => {
                     print!("{text}");
@@ -175,15 +238,191 @@ fn main() -> ExitCode {
                 }
             }
         }
-        Command::Vocab(VocabCommand::Validate(ref args)) => {
-            let root = match fs::resolve_root(&cli.project) {
+        Command::Code(CodeCommand::Check(ref args)) => {
+            let settings = match resolve_report(&args.report, &environment) {
+                Ok(s) => s,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let fail_on = match resolve_gate(&args.gate, &environment) {
+                Ok(f) => f,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let selection = match code::selection(args) {
+                Ok(s) => s,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let root = match fs::resolve_root(&context.project) {
                 Ok(r) => r,
                 Err(failure) => {
                     eprintln!("{failure}");
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            let source = fs::FsSource::new(root.clone(), cli.verbose);
+            let discovered = match fs::discover_features(&root) {
+                Ok(d) => d,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let source = fs::FsSource::new(root.clone(), verbose);
+            let run = match code::run(&root, source, discovered, &selection, args.show_highest) {
+                Ok(r) => r,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let verdict = exit::verdict(fail_on, run.report.base_findings());
+            let output = match settings.format {
+                cli::ReportFormat::Text => {
+                    let mut text = kiro_core::code::report::text(&run.report);
+                    if !run.highest.is_empty() {
+                        text.push_str("\nHighest values (a distribution, not a verdict):\n");
+                        for line in &run.highest {
+                            text.push_str(&format!("  {line}\n"));
+                        }
+                    }
+                    let word = match fail_on {
+                        exit::FailOn::Error => "error",
+                        exit::FailOn::Warning => "warning",
+                    };
+                    let result = if verdict == Exit::Clean {
+                        "pass"
+                    } else {
+                        "fail"
+                    };
+                    text.push_str(&format!("fail-on {word}: {result}\n"));
+                    text
+                }
+                cli::ReportFormat::Json => kiro_core::code::report::json(&run.report),
+            };
+            if let Err(failure) = write_report(&settings.destination, output.as_bytes()) {
+                eprintln!("{failure}");
+                return ExitCode::from(Exit::Failure);
+            }
+            ExitCode::from(verdict)
+        }
+        Command::Telemetry(TelemetryCommand::Export(ref args)) => {
+            let settings = match resolve_report(&args.report, &environment) {
+                Ok(s) => s,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let selection = match cli::selection_of(args.all, &args.features) {
+                Ok(s) => s,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let root = match fs::resolve_root(&context.project) {
+                Ok(r) => r,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            // A dry run prints the snapshot and writes nothing, whatever
+            // the environment says about a telemetry directory.
+            let telemetry_plan = if args.dry_run {
+                None
+            } else {
+                match telemetry::plan(
+                    &root,
+                    args.telemetry.telemetry_dir.as_deref(),
+                    &telemetry_environment,
+                ) {
+                    Ok(Some(p)) => Some(p),
+                    Ok(None) => {
+                        eprintln!(
+                            "no telemetry directory: pass --telemetry-dir, set KIRO_TELEMETRY_DIR, or use --dry-run"
+                        );
+                        return ExitCode::from(Exit::Failure);
+                    }
+                    Err(failure) => {
+                        eprintln!("{failure}");
+                        return ExitCode::from(Exit::Failure);
+                    }
+                }
+            };
+            let mut timer = RunTimer::start();
+            let discovered = match fs::discover_features(&root) {
+                Ok(d) => d,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            timer.phase("discover");
+            let specs = match check::select(&selection, &discovered) {
+                Ok(s) => s,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let source = fs::FsSource::new(root.clone(), verbose);
+            let config = kiro_core::checks::CheckConfig::default();
+            let (report, features) = check::run_with_features(
+                &root,
+                source,
+                discovered,
+                specs,
+                &config,
+                exit::FailOn::Error,
+            );
+            timer.phase("check");
+            match telemetry_plan {
+                None => {
+                    let snapshot = telemetry::snapshot_of(&report, &features);
+                    let output = match settings.format {
+                        cli::ReportFormat::Text => kiro_core::telemetry::snapshot_text(&snapshot),
+                        cli::ReportFormat::Json => kiro_core::telemetry::snapshot_json(&snapshot),
+                    };
+                    if let Err(failure) = write_report(&settings.destination, output.as_bytes()) {
+                        eprintln!("{failure}");
+                        return ExitCode::from(Exit::Failure);
+                    }
+                }
+                Some(plan) => {
+                    // The export is this command's whole purpose, so a
+                    // failed write is a failure here.
+                    if let Err(failure) = telemetry::emit(
+                        &plan,
+                        &root,
+                        &telemetry_environment,
+                        &report,
+                        &features,
+                        timer,
+                    ) {
+                        eprintln!("{failure}");
+                        return ExitCode::from(Exit::Failure);
+                    }
+                }
+            }
+            ExitCode::from(Exit::Clean)
+        }
+        Command::Vocab(VocabCommand::Validate(ref args)) => {
+            let root = match fs::resolve_root(&context.project) {
+                Ok(r) => r,
+                Err(failure) => {
+                    eprintln!("{failure}");
+                    return ExitCode::from(Exit::Failure);
+                }
+            };
+            let source = fs::FsSource::new(root.clone(), verbose);
             let (rep, exit) =
                 match vocab::validate(&root, source, args.file.as_deref(), args.fail_on) {
                     Ok(pair) => pair,
@@ -209,14 +448,14 @@ fn main() -> ExitCode {
             ExitCode::from(exit)
         }
         Command::Vocab(VocabCommand::Import(ref args)) => {
-            let root = match fs::resolve_root(&cli.project) {
+            let root = match fs::resolve_root(&context.project) {
                 Ok(r) => r,
                 Err(failure) => {
                     eprintln!("{failure}");
                     return ExitCode::from(Exit::Failure);
                 }
             };
-            match vocab::import(&root, args, cli.verbose) {
+            match vocab::import(&root, args, verbose) {
                 Ok(exit) => ExitCode::from(exit),
                 Err(failure) => {
                     eprintln!("{failure}");

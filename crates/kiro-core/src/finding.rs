@@ -386,6 +386,41 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Warning,
         description: "Imported term collides with an existing id or label; existing kept",
     },
+    CodeInfo {
+        code: "CODE_ROUTINE_LIMIT",
+        severity: Severity::Warning,
+        description: "A routine metric is above its limit",
+    },
+    CodeInfo {
+        code: "CODE_TYPE_LIMIT",
+        severity: Severity::Warning,
+        description: "A type holds more methods or fields than its limit",
+    },
+    CodeInfo {
+        code: "CODE_FILE_LIMIT",
+        severity: Severity::Warning,
+        description: "A file metric is above its limit",
+    },
+    CodeInfo {
+        code: "CODE_PARSE_FAILED",
+        severity: Severity::Error,
+        description: "A selected source file does not parse; no rule was judged on it",
+    },
+    CodeInfo {
+        code: "CODE_FILE_UNOWNED",
+        severity: Severity::Info,
+        description: "A selected file with findings is mapped by no spec",
+    },
+    CodeInfo {
+        code: "CODE_COVERAGE",
+        severity: Severity::Info,
+        description: "What the code gate measured and what it left out",
+    },
+    CodeInfo {
+        code: "CODE_CONFIG_INVALID",
+        severity: Severity::Error,
+        description: "The code-rules configuration is invalid",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -451,6 +486,13 @@ pub mod codes {
     pub const IMPORT_TERM_SKIPPED: &str = "IMPORT_TERM_SKIPPED";
     pub const IMPORT_DUPLICATE_ID: &str = "IMPORT_DUPLICATE_ID";
     pub const IMPORT_MERGE_CONFLICT: &str = "IMPORT_MERGE_CONFLICT";
+    pub const CODE_ROUTINE_LIMIT: &str = "CODE_ROUTINE_LIMIT";
+    pub const CODE_TYPE_LIMIT: &str = "CODE_TYPE_LIMIT";
+    pub const CODE_FILE_LIMIT: &str = "CODE_FILE_LIMIT";
+    pub const CODE_PARSE_FAILED: &str = "CODE_PARSE_FAILED";
+    pub const CODE_FILE_UNOWNED: &str = "CODE_FILE_UNOWNED";
+    pub const CODE_COVERAGE: &str = "CODE_COVERAGE";
+    pub const CODE_CONFIG_INVALID: &str = "CODE_CONFIG_INVALID";
 }
 
 /// The twenty check finding codes introduced by the constraints engine.
@@ -511,8 +553,8 @@ mod tests {
     }
 
     #[test]
-    fn catalogue_has_61_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 61);
+    fn catalogue_has_68_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 68);
         assert_eq!(CHECK_CODES.len(), 20);
         let all = [
             codes::SPEC_DOC_MISSING,
@@ -576,8 +618,15 @@ mod tests {
             codes::IMPORT_TERM_SKIPPED,
             codes::IMPORT_DUPLICATE_ID,
             codes::IMPORT_MERGE_CONFLICT,
+            codes::CODE_ROUTINE_LIMIT,
+            codes::CODE_TYPE_LIMIT,
+            codes::CODE_FILE_LIMIT,
+            codes::CODE_PARSE_FAILED,
+            codes::CODE_FILE_UNOWNED,
+            codes::CODE_COVERAGE,
+            codes::CODE_CONFIG_INVALID,
         ];
-        assert_eq!(all.len(), 61);
+        assert_eq!(all.len(), 68);
         for c in all {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),

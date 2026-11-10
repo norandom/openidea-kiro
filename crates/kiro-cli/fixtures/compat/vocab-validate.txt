@@ -1,0 +1,6 @@
+exit=0
+--- stdout
+Vocabulary: .kiro/vocabulary.toml — loaded (1 topics, 5 terms)
+
+No findings.
+--- stderr

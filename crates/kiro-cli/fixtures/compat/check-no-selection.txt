@@ -1,0 +1,4 @@
+exit=2
+--- stdout
+--- stderr
+specify either --all or one or more --feature arguments

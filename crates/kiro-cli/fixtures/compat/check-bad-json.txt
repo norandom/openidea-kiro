@@ -1,0 +1,348 @@
+exit=1
+--- stdout
+{
+  "schema_version": "1",
+  "specs": [
+    "broken",
+    "none",
+    "wide"
+  ],
+  "checked": [
+    {
+      "spec": "broken",
+      "topics": [
+        "ops",
+        "pm"
+      ],
+      "vocabulary": "loaded",
+      "checks": {
+        "contradictions": {
+          "status": "ran",
+          "findings": 10
+        },
+        "ears": {
+          "status": "ran",
+          "findings": 6
+        },
+        "terms": {
+          "status": "ran",
+          "findings": 5
+        }
+      }
+    },
+    {
+      "spec": "none",
+      "topics": [],
+      "vocabulary": "loaded",
+      "checks": {
+        "contradictions": {
+          "status": "skipped",
+          "reason": "spec declares no topics"
+        },
+        "ears": {
+          "status": "ran",
+          "findings": 0
+        },
+        "terms": {
+          "status": "skipped",
+          "reason": "spec declares no topics"
+        }
+      }
+    },
+    {
+      "spec": "wide",
+      "topics": [
+        "wide"
+      ],
+      "vocabulary": "loaded",
+      "checks": {
+        "contradictions": {
+          "status": "ran",
+          "findings": 1
+        },
+        "ears": {
+          "status": "ran",
+          "findings": 0
+        },
+        "terms": {
+          "status": "ran",
+          "findings": 0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "errors": 12,
+    "warnings": 10,
+    "info": 11
+  },
+  "fail_on": "error",
+  "verdict": "fail",
+  "findings": [
+    {
+      "severity": "info",
+      "code": "VOCAB_LABEL_CROSS_TOPIC",
+      "feature": null,
+      "file": ".kiro/vocabulary.toml",
+      "line": 61,
+      "message": "label /"Level/" exists in topic `ops` as `level` and topic `pm` as `pm-level`"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/design.md",
+      "line": null,
+      "message": "document '.kiro/specs/broken/design.md' is missing"
+    },
+    {
+      "severity": "info",
+      "code": "CHECK_COVERAGE",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": null,
+      "message": "17 criteria, 14 annotated, 2 pairs considered, 2 contradictions, 0 refused"
+    },
+    {
+      "severity": "info",
+      "code": "TERM_SUGGESTED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 46,
+      "message": "Sprint (term sprint) occurs in 1.6 but is not declared in _Terms:_"
+    },
+    {
+      "severity": "warning",
+      "code": "TERM_AMBIGUOUS",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 50,
+      "message": "Level matches ops.level, pm.pm-level; use the term id"
+    },
+    {
+      "severity": "warning",
+      "code": "TERM_DEPRECATED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 50,
+      "message": "legacy-mode is deprecated; use mode"
+    },
+    {
+      "severity": "error",
+      "code": "TERM_TOPIC_MISMATCH",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 50,
+      "message": "shift exists only in topic(s) hr; spec declares ops, pm; cross-topic matches are never resolved"
+    },
+    {
+      "severity": "error",
+      "code": "TERM_UNDECLARED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 50,
+      "message": "ghost is not a term in topics ops, pm"
+    },
+    {
+      "severity": "error",
+      "code": "EARS_NO_SHALL",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 54,
+      "message": "criterion has no shall"
+    },
+    {
+      "severity": "warning",
+      "code": "EARS_MULTI_SHALL",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 56,
+      "message": "found 2"
+    },
+    {
+      "severity": "warning",
+      "code": "EARS_MODAL",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 58,
+      "message": "use shall, not must"
+    },
+    {
+      "severity": "error",
+      "code": "EARS_NO_SHALL",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 58,
+      "message": "criterion has no shall"
+    },
+    {
+      "severity": "warning",
+      "code": "EARS_NO_TRIGGER",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 60,
+      "message": "condition keyword without comma before shall"
+    },
+    {
+      "severity": "warning",
+      "code": "EARS_UNPARSED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 62,
+      "message": "no subject before shall"
+    },
+    {
+      "severity": "error",
+      "code": "GUARD_UNPARSED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 71,
+      "message": "misplaced _Guard:_ belongs indented under a criterion"
+    },
+    {
+      "severity": "error",
+      "code": "GUARD_UNPARSED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 76,
+      "message": "expected a literal after the operator at position 7"
+    },
+    {
+      "severity": "error",
+      "code": "GUARD_UNPARSED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 79,
+      "message": "armed is a term; comparisons are against literal constants only"
+    },
+    {
+      "severity": "error",
+      "code": "GUARD_UNPARSED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 83,
+      "message": "second _Guard:_ on criterion"
+    },
+    {
+      "severity": "error",
+      "code": "GUARD_TERM_UNDECLARED",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 86,
+      "message": "depth"
+    },
+    {
+      "severity": "error",
+      "code": "GUARD_KIND_MISMATCH",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 89,
+      "message": "operator (entity) cannot be compared with a boolean"
+    },
+    {
+      "severity": "warning",
+      "code": "GUARD_UNSATISFIABLE",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 92,
+      "message": "guard holds in no state"
+    },
+    {
+      "severity": "warning",
+      "code": "CONFLICT_REF_UNKNOWN",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 95,
+      "message": "99.9"
+    },
+    {
+      "severity": "error",
+      "code": "CONTRADICTION",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 105,
+      "message": "criteria 3.1 and 3.2 can both apply (effect armed: true vs false); witness: depth >= 1001, mode = safe"
+    },
+    {
+      "severity": "error",
+      "code": "CONTRADICTION",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/requirements.md",
+      "line": 121,
+      "message": "criteria 4.1 and 4.2 can both apply (declared conflict); witness: in every state"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "broken",
+      "file": ".kiro/specs/broken/tasks.md",
+      "line": null,
+      "message": "document '.kiro/specs/broken/tasks.md' is missing"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "none",
+      "file": ".kiro/specs/none/design.md",
+      "line": null,
+      "message": "document '.kiro/specs/none/design.md' is missing"
+    },
+    {
+      "severity": "warning",
+      "code": "CHECK_UNSCOPED",
+      "feature": "none",
+      "file": ".kiro/specs/none/requirements.md",
+      "line": 21,
+      "message": "annotations present but not checked: spec declares no topics"
+    },
+    {
+      "severity": "info",
+      "code": "TOPICS_UNDECLARED",
+      "feature": "none",
+      "file": ".kiro/specs/none/spec.json",
+      "line": null,
+      "message": "spec `none` declares no topics: add `topics = [...]` to spec.json"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "none",
+      "file": ".kiro/specs/none/tasks.md",
+      "line": null,
+      "message": "document '.kiro/specs/none/tasks.md' is missing"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "wide",
+      "file": ".kiro/specs/wide/design.md",
+      "line": null,
+      "message": "document '.kiro/specs/wide/design.md' is missing"
+    },
+    {
+      "severity": "info",
+      "code": "CHECK_COVERAGE",
+      "feature": "wide",
+      "file": ".kiro/specs/wide/requirements.md",
+      "line": null,
+      "message": "2 criteria, 3 annotated, 1 pairs considered, 0 contradictions, 1 refused"
+    },
+    {
+      "severity": "warning",
+      "code": "SEARCH_REFUSED",
+      "feature": "wide",
+      "file": ".kiro/specs/wide/requirements.md",
+      "line": null,
+      "message": "variable cap 512 exceeded: 520 values; 1 pairs not checked: 1.1/1.2; largest terms: w01 (8 values), w02 (8 values)"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "wide",
+      "file": ".kiro/specs/wide/tasks.md",
+      "line": null,
+      "message": "document '.kiro/specs/wide/tasks.md' is missing"
+    }
+  ]
+}
+--- stderr

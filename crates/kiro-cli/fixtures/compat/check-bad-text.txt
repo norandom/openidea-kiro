@@ -1,0 +1,54 @@
+exit=1
+--- stdout
+Vocabulary: .kiro/vocabulary.toml — loaded (4 topics, 74 terms)
+.kiro/vocabulary.toml:61: INFO VOCAB_LABEL_CROSS_TOPIC label "Level" exists in topic `ops` as `level` and topic `pm` as `pm-level`
+
+Spec: broken (topics: ops, pm) — vocabulary: loaded
+EARS: 17 criteria checked, 6 findings
+Terms: 11 declared — 8 resolved, 1 deprecated, 1 mismatched, 1 undeclared, 1 ambiguous; 1 suggested
+Contradictions: 3 guarded criteria, 2 pairs considered, 2 found, 0 refused (caps: 512 variables, 100000 nodes)
+.kiro/specs/broken/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/broken/design.md' is missing
+.kiro/specs/broken/requirements.md: INFO CHECK_COVERAGE 17 criteria, 14 annotated, 2 pairs considered, 2 contradictions, 0 refused
+.kiro/specs/broken/requirements.md:46: INFO TERM_SUGGESTED Sprint (term sprint) occurs in 1.6 but is not declared in _Terms:_
+.kiro/specs/broken/requirements.md:50: WARNING TERM_AMBIGUOUS Level matches ops.level, pm.pm-level; use the term id
+.kiro/specs/broken/requirements.md:50: WARNING TERM_DEPRECATED legacy-mode is deprecated; use mode
+.kiro/specs/broken/requirements.md:50: ERROR TERM_TOPIC_MISMATCH shift exists only in topic(s) hr; spec declares ops, pm; cross-topic matches are never resolved
+.kiro/specs/broken/requirements.md:50: ERROR TERM_UNDECLARED ghost is not a term in topics ops, pm
+.kiro/specs/broken/requirements.md:54: ERROR EARS_NO_SHALL criterion has no shall
+.kiro/specs/broken/requirements.md:56: WARNING EARS_MULTI_SHALL found 2
+.kiro/specs/broken/requirements.md:58: WARNING EARS_MODAL use shall, not must
+.kiro/specs/broken/requirements.md:58: ERROR EARS_NO_SHALL criterion has no shall
+.kiro/specs/broken/requirements.md:60: WARNING EARS_NO_TRIGGER condition keyword without comma before shall
+.kiro/specs/broken/requirements.md:62: WARNING EARS_UNPARSED no subject before shall
+.kiro/specs/broken/requirements.md:71: ERROR GUARD_UNPARSED misplaced _Guard:_ belongs indented under a criterion
+.kiro/specs/broken/requirements.md:76: ERROR GUARD_UNPARSED expected a literal after the operator at position 7
+.kiro/specs/broken/requirements.md:79: ERROR GUARD_UNPARSED armed is a term; comparisons are against literal constants only
+.kiro/specs/broken/requirements.md:83: ERROR GUARD_UNPARSED second _Guard:_ on criterion
+.kiro/specs/broken/requirements.md:86: ERROR GUARD_TERM_UNDECLARED depth
+.kiro/specs/broken/requirements.md:89: ERROR GUARD_KIND_MISMATCH operator (entity) cannot be compared with a boolean
+.kiro/specs/broken/requirements.md:92: WARNING GUARD_UNSATISFIABLE guard holds in no state
+.kiro/specs/broken/requirements.md:95: WARNING CONFLICT_REF_UNKNOWN 99.9
+.kiro/specs/broken/requirements.md:105: ERROR CONTRADICTION criteria 3.1 and 3.2 can both apply (effect armed: true vs false); witness: depth >= 1001, mode = safe
+.kiro/specs/broken/requirements.md:121: ERROR CONTRADICTION criteria 4.1 and 4.2 can both apply (declared conflict); witness: in every state
+.kiro/specs/broken/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/broken/tasks.md' is missing
+
+Spec: none (topics: none) — vocabulary: loaded
+EARS: 1 criteria checked, 0 findings
+Terms: skipped (spec declares no topics)
+Contradictions: skipped (spec declares no topics)
+.kiro/specs/none/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/none/design.md' is missing
+.kiro/specs/none/requirements.md:21: WARNING CHECK_UNSCOPED annotations present but not checked: spec declares no topics
+.kiro/specs/none/spec.json: INFO TOPICS_UNDECLARED spec `none` declares no topics: add `topics = [...]` to spec.json
+.kiro/specs/none/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/none/tasks.md' is missing
+
+Spec: wide (topics: wide) — vocabulary: loaded
+EARS: 2 criteria checked, 0 findings
+Terms: 65 declared — 65 resolved, 0 deprecated, 0 mismatched, 0 undeclared, 0 ambiguous; 0 suggested
+Contradictions: 2 guarded criteria, 1 pairs considered, 0 found, 1 refused (caps: 512 variables, 100000 nodes)
+.kiro/specs/wide/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/wide/design.md' is missing
+.kiro/specs/wide/requirements.md: INFO CHECK_COVERAGE 2 criteria, 3 annotated, 1 pairs considered, 0 contradictions, 1 refused
+.kiro/specs/wide/requirements.md: WARNING SEARCH_REFUSED variable cap 512 exceeded: 520 values; 1 pairs not checked: 1.1/1.2; largest terms: w01 (8 values), w02 (8 values)
+.kiro/specs/wide/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/wide/tasks.md' is missing
+
+Checked 3 specs: 12 errors, 10 warnings, 11 info — fail-on error: fail
+--- stderr

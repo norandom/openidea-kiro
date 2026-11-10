@@ -2,7 +2,7 @@
 
 use kiro_core::checks::{CheckConfig, run_checks};
 use kiro_core::finding::sort_findings;
-use kiro_core::source::Workspace;
+use kiro_core::source::{Feature, Workspace};
 use kiro_core::vocab::load as vocab_load;
 
 use crate::cli::Selection;
@@ -45,13 +45,27 @@ pub fn select(selection: &Selection, discovered: &[String]) -> Result<Vec<String
 /// Executes all spec checks across `specs` and produces the consolidated [`GateReport`].
 #[must_use]
 pub fn run(
-    _root: &ProjectRoot,
+    root: &ProjectRoot,
     source: FsSource,
     discovered: Vec<String>,
     specs: Vec<String>,
     config: &CheckConfig,
     fail_on: FailOn,
 ) -> GateReport {
+    run_with_features(root, source, discovered, specs, config, fail_on).0
+}
+
+/// Like [`run`], and also returns the loaded feature of every checked spec
+/// in the same order, for consumers that read the documents themselves.
+#[must_use]
+pub fn run_with_features(
+    _root: &ProjectRoot,
+    source: FsSource,
+    discovered: Vec<String>,
+    specs: Vec<String>,
+    config: &CheckConfig,
+    fail_on: FailOn,
+) -> (GateReport, Vec<Feature>) {
     let mut ws = Workspace::new(source, discovered);
     ws.adopt_roadmap_features();
     let roadmap = ws
@@ -61,6 +75,7 @@ pub fn run(
     let vocabulary = vocab_load(&mut ws);
 
     let mut checked = Vec::with_capacity(specs.len());
+    let mut features: Vec<Feature> = Vec::with_capacity(specs.len());
     for spec in &specs {
         let report = run_checks(&mut ws, spec, config);
         let structural = ws
@@ -76,6 +91,7 @@ pub fn run(
         }
         sort_findings(&mut findings);
 
+        features.push(ws.load(spec).clone());
         checked.push(SpecResult {
             spec: spec.clone(),
             report,
@@ -93,7 +109,7 @@ pub fn run(
     let counts = Counts::from_findings(all_findings.iter().copied());
     let exit = verdict(fail_on, all_findings);
 
-    GateReport {
+    let report = GateReport {
         specs,
         vocabulary,
         roadmap,
@@ -101,7 +117,8 @@ pub fn run(
         fail_on,
         counts,
         exit,
-    }
+    };
+    (report, features)
 }
 
 #[cfg(test)]

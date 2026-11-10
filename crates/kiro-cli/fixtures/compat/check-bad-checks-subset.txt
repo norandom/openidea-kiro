@@ -1,0 +1,51 @@
+exit=1
+--- stdout
+Vocabulary: .kiro/vocabulary.toml — loaded (4 topics, 74 terms)
+.kiro/vocabulary.toml:61: INFO VOCAB_LABEL_CROSS_TOPIC label "Level" exists in topic `ops` as `level` and topic `pm` as `pm-level`
+
+Spec: broken (topics: ops, pm) — vocabulary: loaded
+EARS: 17 criteria checked, 20 findings
+Terms: skipped (disabled by configuration)
+Contradictions: skipped (disabled by configuration)
+.kiro/specs/broken/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/broken/design.md' is missing
+.kiro/specs/broken/requirements.md:54: ERROR EARS_NO_SHALL criterion has no shall
+.kiro/specs/broken/requirements.md:56: WARNING EARS_MULTI_SHALL found 2
+.kiro/specs/broken/requirements.md:58: WARNING EARS_MODAL use shall, not must
+.kiro/specs/broken/requirements.md:58: ERROR EARS_NO_SHALL criterion has no shall
+.kiro/specs/broken/requirements.md:60: WARNING EARS_NO_TRIGGER condition keyword without comma before shall
+.kiro/specs/broken/requirements.md:60: INFO EARS_PATTERN pattern: event-driven
+.kiro/specs/broken/requirements.md:62: INFO EARS_PATTERN pattern: event-driven
+.kiro/specs/broken/requirements.md:62: WARNING EARS_UNPARSED no subject before shall
+.kiro/specs/broken/requirements.md:64: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:75: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:78: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:81: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:85: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:88: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:91: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:94: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:105: INFO EARS_PATTERN pattern: state-driven
+.kiro/specs/broken/requirements.md:109: INFO EARS_PATTERN pattern: state-driven
+.kiro/specs/broken/requirements.md:121: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/requirements.md:124: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/broken/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/broken/tasks.md' is missing
+
+Spec: none (topics: none) — vocabulary: loaded
+EARS: 1 criteria checked, 1 finding
+Terms: skipped (disabled by configuration)
+Contradictions: skipped (disabled by configuration)
+.kiro/specs/none/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/none/design.md' is missing
+.kiro/specs/none/requirements.md:25: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/none/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/none/tasks.md' is missing
+
+Spec: wide (topics: wide) — vocabulary: loaded
+EARS: 2 criteria checked, 2 findings
+Terms: skipped (disabled by configuration)
+Contradictions: skipped (disabled by configuration)
+.kiro/specs/wide/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/wide/design.md' is missing
+.kiro/specs/wide/requirements.md:27: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/wide/requirements.md:31: INFO EARS_PATTERN pattern: ubiquitous
+.kiro/specs/wide/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/wide/tasks.md' is missing
+
+Checked 3 specs: 2 errors, 4 warnings, 24 info — fail-on error: fail
+--- stderr
