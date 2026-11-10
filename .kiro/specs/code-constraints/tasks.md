@@ -144,7 +144,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Requirements: 6.1, 6.4, 8.2, 9.2, 12.2, 12.5_
 
 - [ ] 5. Implement safe comparison and deterministic baselines
-- [ ] 5.1 Pair exact and changed signatures without excusing new debt
+- [x] 5.1 Pair exact and changed signatures without excusing new debt
   - Pair exact comparable identities and unique signature changes; keep ambiguous candidates unpaired and missing-before unknown unless coverage proves newness.
   - Permit heuristic pairing only to add regression, never to classify pre-existing absolute breaches; bypass container and breach-only ratchets.
   - Done when exact-debt, changed-signature, ambiguous-pair and incomplete-before fixtures return the expected trust and eligibility.
@@ -152,14 +152,14 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 4.3_
   - _Requirements: 5.1, 5.2, 5.3, 5.5, 5.6, 5.9, 11.1, 11.2_
 
-- [ ] 5.2 Apply population, parse and decomposition safeguards
+- [x] 5.2 Apply population, parse and decomposition safeguards
   - Check both-side parse validity and metric floors before attaching before values or excusing debt.
   - Suppress line/statement regression only on proven control-flow improvement with none worsening, excluding Essential from the exemption; retain absolute limits and strict mode.
   - Done when guard-clause, floor-crossing, parse-repair and unchanged-debt fixtures distinguish allowed refactoring from genuine regression.
   - _Boundary: CodeRatchet_
   - _Requirements: 5.2, 5.3, 5.5, 11.2, 11.3, 11.4_
 
-- [ ] 5.3 Capture and load complete deterministic baselines
+- [x] 5.3 Capture and load complete deterministic baselines
   - Implement baseline read/write through the existing fact contract with sorted keys, no timestamps, config/source/scope identity and atomic requested replacement.
   - Reject incomplete required measurements and incompatible schemas; diagnose recapture/migration without automatically resetting policy.
   - Done when two captures are byte-identical, interrupted/failed writes preserve the old file and incompatible baselines cannot excuse debt.
@@ -168,7 +168,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Requirements: 5.4, 5.8, 5.9, 9.1, 9.6, 11.1, 11.7_
 
 - [ ] 6. Preserve Git history and complete net accounting
-- [ ] 6.1 Read revision blobs and rename/deletion manifests safely
+- [x] 6.1 Read revision blobs and rename/deletion manifests safely
   - Use separate Git argv and read-only revision/diff/blob operations; preserve old/new rename paths and deletions in before/after accounting.
   - Cover tracked staged/unstaged changes while keeping untracked files explicit through all/files selection; diagnose missing/shallow history without fetching.
   - Done when temporary Git fixtures exercise rename, deletion, modification and invalid revisions without changing checkout state.
@@ -176,7 +176,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 5.3_
   - _Requirements: 5.4, 5.7, 9.6, 11.6_
 
-- [ ] 6.2 Compute net growth only from complete comparable scopes
+- [x] 6.2 Compute net growth only from complete comparable scopes
   - Account for complete routine additions, deletions and explicit renames across both scope manifests, with configured net-growth limits only.
   - Return unavailable with a reason for missing/incompatible accounting facts rather than invented zero values or savings.
   - Done when renamed/deleted routines contribute signed deltas correctly and sparse or failed before measurements never produce a complete net total.
@@ -184,7 +184,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 6.1_
   - _Requirements: 5.7, 5.9, 11.2, 11.6, 11.7_
 
-- [ ] 6.3 Integrate before-side precedence and changed selection
+- [x] 6.3 Integrate before-side precedence and changed selection
   - Connect named revision precedence over committed baseline, comparison eligibility and distinct selected/accounting scopes.
   - Show before-side identity, debt/strict-mode behavior and net availability in text/JSON summaries; serialize the orchestration join.
   - Done when real Git and baseline fixtures demonstrate correct precedence and selection without losing old rename or deleted paths.
@@ -209,7 +209,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 7.1_
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 3.5, 4.5, 7.1, 9.1, 9.2, 11.5, 11.7_
 
-- [ ] 7.3 Prove baseline debt, regression and changed-source journeys
+- [x] 7.3 Prove baseline debt, regression and changed-source journeys
   - Drive existing debt acceptance, new regression rejection and repair through the binary with real baseline/Git fixtures.
   - Cover signature trust, decomposition, floors, parse repair, same-change moves that keep debt status, renames/deletions and required-source failure using the already implemented component corpus.
   - Done when current M2 evidence passes and a disabled ratchet breaks its journey; extension joins may proceed only after their remaining upstream prerequisites.

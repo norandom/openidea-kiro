@@ -4,11 +4,13 @@
 //! the engine's `CodeFacts`. Parsing is adopted from `ast-grep-core`; this
 //! crate writes no lexer and no parser.
 
+pub mod git;
 pub mod measure;
 pub mod walk;
 
 use kiro_core::code::CodeFacts;
 
+pub use git::{ChangeSet, GitError, read_before};
 pub use measure::{DEFINITION_VERSION, PRODUCER, measure_into, profile_for};
 pub use walk::{
     BundleError, DEFAULT_EXCLUDED_DIRS, MAX_SOURCE_BYTES, SourceBundle, SourceText, read_bundle,

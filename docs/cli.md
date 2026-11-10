@@ -132,6 +132,8 @@ Exactly one selection is required.
 - `--spec <NAME>`: Judge the files the spec maps in its File Structure Plan.
 - `--files <PATH>...`: Judge these project-relative files.
 - `--all`: Judge every file a measurement profile covers.
+- `--changed <REV>`: Judge the tracked files that differ from this revision and compare them with it (the ratchet).
+- `--summary`: Print the hook summary instead of the text report: at most 25 lines of plain ASCII.
 - `--show-highest`: Also print the highest value of every metric, for a first look at a grown repository.
 - `--format <text|json>`: Report output format. (Default: `text`).
 - `--output <PATH>`: Write the report to this file instead of standard output.
@@ -142,6 +144,12 @@ Exactly one selection is required.
 ```bash
 kiro-cli code check --task my-feature:2.1 --fail-on warning
 ```
+
+---
+
+### `code baseline`
+
+Measure the whole tree and write `.kiro/code-baseline.json`, the side `code check` compares with when no revision is named. The same tree gives the same bytes. Refuses when a file does not parse. See [Code rules](code-rules.md#the-ratchet-only-regression-blocks).
 
 ---
 

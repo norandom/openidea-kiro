@@ -89,6 +89,7 @@ fn run(cli: &Cli) -> Result<Exit, Failure> {
         Command::Tasks(args) => run_tasks(&session, args),
         Command::Code(CodeCommand::Check(args)) => run_code_check(&session, args),
         Command::Code(CodeCommand::Config) => run_code_config(&session),
+        Command::Code(CodeCommand::Baseline) => run_code_baseline(&session),
         Command::Telemetry(TelemetryCommand::Export(args)) => run_telemetry_export(&session, args),
         Command::Vocab(VocabCommand::Validate(args)) => run_vocab_validate(&session, args),
         Command::Vocab(VocabCommand::Import(args)) => run_vocab_import(&session, args),
@@ -235,11 +236,41 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
     )?;
     let verdict = exit::verdict(fail_on, run.report.blocking_findings());
     let output = match settings.format {
+        ReportFormat::Text if args.summary => code_summary(&run, fail_on, verdict),
         ReportFormat::Text => code_text(&run, fail_on, verdict),
         ReportFormat::Json => kiro_core::code::report::json(&run.report),
     };
     write_report(&settings.destination, output.as_bytes())?;
     Ok(verdict)
+}
+
+/// The hook summary of a code check: what improved and what worsened.
+fn code_summary(run: &code::CodeRun, fail_on: FailOn, verdict: Exit) -> String {
+    let blocking = run
+        .report
+        .blocking_findings()
+        .filter(|finding| exit::meets(fail_on, finding.severity))
+        .count();
+    let word = match fail_on {
+        FailOn::Error => "error",
+        FailOn::Warning => "warning",
+    };
+    let result = if verdict == Exit::Clean {
+        "PASS"
+    } else {
+        "FAIL"
+    };
+    kiro_core::code::report::summary(&run.report, result, word, blocking)
+}
+
+/// Measures the whole tree and writes the baseline the ratchet compares
+/// with. Only the named baseline file is written.
+fn run_code_baseline(session: &Session) -> Result<Exit, Failure> {
+    let root = session.root()?;
+    let document = code::baseline_document(&root)?;
+    fs::write_output(&root.join(code::BASELINE_PATH), &document)?;
+    eprintln!("wrote {}", code::BASELINE_PATH);
+    Ok(Exit::Clean)
 }
 
 /// Prints the effective code configuration with origins and reasons.

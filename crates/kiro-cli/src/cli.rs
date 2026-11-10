@@ -67,6 +67,13 @@ pub const PROFILES: &[CommandProfile] = &[
         exceptions: &[],
     },
     CommandProfile {
+        id: "code baseline",
+        reports: false,
+        gates: false,
+        artifact: true,
+        exceptions: &[],
+    },
+    CommandProfile {
         id: "graph",
         reports: false,
         gates: false,
@@ -238,6 +245,8 @@ pub enum CodeCommand {
     Check(CodeCheckArgs),
     /// Print every effective limit, scope and ignore with its origin and reason
     Config,
+    /// Measure the whole tree and write the baseline the ratchet compares with
+    Baseline,
 }
 
 /// Arguments for `code check`. Exactly one selection is required.
@@ -258,6 +267,14 @@ pub struct CodeCheckArgs {
     /// Judge the files of the components this task names in its boundary (<spec>:<id>)
     #[arg(long, value_name = "SPEC:ID")]
     pub task: Option<String>,
+
+    /// Judge the tracked files that differ from this revision, and compare with it
+    #[arg(long, value_name = "REV")]
+    pub changed: Option<String>,
+
+    /// Print the hook summary (at most 25 lines of plain ASCII) instead of the text report
+    #[arg(long)]
+    pub summary: bool,
 
     /// Also print the highest value of every metric
     #[arg(long)]
