@@ -131,31 +131,83 @@ fn simple_name(qualified: &str) -> &str {
     qualified.rsplit([':', '.']).next().unwrap_or(qualified)
 }
 
-/// Pairs the entities of `after` with those of the before side and
-/// collects the before values of every paired metric.
-#[must_use]
-pub fn pair(before: &Before<'_>, after: &CodeFacts) -> Pairing {
-    let renamed: BTreeMap<&str, &str> = before
-        .renames
-        .iter()
-        .map(|(old, new)| (old.as_str(), new.as_str()))
-        .collect();
-    let new_path = |old: &str| renamed.get(old).copied().unwrap_or(old).to_string();
-    let before_complete = complete_paths(before.facts);
-    let after_complete = complete_paths(after);
-
-    let before_entities: Vec<&EntityKey> = entities(before.facts)
+/// The entities of a side that take part in pairing, in key order.
+fn comparable_entities(facts: &CodeFacts) -> Vec<&EntityKey> {
+    let complete = complete_paths(facts);
+    entities(facts)
         .into_iter()
-        .filter(|entity| before_complete.contains(entity.path.as_str()))
-        .collect();
-    let after_entities: Vec<&EntityKey> = entities(after)
-        .into_iter()
-        .filter(|entity| after_complete.contains(entity.path.as_str()))
-        .collect();
+        .filter(|entity| complete.contains(entity.path.as_str()))
+        .collect()
+}
 
-    // The before entity as it would be named on the after side.
-    let mapped = |entity: &EntityKey| {
-        let path = new_path(&entity.path);
+/// The routines of `list` that no earlier step has paired.
+fn open_routines<'a>(list: &[&'a EntityKey], used: &BTreeSet<&EntityKey>) -> Vec<&'a EntityKey> {
+    list.iter()
+        .copied()
+        .filter(|entity| entity.scope == Scope::Routine && !used.contains(entity))
+        .collect()
+}
+
+/// Normalized body hashes of both sides, to recognise a moved routine.
+struct Bodies<'a> {
+    before: BTreeMap<&'a EntityKey, &'a str>,
+    after: BTreeMap<&'a EntityKey, &'a str>,
+}
+
+impl Bodies<'_> {
+    /// Same name, parameter text and normalized body. A routine without a
+    /// fingerprint equals nothing.
+    fn same(&self, earlier: &EntityKey, later: &EntityKey) -> bool {
+        simple_name(&earlier.qualified_name) == simple_name(&later.qualified_name)
+            && earlier.parameters == later.parameters
+            && match (self.before.get(earlier), self.after.get(later)) {
+                (Some(a), Some(b)) => a == b,
+                _ => false,
+            }
+    }
+}
+
+/// A before entity, the after entity it is paired with, and how.
+type Match<'a> = (&'a EntityKey, &'a EntityKey, Trust);
+
+/// (file, qualified name) -> (routines that went, routines that came).
+type Groups<'a> = BTreeMap<(String, String), (Vec<&'a EntityKey>, Vec<&'a EntityKey>)>;
+
+/// The pairing steps and what they have paired so far. The steps run in a
+/// fixed order, each on what the earlier ones left open.
+struct Matcher<'a> {
+    /// New path by old path, as Git reported the renames.
+    renamed: BTreeMap<&'a str, &'a str>,
+    before: Vec<&'a EntityKey>,
+    after: Vec<&'a EntityKey>,
+    matches: Vec<Match<'a>>,
+    used_before: BTreeSet<&'a EntityKey>,
+    used_after: BTreeSet<&'a EntityKey>,
+}
+
+impl<'a> Matcher<'a> {
+    fn new(before: &Before<'a>, after: &'a CodeFacts) -> Self {
+        Self {
+            renamed: before
+                .renames
+                .iter()
+                .map(|(old, new)| (old.as_str(), new.as_str()))
+                .collect(),
+            before: comparable_entities(before.facts),
+            after: comparable_entities(after),
+            matches: Vec::new(),
+            used_before: BTreeSet::new(),
+            used_after: BTreeSet::new(),
+        }
+    }
+
+    fn new_path(&self, old: &str) -> String {
+        self.renamed.get(old).copied().unwrap_or(old).to_string()
+    }
+
+    /// The before entity as it would be named on the after side.
+    fn mapped(&self, entity: &EntityKey) -> EntityKey {
+        let path = self.new_path(&entity.path);
         EntityKey {
             // A file entity is named by its path.
             qualified_name: if entity.scope == Scope::File {
@@ -166,121 +218,91 @@ pub fn pair(before: &Before<'_>, after: &CodeFacts) -> Pairing {
             path,
             ..entity.clone()
         }
-    };
+    }
 
-    let mut matches: Vec<(&EntityKey, &EntityKey, Trust)> = Vec::new();
-    let mut used_before: BTreeSet<&EntityKey> = BTreeSet::new();
-    let mut used_after: BTreeSet<&EntityKey> = BTreeSet::new();
+    /// Records a pair and takes both entities out of the later steps.
+    fn record(&mut self, earlier: &'a EntityKey, later: &'a EntityKey, trust: Trust) {
+        self.matches.push((earlier, later, trust));
+        self.used_before.insert(earlier);
+        self.used_after.insert(later);
+    }
 
-    // 1. Exact identity.
-    let after_index: BTreeSet<&EntityKey> = after_entities.iter().copied().collect();
-    for earlier in &before_entities {
-        let target = mapped(earlier);
-        if let Some(found) = after_index.get(&target).copied() {
-            matches.push((earlier, found, Trust::Exact));
-            used_before.insert(earlier);
-            used_after.insert(found);
+    /// 1. Exact identity.
+    fn pair_exact(&mut self) {
+        let after_index: BTreeSet<&'a EntityKey> = self.after.iter().copied().collect();
+        let found: Vec<(&'a EntityKey, &'a EntityKey)> = self
+            .before
+            .iter()
+            .filter_map(|earlier| {
+                let later = after_index.get(&self.mapped(earlier))?;
+                Some((*earlier, *later))
+            })
+            .collect();
+        for (earlier, later) in found {
+            self.record(earlier, later, Trust::Exact);
         }
     }
 
-    // 2. Moved routines: same name, parameters and normalized body, one
-    //    candidate on each side.
-    let before_hash = hashes(before.facts);
-    let after_hash = hashes(after);
-    let unmatched = |list: &[&'_ EntityKey], used: &BTreeSet<&EntityKey>| -> Vec<usize> {
-        list.iter()
-            .enumerate()
-            .filter(|(_, entity)| entity.scope == Scope::Routine && !used.contains(*entity))
-            .map(|(index, _)| index)
-            .collect()
-    };
-    let same_body = |earlier: &EntityKey, later: &EntityKey| {
-        simple_name(&earlier.qualified_name) == simple_name(&later.qualified_name)
-            && earlier.parameters == later.parameters
-            && match (before_hash.get(earlier), after_hash.get(later)) {
-                (Some(a), Some(b)) => a == b,
-                _ => false,
-            }
-    };
-    let open_before = unmatched(&before_entities, &used_before);
-    let open_after = unmatched(&after_entities, &used_after);
-    let mut moves: Vec<(usize, usize)> = Vec::new();
-    for later_index in &open_after {
-        let Some(later) = after_entities.get(*later_index).copied() else {
-            continue;
-        };
-        let candidates: Vec<usize> = open_before
-            .iter()
-            .copied()
-            .filter(|index| {
-                before_entities
-                    .get(*index)
-                    .is_some_and(|earlier| same_body(earlier, later))
-            })
-            .collect();
-        if let [only] = candidates.as_slice() {
-            let Some(earlier) = before_entities.get(*only).copied() else {
+    /// 2. Moved routines: same name, parameters and normalized body, one
+    ///    candidate on each side.
+    fn pair_moved(&mut self, bodies: &Bodies<'_>) {
+        let open_before = open_routines(&self.before, &self.used_before);
+        let open_after = open_routines(&self.after, &self.used_after);
+        let mut moves: Vec<(&'a EntityKey, &'a EntityKey)> = Vec::new();
+        for later in &open_after {
+            let candidates: Vec<&'a EntityKey> = open_before
+                .iter()
+                .copied()
+                .filter(|earlier| bodies.same(earlier, later))
+                .collect();
+            let [earlier] = candidates.as_slice() else {
                 continue;
             };
             let rivals = open_after
                 .iter()
-                .filter(|index| {
-                    after_entities
-                        .get(**index)
-                        .is_some_and(|other| same_body(earlier, other))
-                })
+                .filter(|other| bodies.same(earlier, other))
                 .count();
             if rivals == 1 {
-                moves.push((*only, *later_index));
+                moves.push((*earlier, *later));
             }
         }
-    }
-    for (earlier_index, later_index) in moves {
-        if let (Some(earlier), Some(later)) = (
-            before_entities.get(earlier_index).copied(),
-            after_entities.get(later_index).copied(),
-        ) {
-            matches.push((earlier, later, Trust::Moved));
-            used_before.insert(earlier);
-            used_after.insert(later);
+        for (earlier, later) in moves {
+            self.record(earlier, later, Trust::Moved);
         }
     }
 
-    // 3. One disappeared and one appeared under the same file and name.
-    // (file, qualified name) -> (routines that went, routines that came).
-    type Group<'k> = (Vec<&'k EntityKey>, Vec<&'k EntityKey>);
-    let mut groups: BTreeMap<(String, String), Group<'_>> = BTreeMap::new();
-    for earlier in &before_entities {
-        if earlier.scope == Scope::Routine && !used_before.contains(earlier) {
+    /// 3. One disappeared and one appeared under the same file and name.
+    fn pair_signature(&mut self) {
+        let mut groups: Groups<'a> = BTreeMap::new();
+        for earlier in open_routines(&self.before, &self.used_before) {
             groups
-                .entry((new_path(&earlier.path), earlier.qualified_name.clone()))
+                .entry((self.new_path(&earlier.path), earlier.qualified_name.clone()))
                 .or_default()
                 .0
                 .push(earlier);
         }
-    }
-    for later in &after_entities {
-        if later.scope == Scope::Routine && !used_after.contains(later) {
+        for later in open_routines(&self.after, &self.used_after) {
             groups
                 .entry((later.path.clone(), later.qualified_name.clone()))
                 .or_default()
                 .1
                 .push(later);
         }
-    }
-    for (gone, came) in groups.values() {
-        if let ([earlier], [later]) = (gone.as_slice(), came.as_slice()) {
-            matches.push((earlier, later, Trust::Signature));
+        for (gone, came) in groups.values() {
+            if let ([earlier], [later]) = (gone.as_slice(), came.as_slice()) {
+                self.matches.push((earlier, later, Trust::Signature));
+            }
         }
     }
+}
 
-    // Before values of every paired entity, by metric name. Only the same
-    // producer and metric definition are comparable.
+/// Before values of every paired entity, by metric name. Only the same
+/// producer and metric definition are comparable.
+fn before_values(before: &CodeFacts, after: &CodeFacts, matches: &[Match<'_>]) -> Pairing {
     let mut pairing = Pairing::default();
-    for (earlier, later, trust) in matches {
+    for (earlier, later, trust) in matches.iter().copied() {
         pairing.paired.insert(later.clone(), trust);
         for was in before
-            .facts
             .observations
             .iter()
             .filter(|observation| &observation.entity == earlier)
@@ -300,4 +322,18 @@ pub fn pair(before: &Before<'_>, after: &CodeFacts) -> Pairing {
         }
     }
     pairing
+}
+
+/// Pairs the entities of `after` with those of the before side and
+/// collects the before values of every paired metric.
+#[must_use]
+pub fn pair(before: &Before<'_>, after: &CodeFacts) -> Pairing {
+    let mut matcher = Matcher::new(before, after);
+    matcher.pair_exact();
+    matcher.pair_moved(&Bodies {
+        before: hashes(before.facts),
+        after: hashes(after),
+    });
+    matcher.pair_signature();
+    before_values(before.facts, after, &matcher.matches)
 }

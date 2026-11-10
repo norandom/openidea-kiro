@@ -20,33 +20,39 @@ pub struct Judgement {
     pub line: u32,
 }
 
-fn judge_value(
-    config: &CodeConfig,
-    entity: &EntityKey,
-    metric: &str,
+/// One value to judge: a measured observation, or a value derived from two.
+struct Candidate<'a> {
+    entity: &'a EntityKey,
+    metric: &'a str,
     value: f64,
+    /// 1-based line where the entity starts.
     line: u32,
+    /// The count a limit with a minimum population is checked against;
+    /// `None` when the value has no such count.
     population: Option<f64>,
-    out: &mut Vec<Judgement>,
-) {
-    let Some((limit, source)) = config.limit_for(entity.scope, metric, &entity.path) else {
+}
+
+fn judge_value(config: &CodeConfig, candidate: &Candidate<'_>, out: &mut Vec<Judgement>) {
+    let entity = candidate.entity;
+    let Some((limit, source)) = config.limit_for(entity.scope, candidate.metric, &entity.path)
+    else {
         return;
     };
     if let Some(minimum) = limit.minimum_population {
-        match population {
+        match candidate.population {
             Some(count) if count >= f64::from(minimum) => {}
             _ => return,
         }
     }
-    if value > limit.maximum {
+    if candidate.value > limit.maximum {
         out.push(Judgement {
             entity: entity.clone(),
-            metric: metric.to_string(),
-            value,
+            metric: candidate.metric.to_string(),
+            value: candidate.value,
             limit: limit.maximum,
             limit_source: source,
             severity: limit.severity,
-            line,
+            line: candidate.line,
         });
     }
 }
@@ -77,29 +83,27 @@ pub fn judge(
         if !selected(&observation.entity.path) {
             continue;
         }
-        judge_value(
-            config,
-            &observation.entity,
-            &observation.metric.name,
-            observation.value,
-            observation.line,
-            None,
-            &mut out,
-        );
+        let measured = Candidate {
+            entity: &observation.entity,
+            metric: &observation.metric.name,
+            value: observation.value,
+            line: observation.line,
+            population: None,
+        };
+        judge_value(config, &measured, &mut out);
         if observation.entity.scope == Scope::Routine
             && observation.metric.name == metrics::CODE_LINES
             && let Some(statements) = statements_of.get(&observation.entity).copied()
             && statements > 0.0
         {
-            judge_value(
-                config,
-                &observation.entity,
-                metrics::LINES_PER_STATEMENT,
-                observation.value / statements,
-                observation.line,
-                Some(statements),
-                &mut out,
-            );
+            let derived = Candidate {
+                entity: &observation.entity,
+                metric: metrics::LINES_PER_STATEMENT,
+                value: observation.value / statements,
+                line: observation.line,
+                population: Some(statements),
+            };
+            judge_value(config, &derived, &mut out);
         }
     }
     out.sort_by(|a, b| (&a.entity, &a.metric).cmp(&(&b.entity, &b.metric)));

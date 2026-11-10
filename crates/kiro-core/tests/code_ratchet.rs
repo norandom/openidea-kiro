@@ -100,21 +100,27 @@ fn build(routines: &[Routine<'_>], files: &[(&str, f64)], failed: &[&str]) -> Co
     paths.sort_unstable();
     paths.dedup();
     for path in paths {
-        let is_failed = failed.contains(&path);
-        facts.coverage.push(CoverageCell {
-            path: path.to_string(),
-            metric: None,
-            state: if is_failed {
-                Completeness::Failed
-            } else {
-                Completeness::Complete
-            },
-            reason: is_failed.then(|| "syntax error at line 1".to_string()),
-            line: is_failed.then_some(1),
-        });
+        facts
+            .coverage
+            .push(file_state(path, failed.contains(&path)));
     }
     facts.sort();
     facts
+}
+
+/// The file-level coverage cell of `path`: complete, or failed to parse.
+fn file_state(path: &str, is_failed: bool) -> CoverageCell {
+    CoverageCell {
+        path: path.to_string(),
+        metric: None,
+        state: if is_failed {
+            Completeness::Failed
+        } else {
+            Completeness::Complete
+        },
+        reason: is_failed.then(|| "syntax error at line 1".to_string()),
+        line: is_failed.then_some(1),
+    }
 }
 
 fn run(before: &CodeFacts, after: &CodeFacts, renames: &[(String, String)]) -> CodeReport {
@@ -388,25 +394,20 @@ fn ambiguous_signature_changes_stay_unpaired() {
     );
 }
 
+/// The routine `big` of the move cases: above the cyclomatic limit, in
+/// `path`, with the body `hash`.
+fn big(path: &'static str, hash: &'static str) -> Routine<'static> {
+    Routine {
+        hash,
+        ..routine(path, "big", &[("cyclomatic", 15.0)])
+    }
+}
+
 #[test]
 fn a_routine_moved_to_another_file_keeps_its_debt_status() {
     // Splitting a god file: `big` moves from a.rs to b.rs unchanged.
-    let before = build(
-        &[Routine {
-            hash: "body-1",
-            ..routine("a.rs", "big", &[("cyclomatic", 15.0)])
-        }],
-        &[],
-        &[],
-    );
-    let moved = build(
-        &[Routine {
-            hash: "body-1",
-            ..routine("b.rs", "big", &[("cyclomatic", 15.0)])
-        }],
-        &[("a.rs", 10.0)],
-        &[],
-    );
+    let before = build(&[big("a.rs", "body-1")], &[], &[]);
+    let moved = build(&[big("b.rs", "body-1")], &[("a.rs", 10.0)], &[]);
     let result = run(&before, &moved, &[]);
     assert_eq!(
         outcomes(&result, "big"),
@@ -428,29 +429,13 @@ fn a_routine_moved_to_another_file_keeps_its_debt_status() {
     assert_eq!(blocking(&result), 0);
 
     // The same move with a changed body is a new routine.
-    let rewritten = build(
-        &[Routine {
-            hash: "body-2",
-            ..routine("b.rs", "big", &[("cyclomatic", 15.0)])
-        }],
-        &[("a.rs", 10.0)],
-        &[],
-    );
+    let rewritten = build(&[big("b.rs", "body-2")], &[("a.rs", 10.0)], &[]);
     let result = run(&before, &rewritten, &[]);
     assert_eq!(outcomes(&result, "big")[0].2, false);
 
     // Two identical copies appear: the move is ambiguous, nothing is excused.
     let copied = build(
-        &[
-            Routine {
-                hash: "body-1",
-                ..routine("b.rs", "big", &[("cyclomatic", 15.0)])
-            },
-            Routine {
-                hash: "body-1",
-                ..routine("c.rs", "big", &[("cyclomatic", 15.0)])
-            },
-        ],
+        &[big("b.rs", "body-1"), big("c.rs", "body-1")],
         &[("a.rs", 10.0)],
         &[],
     );
@@ -495,79 +480,41 @@ fn a_renamed_file_is_compared_through_the_rename() {
     assert_eq!(outcomes(&result, "f")[0].2, false);
 }
 
+/// The four ratcheted values of a routine: control flow as (cyclomatic,
+/// nesting), size as (code lines, statements).
+const fn shape(control_flow: (f64, f64), size: (f64, f64)) -> [(&'static str, f64); 4] {
+    [
+        ("cyclomatic", control_flow.0),
+        ("nesting", control_flow.1),
+        ("code_lines", size.0),
+        ("statements", size.1),
+    ]
+}
+
 #[test]
 fn size_growth_is_excused_only_when_control_flow_got_simpler() {
+    // All three start alike and grow by four lines and two statements.
+    let start = shape((6.0, 3.0), (20.0, 10.0));
     let before = build(
         &[
-            routine(
-                "a.rs",
-                "guarded",
-                &[
-                    ("cyclomatic", 6.0),
-                    ("nesting", 3.0),
-                    ("code_lines", 20.0),
-                    ("statements", 10.0),
-                ],
-            ),
-            routine(
-                "a.rs",
-                "bloated",
-                &[
-                    ("cyclomatic", 6.0),
-                    ("nesting", 3.0),
-                    ("code_lines", 20.0),
-                    ("statements", 10.0),
-                ],
-            ),
-            routine(
-                "a.rs",
-                "mixed",
-                &[
-                    ("cyclomatic", 6.0),
-                    ("nesting", 3.0),
-                    ("code_lines", 20.0),
-                    ("statements", 10.0),
-                ],
-            ),
+            routine("a.rs", "guarded", &start),
+            routine("a.rs", "bloated", &start),
+            routine("a.rs", "mixed", &start),
         ],
         &[],
         &[],
     );
+    // Guard clauses: more lines and statements, less nesting.
+    let guarded = shape((6.0, 2.0), (24.0, 12.0));
+    // Just longer.
+    let bloated = shape((6.0, 3.0), (24.0, 12.0));
+    // Less nesting but more branches: nothing is excused.
+    let mixed = shape((7.0, 2.0), (24.0, 12.0));
     let after = build(
         &[
-            // Guard clauses: more lines and statements, less nesting.
-            routine(
-                "a.rs",
-                "guarded",
-                &[
-                    ("cyclomatic", 6.0),
-                    ("nesting", 2.0),
-                    ("code_lines", 24.0),
-                    ("statements", 12.0),
-                ],
-            ),
-            // Just longer.
-            routine(
-                "a.rs",
-                "bloated",
-                &[
-                    ("cyclomatic", 6.0),
-                    ("nesting", 3.0),
-                    ("code_lines", 24.0),
-                    ("statements", 12.0),
-                ],
-            ),
-            // Less nesting but more branches: nothing is excused.
-            routine(
-                "a.rs",
-                "mixed",
-                &[
-                    ("cyclomatic", 7.0),
-                    ("nesting", 2.0),
-                    ("code_lines", 24.0),
-                    ("statements", 12.0),
-                ],
-            ),
+            routine("a.rs", "guarded", &guarded),
+            routine("a.rs", "bloated", &bloated),
+            routine("a.rs", "mixed", &mixed),
         ],
         &[],
         &[],
@@ -703,10 +650,9 @@ fn trust_levels_say_what_they_may_excuse() {
     assert!(!Trust::Signature.excuses_debt());
 }
 
-#[test]
-fn the_summary_is_short_ascii_in_a_fixed_order() {
-    let many_before: Vec<Routine<'_>> = Vec::new();
-    let _ = many_before;
+/// Thirty paired routines of one file: every second one got worse, the
+/// others got better, all within the limit.
+fn thirty_changes() -> CodeReport {
     let names: Vec<String> = (0..30).map(|index| format!("r{index:02}")).collect();
     let values_before = [("cyclomatic", 5.0)];
     let values_worse = [("cyclomatic", 7.0)];
@@ -732,7 +678,12 @@ fn the_summary_is_short_ascii_in_a_fixed_order() {
         .collect();
     let before = build(&before_routines, &[], &[]);
     let after = build(&after_routines, &[], &[]);
-    let result = run(&before, &after, &[]);
+    run(&before, &after, &[])
+}
+
+#[test]
+fn the_summary_is_short_ascii_in_a_fixed_order() {
+    let result = thirty_changes();
     let text = report::summary(&result, "FAIL", "warning", 15);
     let lines: Vec<&str> = text.lines().collect();
     assert!(
@@ -762,8 +713,10 @@ fn the_summary_is_short_ascii_in_a_fixed_order() {
             .all(|c| c == '\n' || c.is_ascii_graphic() || c == ' ')
     );
     assert!(text.ends_with('\n'));
+}
 
-    // A name outside ASCII cannot break the summary.
+#[test]
+fn a_name_outside_ascii_cannot_break_the_summary() {
     let odd = build(
         &[routine("a.rs", "größe", &[("cyclomatic", 5.0)])],
         &[],

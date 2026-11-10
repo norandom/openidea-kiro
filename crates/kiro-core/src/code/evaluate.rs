@@ -9,8 +9,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::attribution::{Attribution, attribute};
-use super::config::CodeConfig;
-use super::facts::{CodeFacts, Completeness, CoverageCell, EntityKey, Scope, metrics};
+use super::config::{CodeConfig, LimitSource};
+use super::facts::{CodeFacts, Completeness, CoverageCell, EntityKey, Observation, Scope, metrics};
 use super::limits::{Judgement, judge};
 use super::ratchet::{Before, Earlier, Pairing, pair};
 use super::report::{
@@ -151,6 +151,55 @@ fn plain(finding: Finding, tag: Tag, hint: &str, owners: Attribution) -> CodeFin
     }
 }
 
+/// How a value above its limit stands against the before side.
+enum Standing {
+    /// It rose against a paired before value: the ratchet blocks.
+    Regressed(Earlier),
+    /// It was already there and did not worsen.
+    PreExisting(Earlier),
+    /// Nothing excuses it: judged on the limit alone.
+    New,
+}
+
+/// Code, severity and message of a value above its limit.
+fn breach_wording(judgement: &Judgement, standing: Standing) -> (&'static str, Severity, String) {
+    let entity = &judgement.entity;
+    let value = report::display_number(judgement.value);
+    let limit = report::display_number(judgement.limit);
+    let source = judgement.limit_source.label();
+    match standing {
+        Standing::Regressed(earlier) => (
+            codes::CODE_RATCHET,
+            Severity::Error,
+            format!(
+                "{}: {} rose from {} to {value}, limit {limit} ({source})",
+                subject(entity),
+                judgement.metric,
+                report::display_number(earlier.value)
+            ),
+        ),
+        Standing::PreExisting(earlier) => (
+            limit_code(entity.scope),
+            judgement.severity,
+            format!(
+                "{}: {} is {value}, limit {limit} ({source}); pre-existing, was {} before",
+                subject(entity),
+                judgement.metric,
+                report::display_number(earlier.value)
+            ),
+        ),
+        Standing::New => (
+            limit_code(entity.scope),
+            judgement.severity,
+            format!(
+                "{}: {} is {value}, limit {limit} ({source})",
+                subject(entity),
+                judgement.metric
+            ),
+        ),
+    }
+}
+
 /// State shared by the steps of one evaluation.
 struct Run<'a> {
     input: &'a EvaluateInput<'a>,
@@ -161,6 +210,72 @@ struct Run<'a> {
 }
 
 impl<'a> Run<'a> {
+    fn new(input: &'a EvaluateInput<'a>) -> Self {
+        let coverage = Coverage {
+            selected: input.selected.len(),
+            before_side: match &input.before {
+                Some(before) => before.identity.to_string(),
+                None => {
+                    "none: no baseline and no revision given, so nothing is ratcheted".to_string()
+                }
+            },
+            // A file the configuration ignores is measured but not judged.
+            ignored: input
+                .selected
+                .iter()
+                .filter(|path| input.config.ignored(path).is_some())
+                .cloned()
+                .collect(),
+            ..Coverage::default()
+        };
+        Self {
+            input,
+            // Ownership is resolved once per selected file.
+            ownership: input
+                .selected
+                .iter()
+                .map(|path| (path.as_str(), attribute(path, input.specs)))
+                .collect(),
+            pairing: input
+                .before
+                .as_ref()
+                .map(|before| pair(before, input.facts))
+                .unwrap_or_default(),
+            findings: Vec::new(),
+            coverage,
+        }
+    }
+
+    /// What the run measured: always reported, so a clean report is never
+    /// mistaken for a checked one.
+    fn coverage_finding(&self, net: &NetDelta) -> CodeFinding {
+        let coverage = &self.coverage;
+        let message = format!(
+            "{} files selected: {} measured, {} failed to parse, {} not measured (no profile for the language), {} ignored by configuration, {} mapped by no spec; configuration {}; before side: {}; {} entities paired; net: {}{}",
+            coverage.selected,
+            coverage.measured,
+            coverage.failed.len(),
+            coverage.unmeasured.len(),
+            coverage.ignored.len(),
+            coverage.unowned,
+            self.input.config.digest(),
+            coverage.before_side,
+            self.pairing.len(),
+            net.label(),
+            self.input
+                .extension_notes
+                .iter()
+                .map(|note| format!("; {note}"))
+                .collect::<String>()
+        );
+        plain(
+            Finding::new(codes::CODE_COVERAGE, super::config::CONFIG_PATH, message),
+            Tag::Fix,
+            "read this line before trusting a clean report; unmeasured files were not judged",
+            Attribution::default(),
+        )
+    }
+
     fn owners(&self, path: &str) -> Attribution {
         self.ownership.get(path).cloned().unwrap_or_default()
     }
@@ -255,9 +370,6 @@ impl<'a> Run<'a> {
         let owners = self.owners(&entity.path);
         let (tag, hint) = limit_hint(entity.scope, &judgement.metric, judgement.limit, &owners);
         let earlier = self.pairing.earlier(entity, &judgement.metric);
-        let value = report::display_number(judgement.value);
-        let limit = report::display_number(judgement.limit);
-        let source = judgement.limit_source.label();
         let regression = earlier.is_some_and(|earlier| {
             self.regressed(entity, &judgement.metric, judgement.value, earlier)
         });
@@ -265,37 +377,12 @@ impl<'a> Run<'a> {
             && earlier.is_some_and(|earlier| {
                 earlier.trust.excuses_debt() && judgement.value <= earlier.value
             });
-        let (code, severity, message) = match earlier {
-            Some(earlier) if regression => (
-                codes::CODE_RATCHET,
-                Severity::Error,
-                format!(
-                    "{}: {} rose from {} to {value}, limit {limit} ({source})",
-                    subject(entity),
-                    judgement.metric,
-                    report::display_number(earlier.value)
-                ),
-            ),
-            Some(earlier) if pre_existing => (
-                limit_code(entity.scope),
-                judgement.severity,
-                format!(
-                    "{}: {} is {value}, limit {limit} ({source}); pre-existing, was {} before",
-                    subject(entity),
-                    judgement.metric,
-                    report::display_number(earlier.value)
-                ),
-            ),
-            _ => (
-                limit_code(entity.scope),
-                judgement.severity,
-                format!(
-                    "{}: {} is {value}, limit {limit} ({source})",
-                    subject(entity),
-                    judgement.metric
-                ),
-            ),
+        let standing = match earlier {
+            Some(earlier) if regression => Standing::Regressed(earlier),
+            Some(earlier) if pre_existing => Standing::PreExisting(earlier),
+            _ => Standing::New,
         };
+        let (code, severity, message) = breach_wording(&judgement, standing);
         let finding = Finding::new(code, entity.path.clone(), message).severity(severity);
         CodeFinding {
             finding: located(finding, judgement.line, &owners),
@@ -305,10 +392,52 @@ impl<'a> Run<'a> {
             value: Some(judgement.value),
             before: earlier.map(|earlier| earlier.value),
             limit: Some(judgement.limit),
-            limit_source: Some(source),
+            limit_source: Some(judgement.limit_source.label()),
             pre_existing,
             trust: earlier.map(|earlier| earlier.trust.label()),
             entity: Some(judgement.entity),
+            owners,
+        }
+    }
+
+    /// The warning for a paired routine metric that rose and stayed within
+    /// its limit.
+    fn rise_warning(
+        &self,
+        observation: &Observation,
+        earlier: Earlier,
+        maximum: f64,
+        source: &LimitSource,
+    ) -> CodeFinding {
+        let entity = &observation.entity;
+        let metric = observation.metric.name.as_str();
+        let owners = self.owners(&entity.path);
+        let (tag, hint) = limit_hint(entity.scope, metric, maximum, &owners);
+        let finding = Finding::new(
+            codes::CODE_RATCHET,
+            entity.path.clone(),
+            format!(
+                "{}: {metric} rose from {} to {}, within the limit {} ({})",
+                subject(entity),
+                report::display_number(earlier.value),
+                report::display_number(observation.value),
+                report::display_number(maximum),
+                source.label()
+            ),
+        )
+        .severity(Severity::Warning);
+        CodeFinding {
+            finding: located(finding, observation.line, &owners),
+            tag,
+            hint,
+            metric: Some(metric.to_string()),
+            value: Some(observation.value),
+            before: Some(earlier.value),
+            limit: Some(maximum),
+            limit_source: Some(source.label()),
+            pre_existing: false,
+            trust: Some(earlier.trust.label()),
+            entity: Some(entity.clone()),
             owners,
         }
     }
@@ -351,35 +480,7 @@ impl<'a> Run<'a> {
             };
             let within = observation.value <= limit.maximum;
             if within && self.regressed(entity, metric, observation.value, earlier) {
-                let owners = self.owners(&entity.path);
-                let (tag, hint) = limit_hint(entity.scope, metric, limit.maximum, &owners);
-                let finding = Finding::new(
-                    codes::CODE_RATCHET,
-                    entity.path.clone(),
-                    format!(
-                        "{}: {metric} rose from {} to {}, within the limit {} ({})",
-                        subject(entity),
-                        report::display_number(earlier.value),
-                        report::display_number(observation.value),
-                        report::display_number(limit.maximum),
-                        source.label()
-                    ),
-                )
-                .severity(Severity::Warning);
-                warnings.push(CodeFinding {
-                    finding: located(finding, observation.line, &owners),
-                    tag,
-                    hint,
-                    metric: Some(metric.to_string()),
-                    value: Some(observation.value),
-                    before: Some(earlier.value),
-                    limit: Some(limit.maximum),
-                    limit_source: Some(source.label()),
-                    pre_existing: false,
-                    trust: Some(earlier.trust.label()),
-                    entity: Some(entity.clone()),
-                    owners,
-                });
+                warnings.push(self.rise_warning(observation, earlier, limit.maximum, &source));
             }
         }
         self.findings.append(&mut warnings);
@@ -543,37 +644,7 @@ impl<'a> Run<'a> {
 /// Evaluates the facts of a run into the code report.
 #[must_use]
 pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
-    let coverage = Coverage {
-        selected: input.selected.len(),
-        before_side: match &input.before {
-            Some(before) => before.identity.to_string(),
-            None => "none: no baseline and no revision given, so nothing is ratcheted".to_string(),
-        },
-        // A file the configuration ignores is measured but not judged.
-        ignored: input
-            .selected
-            .iter()
-            .filter(|path| input.config.ignored(path).is_some())
-            .cloned()
-            .collect(),
-        ..Coverage::default()
-    };
-    let mut run = Run {
-        input,
-        // Ownership is resolved once per selected file.
-        ownership: input
-            .selected
-            .iter()
-            .map(|path| (path.as_str(), attribute(path, input.specs)))
-            .collect(),
-        pairing: input
-            .before
-            .as_ref()
-            .map(|before| pair(before, input.facts))
-            .unwrap_or_default(),
-        findings: Vec::new(),
-        coverage,
-    };
+    let mut run = Run::new(input);
     run.file_states();
     run.limits();
     let changes = run.changes();
@@ -589,34 +660,8 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
     });
     let specs = run.summaries();
     let net = run.net();
-
-    // What the run measured: always reported, so a clean report is never
-    // mistaken for a checked one.
-    let coverage = &run.coverage;
-    let message = format!(
-        "{} files selected: {} measured, {} failed to parse, {} not measured (no profile for the language), {} ignored by configuration, {} mapped by no spec; configuration {}; before side: {}; {} entities paired; net: {}{}",
-        coverage.selected,
-        coverage.measured,
-        coverage.failed.len(),
-        coverage.unmeasured.len(),
-        coverage.ignored.len(),
-        coverage.unowned,
-        input.config.digest(),
-        coverage.before_side,
-        run.pairing.len(),
-        net.label(),
-        input
-            .extension_notes
-            .iter()
-            .map(|note| format!("; {note}"))
-            .collect::<String>()
-    );
-    run.findings.push(plain(
-        Finding::new(codes::CODE_COVERAGE, super::config::CONFIG_PATH, message),
-        Tag::Fix,
-        "read this line before trusting a clean report; unmeasured files were not judged",
-        Attribution::default(),
-    ));
+    let coverage = run.coverage_finding(&net);
+    run.findings.push(coverage);
 
     let measures = run.measures();
     CodeReport {

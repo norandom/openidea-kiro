@@ -294,13 +294,12 @@ fn spec_and_task_selection_resolve_or_name_the_choices() {
     assert!(!error.to_string().contains('\n'));
 }
 
-#[test]
-fn evaluation_orders_findings_and_always_reports_coverage() {
-    let features = features();
-    let specs: Vec<&Feature> = features.iter().collect();
+/// Four selected files: an owned and an unowned one with a breach each,
+/// one that fails to parse and one no profile covers.
+fn mixed_facts() -> CodeFacts {
     let owned = routine("src/demo.rs", "deep");
     let stray = routine("tools/x.rs", "deep");
-    let facts = facts(
+    facts(
         vec![
             observe(&owned, "nesting", 4.0),
             observe(&stray, "nesting", 5.0),
@@ -323,12 +322,19 @@ fn evaluation_orders_findings_and_always_reports_coverage() {
                 line: None,
             },
         ],
-    );
+    )
+}
+
+/// The report of `mixed_facts` without a before side.
+fn mixed_report() -> report::CodeReport {
+    let features = features();
+    let specs: Vec<&Feature> = features.iter().collect();
+    let facts = mixed_facts();
     let selected: Vec<String> = ["notes.txt", "src/demo.rs", "src/ui.rs", "tools/x.rs"]
         .map(String::from)
         .to_vec();
     let config = CodeConfig::default();
-    let result = evaluate(&EvaluateInput {
+    evaluate(&EvaluateInput {
         facts: &facts,
         config: &config,
         selected: &selected,
@@ -337,8 +343,12 @@ fn evaluation_orders_findings_and_always_reports_coverage() {
         before_paths: &[],
         extensions: &[],
         extension_notes: &[],
-    });
+    })
+}
 
+#[test]
+fn evaluation_orders_findings_and_always_reports_coverage() {
+    let result = mixed_report();
     let codes: Vec<(&str, &str)> = result
         .findings
         .iter()
@@ -364,7 +374,11 @@ fn evaluation_orders_findings_and_always_reports_coverage() {
     assert_eq!(parse.tag, Tag::Fix);
     assert_eq!(parse.finding.line, Some(3));
     assert_eq!(parse.finding.feature.as_deref(), Some("demo"));
+}
 
+#[test]
+fn evaluation_counts_coverage_and_renders_the_same_report_twice() {
+    let result = mixed_report();
     assert_eq!(result.coverage.selected, 4);
     assert_eq!(result.coverage.measured, 2);
     assert_eq!(result.coverage.failed, ["src/ui.rs"]);
