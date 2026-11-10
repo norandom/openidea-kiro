@@ -307,25 +307,41 @@ fn holds_statements(kind: &str, profile: &Profile) -> bool {
     }
 }
 
-/// The children of a node, each with whether the node can hold statements.
-/// Asking every node for its parent is slow in the syntax tree library, so
-/// the walk carries this one fact about the parent down.
-fn tagged_children<'r>(node: &SgNode<'r>, profile: &Profile) -> Vec<(SgNode<'r>, bool)> {
-    let holds = holds_statements(&node.kind(), profile);
-    node.children().map(|child| (child, holds)).collect()
+/// A node of a routine with the two facts about its place that the
+/// measures need. Asking a node for its parent or its previous sibling is
+/// slow in the syntax tree library (it walks from the root), so the walk
+/// carries both facts down.
+struct Walked<'r> {
+    node: SgNode<'r>,
+    /// The parent can hold statements.
+    parent_holds: bool,
+    /// The node is the first child of its parent.
+    first: bool,
 }
 
-/// Every node below `root` in pre-order, without descending into routines,
-/// each with whether its parent can hold statements.
-fn routine_nodes<'r>(root: &SgNode<'r>, profile: &Profile) -> Vec<(SgNode<'r>, bool)> {
+/// The children of a node as walked nodes.
+fn walked_children<'r>(node: &SgNode<'r>, profile: &Profile) -> Vec<Walked<'r>> {
+    let parent_holds = holds_statements(&node.kind(), profile);
+    node.children()
+        .enumerate()
+        .map(|(index, child)| Walked {
+            node: child,
+            parent_holds,
+            first: index == 0,
+        })
+        .collect()
+}
+
+/// Every node below `root` in pre-order, without descending into routines.
+fn routine_nodes<'r>(root: &SgNode<'r>, profile: &Profile) -> Vec<Walked<'r>> {
     let mut out = Vec::new();
-    let mut stack = tagged_children(root, profile);
-    while let Some((node, parent_holds)) = stack.pop() {
-        if is_routine(&node, profile) {
+    let mut stack = walked_children(root, profile);
+    while let Some(walked) = stack.pop() {
+        if is_routine(&walked.node, profile) {
             continue;
         }
-        stack.extend(tagged_children(&node, profile));
-        out.push((node, parent_holds));
+        stack.extend(walked_children(&walked.node, profile));
+        out.push(walked);
     }
     out
 }
@@ -340,9 +356,10 @@ fn silent_span(node: &SgNode<'_>) -> (usize, usize) {
     (start, start.saturating_add(breaks))
 }
 
-/// A Python docstring: a string expression that opens a body.
-fn is_docstring(node: &SgNode<'_>, profile: &Profile) -> bool {
-    if !profile.docstrings || node.kind() != "expression_statement" || node.prev().is_some() {
+/// A Python docstring: a string expression that opens a body. `first`
+/// says whether the node is the first child of its parent.
+fn is_docstring(node: &SgNode<'_>, profile: &Profile, first: bool) -> bool {
+    if !profile.docstrings || !first || node.kind() != "expression_statement" {
         return false;
     }
     let mut named = node.children().filter(|child| child.is_named());
@@ -397,16 +414,16 @@ struct RoutineValues {
     body_hash: u64,
 }
 
-/// Whether a node counts as a statement. `parent_holds` says whether its
-/// parent can hold statements (see `holds_statements`).
-fn is_statement(node: &SgNode<'_>, profile: &Profile, parent_holds: bool) -> bool {
+/// Whether a walked node counts as a statement.
+fn is_statement(walked: &Walked<'_>, profile: &Profile) -> bool {
+    let node = &walked.node;
     let kind = node.kind();
     match &profile.statements {
         StatementRule::ChildrenOf(_) => {
-            parent_holds
+            walked.parent_holds
                 && node.is_named()
                 && !has(profile.comments, &kind)
-                && !is_docstring(node, profile)
+                && !is_docstring(node, profile, walked.first)
         }
         StatementRule::KindSuffix {
             suffix,
@@ -415,7 +432,7 @@ fn is_statement(node: &SgNode<'_>, profile: &Profile, parent_holds: bool) -> boo
             ..
         } => {
             (kind.ends_with(suffix) && !has(excluded, &kind))
-                || (parent_holds && has(declarations, &kind))
+                || (walked.parent_holds && has(declarations, &kind))
         }
     }
 }
@@ -495,16 +512,19 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
     // Line ranges that hold no code: comments and docstrings.
     let silent: Vec<(usize, usize)> = nodes
         .iter()
-        .map(|(node, _)| node)
-        .filter(|node| has(profile.comments, &node.kind()) || is_docstring(node, profile))
-        .map(silent_span)
+        .filter(|walked| {
+            has(profile.comments, &walked.node.kind())
+                || is_docstring(&walked.node, profile, walked.first)
+        })
+        .map(|walked| silent_span(&walked.node))
         .collect();
     let mut cyclomatic: usize = 1;
     let mut statements: usize = 0;
     let mut tokens = CodeTokens::new();
-    for (node, parent_holds) in &nodes {
+    for walked in &nodes {
+        let node = &walked.node;
         cyclomatic = cyclomatic.saturating_add(decisions_of(node, profile));
-        if is_statement(node, profile, *parent_holds) {
+        if is_statement(walked, profile) {
             statements = statements.saturating_add(1);
         }
         if is_code_token(node, profile, &silent) {
@@ -572,18 +592,19 @@ fn file_code_lines(root: &SgNode<'_>, profile: &Profile) -> usize {
     let mut lines: BTreeSet<usize> = BTreeSet::new();
     let mut silent: Vec<(usize, usize)> = Vec::new();
     let mut leaves: Vec<(usize, usize)> = Vec::new();
-    let mut stack = vec![root.clone()];
-    while let Some(node) = stack.pop() {
+    // Each node with whether it is the first child of its parent.
+    let mut stack = vec![(root.clone(), true)];
+    while let Some((node, first)) = stack.pop() {
         let kind = node.kind();
-        if has(profile.comments, &kind) || is_docstring(&node, profile) {
+        if has(profile.comments, &kind) || is_docstring(&node, profile, first) {
             silent.push(silent_span(&node));
             continue;
         }
-        let mut children = node.children().peekable();
+        let mut children = node.children().enumerate().peekable();
         if children.peek().is_none() {
             leaves.push((node.start_pos().line(), node.end_pos().line()));
         }
-        stack.extend(children);
+        stack.extend(children.map(|(index, child)| (child, index == 0)));
     }
     for (start, end) in leaves {
         // A string spanning comment-free lines is code on each of them.

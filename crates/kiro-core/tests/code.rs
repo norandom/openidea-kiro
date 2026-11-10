@@ -437,3 +437,26 @@ fn every_hint_opens_with_exactly_one_known_tag() {
         assert!(tag.label().chars().all(|c| c.is_ascii_lowercase()));
     }
 }
+
+#[test]
+fn a_conflict_is_named_at_every_observation_that_differs_from_an_earlier_one() {
+    let entity = routine("src/a.rs", "f");
+    let other = routine("src/a.rs", "g");
+    let conflicts = |values: &[f64]| {
+        let mut observations: Vec<_> = values
+            .iter()
+            .map(|value| observe(&entity, "cyclomatic", *value))
+            .collect();
+        // Another entity and another metric never conflict with these.
+        observations.push(observe(&other, "cyclomatic", 9.0));
+        observations.push(observe(&entity, "nesting", 9.0));
+        facts(observations, vec![]).problems().len()
+    };
+    // The same value twice is no conflict.
+    assert_eq!(conflicts(&[1.0, 1.0, 1.0]), 0);
+    // The second differs from the first.
+    assert_eq!(conflicts(&[1.0, 2.0]), 1);
+    // The third equals the first and still differs from the second.
+    assert_eq!(conflicts(&[1.0, 2.0, 1.0]), 2);
+    assert_eq!(conflicts(&[1.0, 1.0, 2.0, 2.0]), 2);
+}

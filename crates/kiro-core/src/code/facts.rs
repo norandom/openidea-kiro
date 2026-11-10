@@ -4,6 +4,8 @@
 //! metric definition that give it meaning. A value that was not measured is
 //! absent and described by a coverage cell; it is never zero.
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use serde::{Deserialize, Serialize};
 
 /// Version of the fact model's shape and meaning.
@@ -150,13 +152,38 @@ pub fn is_valid_path(path: &str) -> bool {
 }
 
 impl CodeFacts {
+    /// For each observation, whether an earlier one gives another value
+    /// for the same entity, metric and producer. One pass with an index:
+    /// comparing every pair is too slow for a large project.
+    fn conflicting(&self) -> Vec<bool> {
+        type Key<'a> = (&'a EntityKey, &'a MetricId, &'a ProducerId);
+        let mut seen: BTreeMap<Key<'_>, BTreeSet<u64>> = BTreeMap::new();
+        self.observations
+            .iter()
+            .map(|observation| {
+                let bits = observation.value.to_bits();
+                let values = seen
+                    .entry((
+                        &observation.entity,
+                        &observation.metric,
+                        &observation.producer,
+                    ))
+                    .or_default();
+                let conflict = values.iter().any(|earlier| *earlier != bits);
+                values.insert(bits);
+                conflict
+            })
+            .collect()
+    }
+
     /// Problems that make the facts unusable: nonfinite values, invalid
     /// paths and two different values for the same entity, metric and
     /// producer. An empty list means the facts are valid.
     #[must_use]
     pub fn problems(&self) -> Vec<String> {
         let mut out = Vec::new();
-        for (index, observation) in self.observations.iter().enumerate() {
+        let conflicting = self.conflicting();
+        for (observation, conflict) in self.observations.iter().zip(conflicting) {
             if !observation.value.is_finite() {
                 out.push(format!(
                     "{} {}: value is not finite",
@@ -166,12 +193,6 @@ impl CodeFacts {
             if !is_valid_path(&observation.entity.path) {
                 out.push(format!("invalid path `{}`", observation.entity.path));
             }
-            let conflict = self.observations.iter().take(index).any(|earlier| {
-                earlier.entity == observation.entity
-                    && earlier.metric == observation.metric
-                    && earlier.producer == observation.producer
-                    && earlier.value.to_bits() != observation.value.to_bits()
-            });
             if conflict {
                 out.push(format!(
                     "{} {} {}: two different values",
