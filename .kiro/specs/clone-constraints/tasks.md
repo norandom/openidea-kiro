@@ -92,7 +92,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Requirements: 1.1, 3.3_
 
 - [ ] 4. Implement compatible token families
-- [ ] 4.1 Extract normalized eligible routine shapes
+- [x] 4.1 Extract normalized eligible routine shapes
   - Normalize identifiers/literals while preserving other tokens and compatible entity/statement identities.
   - Exclude cross-language pairs, missing statement counts and parse failures; preserve nesting for filtering.
   - Done when floor/normalization fixtures match the oracle and missing counts never become zero or eligible shapes.
@@ -100,7 +100,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 3.2_
   - _Requirements: 1.2, 1.4, 2.4_
 
-- [ ] 4.2 Score canonical pairs with exact pruning
+- [x] 4.2 Score canonical pairs with exact pruning
   - Wire the admitted library ratio with canonical argument order; write no scorer.
   - Apply length-band/multiset ceilings only when threshold is unreachable; cache and bound pair work.
   - Done when asymmetric/repeated-token/tie cases match the recorded corpus scores and exhaustive small cases prove pruning loses no accepted pair.
@@ -108,7 +108,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 4.1_
   - _Requirements: 1.2, 1.5, 3.2_
 
-- [ ] 4.3 Build families after exclusions and reachability repair
+- [x] 4.3 Build families after exclusions and reachability repair
   - Build connected components, remove ignored/nested members and recompute reachability so excluded third-member bridges cannot connect survivors.
   - Emit one selected-anchor family with sorted members, weakest retained edge and same-file shrink/cross-file delete hints.
   - Done when bridge, nesting, ignores, language and selection fixtures yield exactly the expected stable families.

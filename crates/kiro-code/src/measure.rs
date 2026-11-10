@@ -41,7 +41,7 @@ pub const PRODUCER: &str = "kiro-code";
 /// Parse stack identity written into every observation.
 pub const GRAMMAR: &str = "ast-grep 0.51.1, tree-sitter 0.27";
 
-type SgNode<'r> = Node<'r, StrDoc<SupportLang>>;
+pub(crate) type SgNode<'r> = Node<'r, StrDoc<SupportLang>>;
 
 enum StatementRule {
     /// Named, non-comment children of these container kinds.
@@ -261,7 +261,7 @@ pub fn profile_for(path: &str) -> Option<&'static Profile> {
 }
 
 /// Whether a node is measured as a routine of its own.
-fn is_routine(node: &SgNode<'_>, profile: &Profile) -> bool {
+pub(crate) fn is_routine(node: &SgNode<'_>, profile: &Profile) -> bool {
     let kind = node.kind();
     has(profile.functions, &kind)
         || (has(profile.value_functions, &kind)
@@ -282,7 +282,7 @@ fn routine_name(node: &SgNode<'_>) -> Option<String> {
         .map(|name| name.text().to_string())
 }
 
-fn has(list: &[&str], kind: &str) -> bool {
+pub(crate) fn has(list: &[&str], kind: &str) -> bool {
     list.contains(&kind)
 }
 
@@ -296,16 +296,36 @@ fn count(value: usize) -> f64 {
     value
 }
 
-/// Every node below `root` in pre-order, without descending into routines.
-fn routine_nodes<'r>(root: &SgNode<'r>, profile: &Profile) -> Vec<SgNode<'r>> {
+/// Whether a node of this kind can hold statements as children.
+fn holds_statements(kind: &str, profile: &Profile) -> bool {
+    match &profile.statements {
+        StatementRule::ChildrenOf(containers) => has(containers, kind),
+        StatementRule::KindSuffix {
+            declaration_parents,
+            ..
+        } => has(declaration_parents, kind),
+    }
+}
+
+/// The children of a node, each with whether the node can hold statements.
+/// Asking every node for its parent is slow in the syntax tree library, so
+/// the walk carries this one fact about the parent down.
+fn tagged_children<'r>(node: &SgNode<'r>, profile: &Profile) -> Vec<(SgNode<'r>, bool)> {
+    let holds = holds_statements(&node.kind(), profile);
+    node.children().map(|child| (child, holds)).collect()
+}
+
+/// Every node below `root` in pre-order, without descending into routines,
+/// each with whether its parent can hold statements.
+fn routine_nodes<'r>(root: &SgNode<'r>, profile: &Profile) -> Vec<(SgNode<'r>, bool)> {
     let mut out = Vec::new();
-    let mut stack: Vec<SgNode<'r>> = root.children().collect();
-    while let Some(node) = stack.pop() {
+    let mut stack = tagged_children(root, profile);
+    while let Some((node, parent_holds)) = stack.pop() {
         if is_routine(&node, profile) {
             continue;
         }
-        stack.extend(node.children());
-        out.push(node);
+        stack.extend(tagged_children(&node, profile));
+        out.push((node, parent_holds));
     }
     out
 }
@@ -349,13 +369,12 @@ fn parameters(function: &SgNode<'_>, profile: &Profile) -> (usize, String) {
 
 fn nesting_depth(node: &SgNode<'_>, profile: &Profile, depth: usize) -> usize {
     let mut deepest = depth;
+    // An else-if chain stays on one level: the chain node opens nothing.
+    let chained = has(profile.chain_parents, &node.kind());
     for child in node.children() {
         if is_routine(&child, profile) {
             continue;
         }
-        let chained = node
-            .parent()
-            .is_some_and(|_| has(profile.chain_parents, &node.kind()));
         let opens = has(profile.nesting, &child.kind()) && !chained;
         let next = if opens {
             depth.saturating_add(1)
@@ -378,28 +397,25 @@ struct RoutineValues {
     body_hash: u64,
 }
 
-fn is_statement(node: &SgNode<'_>, profile: &Profile) -> bool {
+/// Whether a node counts as a statement. `parent_holds` says whether its
+/// parent can hold statements (see `holds_statements`).
+fn is_statement(node: &SgNode<'_>, profile: &Profile, parent_holds: bool) -> bool {
     let kind = node.kind();
     match &profile.statements {
-        StatementRule::ChildrenOf(containers) => {
-            node.is_named()
+        StatementRule::ChildrenOf(_) => {
+            parent_holds
+                && node.is_named()
                 && !has(profile.comments, &kind)
                 && !is_docstring(node, profile)
-                && node
-                    .parent()
-                    .is_some_and(|parent| has(containers, &parent.kind()))
         }
         StatementRule::KindSuffix {
             suffix,
             excluded,
             declarations,
-            declaration_parents,
+            ..
         } => {
             (kind.ends_with(suffix) && !has(excluded, &kind))
-                || (has(declarations, &kind)
-                    && node
-                        .parent()
-                        .is_some_and(|parent| has(declaration_parents, &parent.kind())))
+                || (parent_holds && has(declarations, &kind))
         }
     }
 }
@@ -479,15 +495,16 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
     // Line ranges that hold no code: comments and docstrings.
     let silent: Vec<(usize, usize)> = nodes
         .iter()
+        .map(|(node, _)| node)
         .filter(|node| has(profile.comments, &node.kind()) || is_docstring(node, profile))
         .map(silent_span)
         .collect();
     let mut cyclomatic: usize = 1;
     let mut statements: usize = 0;
     let mut tokens = CodeTokens::new();
-    for node in &nodes {
+    for (node, parent_holds) in &nodes {
         cyclomatic = cyclomatic.saturating_add(decisions_of(node, profile));
-        if is_statement(node, profile) {
+        if is_statement(node, profile, *parent_holds) {
             statements = statements.saturating_add(1);
         }
         if is_code_token(node, profile, &silent) {
@@ -520,7 +537,7 @@ fn container_name(node: &SgNode<'_>) -> Option<String> {
     }
 }
 
-fn qualified(node: &SgNode<'_>, profile: &Profile) -> String {
+pub(crate) fn qualified(node: &SgNode<'_>, profile: &Profile) -> String {
     let own = if is_routine(node, profile) {
         routine_name(node)
     } else {
@@ -704,7 +721,7 @@ struct FileTally {
 }
 
 /// Every node of a tree in document order.
-fn document_order<'r>(root: &SgNode<'r>) -> Vec<SgNode<'r>> {
+pub(crate) fn document_order<'r>(root: &SgNode<'r>) -> Vec<SgNode<'r>> {
     let mut all: Vec<SgNode<'r>> = Vec::new();
     let mut stack = vec![root.clone()];
     while let Some(node) = stack.pop() {
@@ -881,4 +898,9 @@ pub fn comment_kinds(path: &str) -> Option<&'static [&'static str]> {
 #[must_use]
 pub fn profile_name(path: &str) -> Option<&'static str> {
     profile_for(path).map(|profile| profile.name)
+}
+
+/// The statements of one routine, as the `statements` metric counts them.
+pub(crate) fn statement_count(function: &SgNode<'_>, profile: &Profile) -> usize {
+    measure_routine(function, profile).statements
 }

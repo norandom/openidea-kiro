@@ -18,7 +18,6 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::attribution::Attribution;
 use super::report::{CodeFinding, Tag};
 use crate::finding::{Finding, Severity, codes};
 
@@ -92,20 +91,7 @@ fn finding(
 ) -> CodeFinding {
     let mut base = Finding::new(code, site.path.to_string(), message).severity(severity);
     base.line = usize::try_from(site.line).ok().filter(|line| *line > 0);
-    CodeFinding {
-        finding: base,
-        tag: Tag::Collect,
-        hint,
-        metric: None,
-        value: None,
-        before: None,
-        limit: None,
-        limit_source: None,
-        pre_existing: false,
-        trust: None,
-        entity: None,
-        owners: Attribution::default(),
-    }
+    CodeFinding::across_files(base, Tag::Collect, hint)
 }
 
 /// File -> first line of one binding or one subject in that file.

@@ -9,6 +9,7 @@ pub mod git;
 pub mod locality;
 pub mod measure;
 pub mod scan;
+pub mod shapes;
 pub mod walk;
 
 use kiro_core::code::CodeFacts;

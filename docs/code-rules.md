@@ -150,10 +150,32 @@ Status: first rule of spec `clone-constraints`.
 - A code line is the line's tokens with whitespace and comments removed. Indentation, spacing inside a line, comment lines, trailing comments and blank lines do not hide a copy. Lines without a token are skipped and do not interrupt a run.
 - The search covers every measurable file of the project, also for a task-scoped check: a copy counts wherever the original stands. Findings are reported for the selected files only; when both ends are selected, each is reported from its own side.
 - Two copies in one file count. A run that only overlaps itself does not.
-- A renamed identifier, a reordered statement or a line broken differently changes the line and ends the run. Copies that were renamed or reshaped are the subject of the similar-routine rule, which is not built yet.
+- A renamed identifier, a reordered statement or a line broken differently changes the line and ends the run. Copies that were renamed or reshaped are the subject of the similar-routine rule below.
 - A block that occurs at more than 64 locations is not expanded; the coverage line counts such windows.
 - The coverage line ends with what was searched, for example `duplicate blocks: 158 files searched, 96 blocks of at least 12 lines, 0 frequent windows skipped`.
 - The length of 12 lines and the severity cannot be configured yet, and duplicates are not compared with a before side: an old copy and a new one look the same.
+
+## Similar routines
+
+**`CODE_SIMILAR_FAMILY`** (warning). A routine is one of a family: a set of routines in which each member is at least 0.9 similar to another member. This is how a routine that was copied and renamed is found. One finding is reported per family, at its first selected member; it names the other members with their locations, the size of the family and the weakest similarity that holds it together. The hint is `shrink:` (merge them and pass what differs as a parameter) when the family stands in one file, and `delete:` (keep one and call it) when it spans files.
+
+- **What is compared.** Routines of at least 6 statements, within one language (TypeScript with and without JSX is one language). Each routine is reduced to its shape: the sequence of its tokens with every identifier replaced by one placeholder and every string or number literal by another. Keywords, operators, punctuation, booleans and built-in type names stay. Comments and routines nested inside are left out.
+- **The similarity** of two shapes is `2 * M / (len(a) + len(b))`, where `M` is the matched length computed by the `difflib-fast` library (the matching of Python's `difflib` without its junk heuristic). This project writes no scorer. The ratio depends on the order of its arguments, so each pair is scored once in a fixed order: the shorter shape first, on equal length the smaller one.
+- **Refused before scoring.** The matched length can exceed neither the shorter shape nor the tokens both shapes have in common, counted with multiplicity. A pair whose ceiling lies below 0.9 is not scored. Both ceilings are exact upper bounds: a test over every pair of strings up to five characters over three letters shows that no ratio exceeds them, so no family is lost.
+- **Not members.** Routines named `main`, `new`, `default`, `fmt` or `__init__`: their likeness is the convention. A routine nested in another member of its family. After a routine is taken out, the families are computed again, so a removed routine never holds two others together.
+- **Budget.** At most 2,000,000 pairs are scored in one run. When the budget runs out the coverage line says so; missing families are then no proof that there are none.
+
+What the rule finds and what it does not, measured on three labeled pairs:
+
+| Pair | Similarity | Reported |
+| --- | --- | --- |
+| A routine and its copy with every name and one constant changed | 1.00 | yes |
+| Guard clauses, rewritten as a nested ladder | 0.86 | no |
+| A chain of `if` on a code, rewritten as a table lookup | 0.60 | no |
+
+The same behaviour written in another shape is not found, and the rule does not claim that two members behave the same. A finder based on embeddings could see such rewrites; its output would be a periodic report for a person or an agent to read, never a reason to refuse a change.
+
+The threshold, the statement floor and the ignored names cannot be configured yet. Families are not compared with a before side.
 
 ## Scattered definitions and scattered state
 
@@ -185,6 +207,7 @@ The thresholds (3 files, 2 values) and the ignored names cannot be configured ye
 | `CODE_FILE_LIMIT` | warning | A file metric is above its limit |
 | `CODE_RATCHET` | error or warning | A routine metric rose against the before side: error above its limit, warning within it |
 | `CODE_DUPLICATE_BLOCK` | warning | A run of at least 12 code lines also stands at another location |
+| `CODE_SIMILAR_FAMILY` | warning | A routine is one of a family of similar routines |
 | `CODE_SCATTERED_DEFINITION` | warning | The same module-level definition stands in more than 3 files |
 | `CODE_DEFINITION_AMBIGUOUS` | info | One name carries several scattered values; they were not merged |
 | `CODE_SCATTERED_STATE` | info | One subject is compared with literal values across more than 3 files |
@@ -203,5 +226,5 @@ A file belongs to the spec whose design lists it in its File Structure Plan, to 
 - Whether the standard library, the platform or an installed dependency would have replaced a piece of code is never checked.
 - A file that was not measured was not judged. Read the `CODE_COVERAGE` line: it counts selected, measured, failed and unmeasured files.
 - Without a before side nothing is compared: existing breaches and new ones look the same. The coverage line names the before side.
-- Copies that were renamed or reshaped and positional data access are not detected yet.
+- A routine rewritten in another shape is not recognized as a copy, and positional data access is not detected yet.
 - A routine within every limit can still be wrong or unclear.

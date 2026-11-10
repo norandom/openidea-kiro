@@ -8,6 +8,7 @@
 
 use kiro_code::{ChangeSet, SourceBundle};
 use kiro_core::code::clones::{DEFAULT_MIN_LINES, duplicate_blocks, duplicate_findings};
+use kiro_core::code::families::{FamilyFacts, IGNORED_NAMES, families, family_findings};
 use kiro_core::code::locality::{
     DEFAULT_MAX_FILES, DEFAULT_MIN_STATES, definition_findings, state_findings,
 };
@@ -362,10 +363,37 @@ fn cross_file(root: &ProjectRoot, selected: &[String]) -> Result<CrossFile, Fail
             scan.locality.bindings.len(),
             scan.locality.comparisons.len()
         ),
+        similar_routines(&scan.families, &is_selected, &mut findings),
     ];
     findings.extend(definitions);
     findings.extend(states);
     Ok(CrossFile { findings, notes })
+}
+
+/// Adds the findings of the similar-routine families and returns what
+/// the comparison covered. An incomplete comparison is said so: absent
+/// families are then no proof that there are none.
+fn similar_routines(
+    facts: &FamilyFacts,
+    is_selected: &dyn Fn(&str) -> bool,
+    findings: &mut Vec<CodeFinding>,
+) -> String {
+    let found = families(facts, IGNORED_NAMES);
+    findings.extend(family_findings(facts, &found, is_selected));
+    let coverage = &facts.coverage;
+    let incomplete = if coverage.complete {
+        ""
+    } else {
+        "; the pair budget ran out, families may be missing"
+    };
+    format!(
+        "similar routines: {} of {} routines compared, {} pairs scored, {} refused before scoring, {} families{incomplete}",
+        coverage.eligible,
+        coverage.routines,
+        coverage.scored_pairs,
+        coverage.pruned_pairs,
+        found.len()
+    )
 }
 
 /// Puts the reason there is no before side into the report, unless the

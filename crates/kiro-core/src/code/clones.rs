@@ -12,7 +12,6 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::attribution::Attribution;
 use super::report::{CodeFinding, Tag};
 use crate::finding::{Finding, Severity, codes};
 
@@ -247,23 +246,11 @@ fn duplicate_finding(here: &CodeRange, there: &BTreeSet<&CodeRange>, lines: usiz
     )
     .severity(Severity::Warning);
     finding.line = usize::try_from(here.start_line).ok();
-    CodeFinding {
-        finding,
-        tag: Tag::Delete,
-        hint: format!(
-            "keep one copy: move the block into one routine and call it from {}",
-            named.first().map_or("the other location", String::as_str)
-        ),
-        metric: None,
-        value: None,
-        before: None,
-        limit: None,
-        limit_source: None,
-        pre_existing: false,
-        trust: None,
-        entity: None,
-        owners: Attribution::default(),
-    }
+    let hint = format!(
+        "keep one copy: move the block into one routine and call it from {}",
+        named.first().map_or("the other location", String::as_str)
+    );
+    CodeFinding::across_files(finding, Tag::Delete, hint)
 }
 
 /// Words one finding per duplicated range in a selected file, naming up to

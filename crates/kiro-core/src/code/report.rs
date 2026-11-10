@@ -63,6 +63,28 @@ pub struct CodeFinding {
     pub owners: Attribution,
 }
 
+impl CodeFinding {
+    /// A finding of a rule that counts across files: it has no metric, no
+    /// limit and no before side. The evaluation adds the owners.
+    #[must_use]
+    pub fn across_files(finding: Finding, tag: Tag, hint: String) -> Self {
+        Self {
+            finding,
+            tag,
+            hint,
+            metric: None,
+            value: None,
+            before: None,
+            limit: None,
+            limit_source: None,
+            pre_existing: false,
+            trust: None,
+            entity: None,
+            owners: Attribution::default(),
+        }
+    }
+}
+
 /// A routine metric that differs from the before side.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Change {

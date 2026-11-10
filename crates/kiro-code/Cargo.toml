@@ -19,6 +19,9 @@ ast-grep-language = { version = "=0.51.1", default-features = false, features = 
 ] }
 # Already in the tree through ast-grep-language; honors .gitignore in the walk.
 ignore = "0.4.34"
+# Similarity ratio of the family rule, adopted in K0 (clone-constraints
+# research.md): exact difflib ratio without the junk heuristic.
+difflib-fast = "=0.6.0"
 
 [dev-dependencies]
 serde_json = "1"

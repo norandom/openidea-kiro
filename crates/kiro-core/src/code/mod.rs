@@ -10,6 +10,7 @@ pub mod clones;
 pub mod config;
 pub mod evaluate;
 pub mod facts;
+pub mod families;
 pub mod limits;
 pub mod locality;
 pub mod ratchet;

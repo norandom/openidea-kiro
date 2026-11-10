@@ -198,6 +198,7 @@
 //! | CODE_SCATTERED_DEFINITION | warning | The same module-level definition stands in more files than allowed |
 //! | CODE_DEFINITION_AMBIGUOUS | info | One name carries several scattered values; they were not merged |
 //! | CODE_SCATTERED_STATE | info | One subject is compared with literal values across more files than allowed |
+//! | CODE_SIMILAR_FAMILY | warning | A routine is one of a family of similar routines |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -278,6 +279,7 @@
 //!     ("CODE_SCATTERED_DEFINITION", Severity::Warning, "The same module-level definition stands in more files than allowed"),
 //!     ("CODE_DEFINITION_AMBIGUOUS", Severity::Info, "One name carries several scattered values; they were not merged"),
 //!     ("CODE_SCATTERED_STATE", Severity::Info, "One subject is compared with literal values across more files than allowed"),
+//!     ("CODE_SIMILAR_FAMILY", Severity::Warning, "A routine is one of a family of similar routines"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {
