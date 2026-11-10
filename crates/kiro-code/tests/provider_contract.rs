@@ -22,7 +22,113 @@ const FIXTURES: &[(&str, &str)] = &[
     ),
     ("sample.py", include_str!("../fixtures/metrics/sample.py")),
     ("sample.ts", include_str!("../fixtures/metrics/sample.ts")),
+    (
+        "constructs.py",
+        include_str!("../fixtures/metrics/constructs.py"),
+    ),
+    (
+        "constructs.ts",
+        include_str!("../fixtures/metrics/constructs.ts"),
+    ),
 ];
+
+#[test]
+fn python_constructs_match_the_hand_counts() {
+    let facts = facts();
+    let path = "constructs.py";
+    // Nested routines are their own entities: `retry` holds one statement.
+    assert_eq!(routine(&facts, path, "retry"), [1.0, 1.0, 0.0, 2.0, 1.0]);
+    // The decorator line of the inner routine is code of `decorator`, and
+    // the decorated definition is one item of its block.
+    assert_eq!(
+        routine(&facts, path, "retry.decorator"),
+        [1.0, 1.0, 0.0, 3.0, 2.0]
+    );
+    // *args and **kwargs are parameters; for, except and if are decisions;
+    // for > try > if nests three deep.
+    assert_eq!(
+        routine(&facts, path, "retry.decorator.wrapper"),
+        [2.0, 4.0, 3.0, 8.0, 6.0]
+    );
+    assert_eq!(
+        routine(&facts, path, "Account.__init__"),
+        [2.0, 1.0, 0.0, 3.0, 2.0]
+    );
+    // The `@property` line belongs to the class body, not to the routine.
+    assert_eq!(
+        routine(&facts, path, "Account.rich"),
+        [0.0, 1.0, 0.0, 2.0, 1.0]
+    );
+    // An async routine is a routine; the bare `*` declares nothing; `or`
+    // and the lambda's conditional expression are decisions of `pay`.
+    assert_eq!(
+        routine(&facts, path, "Account.pay"),
+        [2.0, 3.0, 1.0, 5.0, 4.0]
+    );
+
+    let file = |metric: &str| value(&facts, path, Scope::File, path, metric).unwrap();
+    assert_eq!(file("functions"), 6.0);
+    assert_eq!(file("types"), 1.0);
+    assert_eq!(file("max_cyclomatic"), 4.0);
+    // 27 non-blank lines, no comment and no docstring.
+    assert_eq!(file("code_lines"), 27.0);
+    assert_eq!(
+        value(&facts, path, Scope::Type, "Account", "methods"),
+        Some(3.0)
+    );
+}
+
+#[test]
+fn typescript_constructs_match_the_hand_counts() {
+    let facts = facts();
+    let path = "constructs.ts";
+    // An arrow function bound to a name is a routine. for..of, if, && and
+    // the ternary in the inline callback are its decisions.
+    assert_eq!(routine(&facts, path, "pick"), [2.0, 5.0, 2.0, 8.0, 4.0]);
+    assert_eq!(
+        routine(&facts, path, "Square.constructor"),
+        [1.0, 1.0, 0.0, 3.0, 1.0]
+    );
+    // try opens a nesting level and catch is a decision.
+    assert_eq!(
+        routine(&facts, path, "Square.area"),
+        [0.0, 2.0, 1.0, 7.0, 3.0]
+    );
+    // An arrow function held by a class field is a routine with an
+    // expression body: no statement.
+    assert_eq!(
+        routine(&facts, path, "Square.scale"),
+        [1.0, 1.0, 0.0, 1.0, 0.0]
+    );
+    // A single parameter without a list.
+    assert_eq!(routine(&facts, path, "twice"), [1.0, 1.0, 0.0, 1.0, 0.0]);
+    // The inline callback of `map` is not a routine of its own.
+    assert_eq!(
+        facts
+            .observations
+            .iter()
+            .filter(|o| o.entity.path == path
+                && o.entity.scope == Scope::Routine
+                && o.metric.name == "cyclomatic")
+            .count(),
+        5
+    );
+
+    let file = |metric: &str| value(&facts, path, Scope::File, path, metric).unwrap();
+    assert_eq!(file("functions"), 5.0);
+    // Interface, enum and class.
+    assert_eq!(file("types"), 3.0);
+    assert_eq!(file("max_cyclomatic"), 5.0);
+    assert_eq!(file("code_lines"), 32.0);
+    let member = |name: &str, metric: &str| value(&facts, path, Scope::Type, name, metric);
+    assert_eq!(member("Shape", "methods"), Some(1.0));
+    assert_eq!(member("Shape", "fields"), Some(1.0));
+    assert_eq!(member("Mode", "methods"), Some(0.0));
+    // constructor, area and the arrow field `scale` are methods; `name`
+    // and `side` are fields.
+    assert_eq!(member("Square", "methods"), Some(3.0));
+    assert_eq!(member("Square", "fields"), Some(2.0));
+}
 
 fn facts() -> CodeFacts {
     let mut facts = CodeFacts::default();
@@ -316,4 +422,23 @@ fn full_measurement_matches_the_regression_record() {
     }
     let expected = std::fs::read_to_string(path).unwrap().replace("\r\n", "\n");
     assert_eq!(actual, expected);
+}
+
+#[test]
+fn javascript_uses_the_typescript_tables_with_its_own_field_kind() {
+    let text = "const add = (a, b) => a + b;\nclass K {\n  field = 1;\n  m() { if (this.field || add(1, 2)) { return 1; } }\n}\n";
+    let mut facts = CodeFacts::default();
+    measure_into("k.js", text, &mut facts);
+    assert_eq!(
+        facts.file_state("k.js").unwrap().state,
+        Completeness::Complete
+    );
+    assert_eq!(routine(&facts, "k.js", "add"), [2.0, 1.0, 0.0, 1.0, 0.0]);
+    // if and || are decisions; the if opens one level; if and return are statements.
+    assert_eq!(routine(&facts, "k.js", "K.m"), [0.0, 3.0, 1.0, 1.0, 2.0]);
+    assert_eq!(
+        value(&facts, "k.js", Scope::Type, "K", "methods"),
+        Some(1.0)
+    );
+    assert_eq!(value(&facts, "k.js", Scope::Type, "K", "fields"), Some(1.0));
 }

@@ -30,7 +30,7 @@ Languages: Rust (`.rs`), Python (`.py`, `.pyi`), TypeScript (`.ts`, `.mts`, `.ct
 | Type | `methods`, `fields` | Declared members. Rust: methods of the type's inherent `impl` blocks in the same file count; a trait implementation does not. Python has no field count |
 | File | `code_lines`, `functions`, `types`, `max_cyclomatic` | Counted over the whole file; a type alias is not a type |
 
-A nested routine is its own entity and adds nothing to the routine around it. Closures, lambdas and arrow functions belong to the routine that contains them. Rust's `loop`, the `?` operator and macro calls are not decisions.
+A nested routine is its own entity and adds nothing to the routine around it. In TypeScript and JavaScript an arrow function or function expression bound to a name (a declaration, a class field or an object property) is a routine of that name; a class field holding one counts as a method, not as a field. Every other closure, lambda or inline callback belongs to the routine that contains it. A bare `*` or `/` in a Python parameter list is not a parameter. Rust's `loop`, the `?` operator and macro calls are not decisions.
 
 These definitions carry the version `1`. A change of meaning changes the version.
 

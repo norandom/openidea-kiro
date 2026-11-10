@@ -18,8 +18,11 @@
 //!   the statement nodes, and declarations directly in a block.
 //!
 //! A nested routine is measured as its own entity and contributes nothing
-//! to the routine around it. Closures, lambdas and arrow functions belong
-//! to the routine that contains them.
+//! to the routine around it. In TypeScript and JavaScript an arrow function
+//! or function expression that is bound to a name (the value of a
+//! declaration, a class field or an object property) is a routine of that
+//! name. Every other closure, lambda or inline callback belongs to the
+//! routine that contains it.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -81,6 +84,11 @@ pub struct Profile {
     /// Name separator in qualified names.
     separator: &'static str,
     docstrings: bool,
+    /// Function-valued expressions that are routines when they are the value
+    /// of a declaration, a class field or an object property; elsewhere they
+    /// belong to the routine around them.
+    value_functions: &'static [&'static str],
+    value_parents: &'static [&'static str],
 }
 
 const RUST: Profile = Profile {
@@ -110,6 +118,8 @@ const RUST: Profile = Profile {
     method_signatures: &["function_signature_item"],
     separator: "::",
     docstrings: false,
+    value_functions: &[],
+    value_parents: &[],
 };
 
 const PYTHON: Profile = Profile {
@@ -117,7 +127,8 @@ const PYTHON: Profile = Profile {
     lang: SupportLang::Python,
     extensions: &["py", "pyi"],
     functions: &["function_definition"],
-    receiver_kinds: &[],
+    // A bare `*` or `/` in a parameter list separates, it declares nothing.
+    receiver_kinds: &["keyword_separator", "positional_separator"],
     receiver_names: &["self", "cls"],
     decisions: &[
         "if_statement",
@@ -147,6 +158,8 @@ const PYTHON: Profile = Profile {
     method_signatures: &[],
     separator: ".",
     docstrings: true,
+    value_functions: &[],
+    value_parents: &[],
 };
 
 const TS_FUNCTIONS: &[&str] = &["function_declaration", "method_definition"];
@@ -211,6 +224,8 @@ const TYPESCRIPT: Profile = Profile {
     method_signatures: &["method_signature", "abstract_method_signature"],
     separator: ".",
     docstrings: false,
+    value_functions: &["arrow_function", "function_expression"],
+    value_parents: &["variable_declarator", "public_field_definition", "pair"],
 };
 
 const TSX: Profile = Profile {
@@ -228,6 +243,7 @@ const JAVASCRIPT: Profile = Profile {
     containers: &["class_declaration"],
     fields: &["field_definition"],
     method_signatures: &[],
+    value_parents: &["variable_declarator", "field_definition", "pair"],
     ..TYPESCRIPT
 };
 
@@ -242,6 +258,28 @@ pub fn profile_for(path: &str) -> Option<&'static Profile> {
         .iter()
         .copied()
         .find(|profile| profile.extensions.contains(&extension))
+}
+
+/// Whether a node is measured as a routine of its own.
+fn is_routine(node: &SgNode<'_>, profile: &Profile) -> bool {
+    let kind = node.kind();
+    has(profile.functions, &kind)
+        || (has(profile.value_functions, &kind)
+            && node
+                .parent()
+                .is_some_and(|parent| has(profile.value_parents, &parent.kind())))
+}
+
+/// The name of a routine: its own, or the name it is bound to.
+fn routine_name(node: &SgNode<'_>) -> Option<String> {
+    if let Some(name) = node.field("name") {
+        return Some(name.text().to_string());
+    }
+    let parent = node.parent()?;
+    parent
+        .field("name")
+        .or_else(|| parent.field("key"))
+        .map(|name| name.text().to_string())
 }
 
 fn has(list: &[&str], kind: &str) -> bool {
@@ -263,7 +301,7 @@ fn routine_nodes<'r>(root: &SgNode<'r>, profile: &Profile) -> Vec<SgNode<'r>> {
     let mut out = Vec::new();
     let mut stack: Vec<SgNode<'r>> = root.children().collect();
     while let Some(node) = stack.pop() {
-        if has(profile.functions, &node.kind()) {
+        if is_routine(&node, profile) {
             continue;
         }
         stack.extend(node.children());
@@ -293,7 +331,11 @@ fn is_docstring(node: &SgNode<'_>, profile: &Profile) -> bool {
 
 fn parameters(function: &SgNode<'_>, profile: &Profile) -> (usize, String) {
     let Some(list) = function.field("parameters") else {
-        return (0, String::new());
+        // An arrow function may name its single parameter without a list.
+        return match function.field("parameter") {
+            Some(single) => (1, single.text().to_string()),
+            None => (0, String::new()),
+        };
     };
     let counted = list
         .children()
@@ -308,7 +350,7 @@ fn parameters(function: &SgNode<'_>, profile: &Profile) -> (usize, String) {
 fn nesting_depth(node: &SgNode<'_>, profile: &Profile, depth: usize) -> usize {
     let mut deepest = depth;
     for child in node.children() {
-        if has(profile.functions, &child.kind()) {
+        if is_routine(&child, profile) {
             continue;
         }
         let chained = node
@@ -429,10 +471,12 @@ fn container_name(node: &SgNode<'_>) -> Option<String> {
 }
 
 fn qualified(node: &SgNode<'_>, profile: &Profile) -> String {
-    let own = node
-        .field("name")
-        .map(|name| name.text().to_string())
-        .unwrap_or_default();
+    let own = if is_routine(node, profile) {
+        routine_name(node)
+    } else {
+        node.field("name").map(|name| name.text().to_string())
+    }
+    .unwrap_or_default();
     qualified_as(node, own, profile)
 }
 
@@ -441,9 +485,9 @@ fn qualified_as(node: &SgNode<'_>, own: String, profile: &Profile) -> String {
     let mut parts = vec![own];
     let mut current = node.parent();
     while let Some(parent) = current {
-        if (has(profile.containers, &parent.kind()) || has(profile.functions, &parent.kind()))
-            && let Some(name) = if has(profile.functions, &parent.kind()) {
-                parent.field("name").map(|name| name.text().to_string())
+        if (has(profile.containers, &parent.kind()) || is_routine(&parent, profile))
+            && let Some(name) = if is_routine(&parent, profile) {
+                routine_name(&parent)
             } else {
                 container_name(&parent)
             }
@@ -609,7 +653,7 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
 
     for node in &all {
         let kind = node.kind();
-        if has(profile.functions, &kind) {
+        if is_routine(node, profile) {
             functions = functions.saturating_add(1);
             let values = measure_routine(node, profile);
             max_cyclomatic = max_cyclomatic.max(values.cyclomatic);
@@ -630,13 +674,16 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
                 .or_insert((0, 0, line(node.start_pos().line())));
             entry.2 = line(node.start_pos().line());
         }
-        let is_method = has(profile.functions, &kind) || has(profile.method_signatures, &kind);
-        let is_field = has(profile.fields, &kind);
+        let is_method = is_routine(node, profile) || has(profile.method_signatures, &kind);
+        let is_field = has(profile.fields, &kind)
+            && !node
+                .children()
+                .any(|child| has(profile.value_functions, &child.kind()));
         if is_method || is_field {
             // The nearest container decides which type the member belongs to.
             let mut current = node.parent();
             while let Some(parent) = current {
-                if has(profile.functions, &parent.kind()) {
+                if is_routine(&parent, profile) {
                     break;
                 }
                 if has(profile.containers, &parent.kind()) || has(profile.types, &parent.kind()) {

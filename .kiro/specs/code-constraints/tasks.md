@@ -36,7 +36,7 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Boundary: NativeMeasure_
   - _Requirements: 1.1, 9.6, 12.1_
 
-- [ ] 1.2 Create hand-counted multilingual semantic fixtures
+- [x] 1.2 Create hand-counted multilingual semantic fixtures
   - Encode exact expected routine/file/type measurements for Rust, Python and TS/JS constructs, including boolean decisions, nesting, docstrings, parameters and same-file inherent impls.
   - Capture comparison provenance for the optional Lizard cross-check, distinguishing hand-counted truth from external tool disagreement.
   - Done when the prototype runner reports per-metric expected/actual values and detects deliberately changed metric definitions.

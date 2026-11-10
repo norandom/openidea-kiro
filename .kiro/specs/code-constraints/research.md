@@ -472,3 +472,11 @@ Not covered by this prototype and still owed before the profiles are called cali
 The whole workspace test suite passes on Windows 11 (rustc 1.98.1) and on Linux x86_64 in a throwaway `rust:latest` container (rustc 1.99.1): 470 tests each, 0 failed. This includes the provider contract, the pure policy tests and the `code check` journey, so task 4.3 holds on Windows and Linux. macOS was not run.
 
 The first Linux run failed one telemetry test and, because `cargo test` stops at the first failing suite, reported only 105 tests. The defect was real: `--telemetry-dir <project>/a/../b`, where `a` does not exist, was rejected with "failed to resolve" instead of "inside the project", since only Windows resolves such a path lexically. The resolver now walks the path component by component. The Linux script uses `--no-fail-fast` since then.
+
+## Corpus extension and routine detection (2026-11-10, night)
+
+- Task 1.2 complete: hand-counted fixtures now cover Python decorators, nested and async routines, splat and keyword-only parameters, lambda, `try`/`except`, `with`; TypeScript interface, enum, class fields, constructor, `for..of`, `try`/`catch`, inline callbacks, single-parameter arrows; and a JavaScript class. Every hand count matched on the first measured run. The optional Lizard cross-check was not done (no Python on this workstation).
+- Decision: in TypeScript and JavaScript an arrow function or function expression bound to a name is a routine of that name; a class field holding one is a method, not a field. Without this most TypeScript code would not be measured as routines. Inline callbacks stay with the routine around them.
+- A bare `*` or `/` in a Python parameter list is not counted as a parameter.
+- Not in the corpus yet: Rust macros with control flow in their arguments, `impl` for a foreign type, Python `match`, TypeScript abstract classes, optional chaining, generators.
+- `main.rs` of the CLI was split into one function per command; evaluation resolves ownership once per file.
