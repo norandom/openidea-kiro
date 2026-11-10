@@ -34,25 +34,28 @@ const CORE_TASK: &[&str] = &[
     "warning",
 ];
 
+/// A module whose function `name` returns the timeout, after `head`: the
+/// module's own definition of the constant or an import of it.
+fn timeout_user(head: &str, name: &str) -> String {
+    format!("{head}\n\npub fn {name}() -> u64 {{\n    TIMEOUT_MS\n}}\n")
+}
+
+/// The module defines the constant itself.
+fn defining(name: &str) -> String {
+    timeout_user("pub const TIMEOUT_MS: u64 = 30_000;", name)
+}
+
+/// The module imports the one definition.
+fn importing(name: &str) -> String {
+    timeout_user("use crate::demo::TIMEOUT_MS;", name)
+}
+
 #[test]
 fn a_constant_repeated_in_four_files_is_reported_until_it_is_defined_once() {
     let (_temp, root) = project();
-    let with_constant = |body: &str| format!("pub const TIMEOUT_MS: u64 = 30_000;\n\n{body}");
-    write(
-        &root,
-        "src/demo.rs",
-        &with_constant("pub fn core() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
-    write(
-        &root,
-        "src/ui.rs",
-        &with_constant("pub fn ui() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
-    write(
-        &root,
-        "src/net.rs",
-        &with_constant("pub fn net() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
+    write(&root, "src/demo.rs", &defining("core"));
+    write(&root, "src/ui.rs", &defining("ui"));
+    write(&root, "src/net.rs", &defining("net"));
 
     // Three files: within the allowance.
     let three = run_cli_in(&root, CORE_TASK);
@@ -60,11 +63,7 @@ fn a_constant_repeated_in_four_files_is_reported_until_it_is_defined_once() {
     assert!(!three.stdout.contains("CODE_SCATTERED_DEFINITION"));
 
     // The agent writes it a fourth time.
-    write(
-        &root,
-        "src/job.rs",
-        &with_constant("pub fn job() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
+    write(&root, "src/job.rs", &defining("job"));
     let failing = run_cli_in(&root, CORE_TASK);
     assert_eq!(failing.code, 1, "{}", failing.stdout);
     assert!(
@@ -88,22 +87,9 @@ fn a_constant_repeated_in_four_files_is_reported_until_it_is_defined_once() {
     );
 
     // Consolidation: one definition, the others import it.
-    let importing = |body: &str| format!("use crate::demo::TIMEOUT_MS;\n\n{body}");
-    write(
-        &root,
-        "src/ui.rs",
-        &importing("pub fn ui() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
-    write(
-        &root,
-        "src/net.rs",
-        &importing("pub fn net() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
-    write(
-        &root,
-        "src/job.rs",
-        &importing("pub fn job() -> u64 {\n    TIMEOUT_MS\n}\n"),
-    );
+    write(&root, "src/ui.rs", &importing("ui"));
+    write(&root, "src/net.rs", &importing("net"));
+    write(&root, "src/job.rs", &importing("job"));
     let passing = run_cli_in(&root, CORE_TASK);
     assert_eq!(passing.code, 0, "{}", passing.stdout);
     assert!(!passing.stdout.contains("CODE_SCATTERED_DEFINITION"));

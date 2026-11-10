@@ -122,15 +122,27 @@ pub fn plan(
     Ok(Some(Plan { dir, kind }))
 }
 
+/// Where the telemetry of a run goes and what identifies the run: the
+/// plan, the project the Git identity is read from, and the environment.
+#[derive(Debug, Clone, Copy)]
+pub struct Target<'a> {
+    pub plan: &'a Plan,
+    pub root: &'a fs::ProjectRoot,
+    pub environment: &'a crate::telemetry_io::TelemetryEnvironment,
+}
+
 /// Writes the telemetry of a finished run.
 pub fn emit(
-    plan: &Plan,
-    root: &fs::ProjectRoot,
-    environment: &crate::telemetry_io::TelemetryEnvironment,
+    target: Target<'_>,
     report: &GateReport,
     features: &[Feature],
     timer: crate::telemetry_io::RunTimer,
 ) -> Result<(), Failure> {
+    let Target {
+        plan,
+        root,
+        environment,
+    } = target;
     let git = crate::telemetry_io::GitIdentity::read(root);
     let identity = crate::telemetry_io::resource_identity(environment, &git, &plan.kind);
     let run = timer.finish(git.revision.as_deref(), verdict_word(report.exit));
@@ -141,13 +153,16 @@ pub fn emit(
 /// one record per finding with its hint, tag, component and tasks, and
 /// the run's trace.
 pub fn emit_code(
-    plan: &Plan,
-    root: &fs::ProjectRoot,
-    environment: &crate::telemetry_io::TelemetryEnvironment,
+    target: Target<'_>,
     report: &kiro_core::code::CodeReport,
     verdict: Exit,
     timer: crate::telemetry_io::RunTimer,
 ) -> Result<(), Failure> {
+    let Target {
+        plan,
+        root,
+        environment,
+    } = target;
     let git = crate::telemetry_io::GitIdentity::read(root);
     let identity = crate::telemetry_io::resource_identity(environment, &git, &plan.kind);
     let run = timer.finish(git.revision.as_deref(), verdict_word(verdict));

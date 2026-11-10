@@ -111,6 +111,19 @@ fn select_specs(
     })
 }
 
+/// Where the telemetry of this invocation goes.
+fn telemetry_target<'a>(
+    session: &'a Session,
+    root: &'a ProjectRoot,
+    plan: &'a telemetry::Plan,
+) -> telemetry::Target<'a> {
+    telemetry::Target {
+        plan,
+        root,
+        environment: &session.telemetry_environment,
+    }
+}
+
 fn run_check(session: &Session, args: &CheckArgs) -> Result<Exit, Failure> {
     let settings = resolve_report(&args.report, &session.environment)?;
     let fail_on = resolve_gate(&args.gate, &session.environment)?;
@@ -129,14 +142,14 @@ fn run_check(session: &Session, args: &CheckArgs) -> Result<Exit, Failure> {
         eprintln!("discovered specs: {}", discovered.join(", "));
     }
     let specs = select_specs(&root, &selection, &discovered)?;
-    let (report, features) = check::run_with_features(
-        &root,
-        session.source(&root),
+    let request = check::CheckRequest {
+        source: session.source(&root),
         discovered,
         specs,
-        &config,
+        config: &config,
         fail_on,
-    );
+    };
+    let (report, features) = check::run_with_features(&root, request);
     timer.phase("check");
 
     let output = match settings.format {
@@ -149,9 +162,7 @@ fn run_check(session: &Session, args: &CheckArgs) -> Result<Exit, Failure> {
     // failure is reported and changes neither.
     if let Some(plan) = &telemetry_plan
         && let Err(failure) = telemetry::emit(
-            plan,
-            &root,
-            &session.telemetry_environment,
+            telemetry_target(session, &root, plan),
             &report,
             &features,
             timer,
@@ -254,9 +265,7 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
     // failure is reported and changes neither.
     if let Some(plan) = &telemetry_plan
         && let Err(failure) = telemetry::emit_code(
-            plan,
-            &root,
-            &session.telemetry_environment,
+            telemetry_target(session, &root, plan),
             &run.report,
             verdict,
             timer,
@@ -330,14 +339,14 @@ fn run_telemetry_export(session: &Session, args: &TelemetryExportArgs) -> Result
     timer.phase("discover");
     let specs = check::select(&selection, &discovered)?;
     let config = kiro_core::checks::CheckConfig::default();
-    let (report, features) = check::run_with_features(
-        &root,
-        session.source(&root),
+    let request = check::CheckRequest {
+        source: session.source(&root),
         discovered,
         specs,
-        &config,
-        FailOn::Error,
-    );
+        config: &config,
+        fail_on: FailOn::Error,
+    };
+    let (report, features) = check::run_with_features(&root, request);
     timer.phase("check");
     match telemetry_plan {
         None => {
@@ -351,9 +360,7 @@ fn run_telemetry_export(session: &Session, args: &TelemetryExportArgs) -> Result
         // The export is this command's whole purpose, so a failed write is
         // a failure here.
         Some(plan) => telemetry::emit(
-            &plan,
-            &root,
-            &session.telemetry_environment,
+            telemetry_target(session, &root, &plan),
             &report,
             &features,
             timer,

@@ -6,13 +6,14 @@
 //! engine judges limits, the ratchet and ownership. This module only
 //! connects them.
 
+use kiro_code::{ChangeSet, SourceBundle};
 use kiro_core::code::clones::{DEFAULT_MIN_LINES, duplicate_blocks, duplicate_findings};
 use kiro_core::code::locality::{
     DEFAULT_MAX_FILES, DEFAULT_MIN_STATES, definition_findings, state_findings,
 };
 use kiro_core::code::{
-    Before, CodeConfig, CodeFacts, CodeReport, EvaluateInput, FACTS_SCHEMA_VERSION, evaluate,
-    highest, matches_any, report, spec_paths, task_paths,
+    Before, CodeConfig, CodeFacts, CodeFinding, CodeReport, EvaluateInput, FACTS_SCHEMA_VERSION,
+    evaluate, highest, matches_any, report, spec_paths, task_paths,
 };
 use kiro_core::source::{Feature, Workspace};
 use serde::{Deserialize, Serialize};
@@ -200,67 +201,82 @@ pub struct CodeRun {
     pub highest: Vec<String>,
 }
 
-/// Runs the code check.
-pub fn run(
-    root: &ProjectRoot,
-    source: FsSource,
-    discovered: Vec<String>,
-    selection: &CodeSelection,
-    show_highest: bool,
-) -> Result<CodeRun, Failure> {
-    // The configuration is validated before anything is read or measured.
-    let config = load_config(root)?;
-    let features = load_specs(source, discovered);
-    let specs: Vec<&Feature> = features.iter().collect();
-    let measurable = |path: &str| kiro_code::profile_for(path).is_some();
+/// Whether a measurement profile covers the path.
+fn measurable(path: &str) -> bool {
+    kiro_code::profile_for(path).is_some()
+}
 
-    // Which design paths the selection names, if it goes through a spec.
-    let design_paths: Option<Vec<String>> = match selection {
-        CodeSelection::Spec(name) => {
-            Some(spec_paths(name, &specs).map_err(|error| Failure::new(error.to_string()))?)
-        }
-        CodeSelection::Task { spec, id } => {
-            Some(task_paths(spec, id, &specs).map_err(|error| Failure::new(error.to_string()))?)
-        }
-        _ => None,
+/// Which design paths the selection names, if it goes through a spec.
+fn design_paths(
+    selection: &CodeSelection,
+    specs: &[&Feature],
+) -> Result<Option<Vec<String>>, Failure> {
+    let paths = match selection {
+        CodeSelection::Spec(name) => spec_paths(name, specs),
+        CodeSelection::Task { spec, id } => task_paths(spec, id, specs),
+        _ => return Ok(None),
     };
-    // A revision names both the selection and the before side.
-    let changes = match selection {
-        CodeSelection::Changed(revision) => Some(
-            kiro_code::read_before(root.path(), revision, &measurable)
-                .map_err(|error| Failure::new(error.to_string()))?,
-        ),
-        _ => None,
+    paths
+        .map(Some)
+        .map_err(|error| Failure::new(error.to_string()))
+}
+
+/// Reads what changed since a revision. A revision names both the
+/// selection and the before side.
+fn read_changes(
+    root: &ProjectRoot,
+    selection: &CodeSelection,
+) -> Result<Option<ChangeSet>, Failure> {
+    let CodeSelection::Changed(revision) = selection else {
+        return Ok(None);
     };
+    kiro_code::read_before(root.path(), revision, &measurable)
+        .map(Some)
+        .map_err(|error| Failure::new(error.to_string()))
+}
+
+/// Reads the selected sources, once. A file named on the command line has
+/// to be there.
+fn read_selected(
+    root: &ProjectRoot,
+    selection: &CodeSelection,
+    design_paths: Option<&[String]>,
+    changes: Option<&ChangeSet>,
+) -> Result<SourceBundle, Failure> {
     let wanted = |path: &str| match selection {
         CodeSelection::All => measurable(path),
         CodeSelection::Files(files) => files.iter().any(|file| file == path),
-        CodeSelection::Spec(_) | CodeSelection::Task { .. } => design_paths
-            .as_ref()
-            .is_some_and(|paths| matches_any(paths, path)),
-        CodeSelection::Changed(_) => changes.as_ref().is_some_and(|set| {
+        CodeSelection::Spec(_) | CodeSelection::Task { .. } => {
+            design_paths.is_some_and(|paths| matches_any(paths, path))
+        }
+        CodeSelection::Changed(_) => changes.is_some_and(|set| {
             measurable(path) && set.changed.iter().any(|changed| changed == path)
         }),
     };
-
     let bundle = kiro_code::read_bundle(root.path(), &wanted)
         .map_err(|error| Failure::new(error.to_string()))?;
     if let CodeSelection::Files(files) = selection {
-        for file in files {
-            let found = bundle.files.iter().any(|text| &text.path == file)
-                || bundle.unreadable.iter().any(|entry| &entry.path == file);
-            if !found {
-                return Err(Failure::new(format!(
-                    "file `{file}` was not found under the project root"
-                )));
-            }
+        require_found(&bundle, files)?;
+    }
+    Ok(bundle)
+}
+
+/// Fails on the first named file the bundle does not hold.
+fn require_found(bundle: &SourceBundle, files: &[String]) -> Result<(), Failure> {
+    for file in files {
+        let found = bundle.files.iter().any(|text| &text.path == file)
+            || bundle.unreadable.iter().any(|entry| &entry.path == file);
+        if !found {
+            return Err(Failure::new(format!(
+                "file `{file}` was not found under the project root"
+            )));
         }
     }
-    let facts = kiro_code::measure(&bundle);
-    if let Some(first) = facts.problems().first() {
-        return Err(Failure::new(format!("invalid measurement: {first}")));
-    }
+    Ok(())
+}
 
+/// The paths of the bundle, readable or not, sorted and without repeats.
+fn selected_paths(bundle: &SourceBundle) -> Vec<String> {
     let mut selected: Vec<String> = bundle
         .files
         .iter()
@@ -269,48 +285,63 @@ pub fn run(
         .collect();
     selected.sort();
     selected.dedup();
+    selected
+}
 
-    // The before side: the revision when one was named, else the baseline.
-    let mut no_before = None;
-    let before_side = match changes {
-        Some(set) => {
-            let mut paths: Vec<String> = set
-                .before
-                .files
-                .iter()
-                .map(|file| file.path.clone())
-                .collect();
-            paths.sort();
-            Some(BeforeSide {
-                facts: kiro_code::measure(&set.before),
-                identity: format!("revision {}", set.revision),
-                renames: set.renames,
-                paths,
-            })
-        }
-        None => match read_baseline(root)? {
-            Ok(baseline) => Some(BeforeSide {
-                facts: baseline,
-                identity: format!("baseline {BASELINE_PATH}"),
-                renames: Vec::new(),
-                paths: selected.clone(),
-            }),
-            Err(reason) => {
-                no_before = Some(reason);
-                None
+/// The before side: the revision when one was named, else the baseline.
+/// Without either, the second value says why there is none.
+fn before_side(
+    root: &ProjectRoot,
+    changes: Option<ChangeSet>,
+    selected: &[String],
+) -> Result<(Option<BeforeSide>, Option<String>), Failure> {
+    let Some(set) = changes else {
+        return Ok(match read_baseline(root)? {
+            Ok(baseline) => {
+                let side = BeforeSide {
+                    facts: baseline,
+                    identity: format!("baseline {BASELINE_PATH}"),
+                    renames: Vec::new(),
+                    paths: selected.to_vec(),
+                };
+                (Some(side), None)
             }
-        },
+            Err(reason) => (None, Some(reason)),
+        });
     };
+    let mut paths: Vec<String> = set
+        .before
+        .files
+        .iter()
+        .map(|file| file.path.clone())
+        .collect();
+    paths.sort();
+    let side = BeforeSide {
+        facts: kiro_code::measure(&set.before),
+        identity: format!("revision {}", set.revision),
+        renames: set.renames,
+        paths,
+    };
+    Ok((Some(side), None))
+}
 
-    // The rules that count across files search the whole project: a copy
-    // or a repeated definition counts wherever the original stands. Every
-    // file is parsed once for all of them.
+/// What the rules that count across files found, and what they covered.
+struct CrossFile {
+    findings: Vec<CodeFinding>,
+    /// One line per rule family, for the coverage line.
+    notes: Vec<String>,
+}
+
+/// Judges the rules that count across files. They search the whole
+/// project: a copy or a repeated definition counts wherever the original
+/// stands. Every file is parsed once for all of them.
+fn cross_file(root: &ProjectRoot, selected: &[String]) -> Result<CrossFile, Failure> {
     let project = kiro_code::read_bundle(root.path(), &measurable)
         .map_err(|error| Failure::new(error.to_string()))?;
     let scan = kiro_code::scan::scan(&project);
     let is_selected = |path: &str| selected.iter().any(|selected_path| selected_path == path);
     let (blocks, searched) = duplicate_blocks(&scan.lines, DEFAULT_MIN_LINES);
-    let mut extensions = duplicate_findings(&blocks, &is_selected);
+    let mut findings = duplicate_findings(&blocks, &is_selected);
     let definitions = definition_findings(&scan.locality, &is_selected, DEFAULT_MAX_FILES);
     let states = state_findings(
         &scan.locality,
@@ -318,7 +349,7 @@ pub fn run(
         DEFAULT_MAX_FILES,
         DEFAULT_MIN_STATES,
     );
-    let extension_notes = vec![
+    let notes = vec![
         format!(
             "duplicate blocks: {} files searched, {} blocks of at least {DEFAULT_MIN_LINES} lines, {} frequent windows skipped",
             searched.files,
@@ -332,8 +363,68 @@ pub fn run(
             scan.locality.comparisons.len()
         ),
     ];
-    extensions.extend(definitions);
-    extensions.extend(states);
+    findings.extend(definitions);
+    findings.extend(states);
+    Ok(CrossFile { findings, notes })
+}
+
+/// Puts the reason there is no before side into the report, unless the
+/// report already gives it.
+fn explain_missing_before(report: &mut CodeReport, reason: String) {
+    if reason == report.coverage.before_side {
+        return;
+    }
+    // Why there is no before side belongs in the coverage line.
+    if let Some(last) = report.findings.last_mut() {
+        last.finding.message = last
+            .finding
+            .message
+            .replace(&report.coverage.before_side, &reason);
+    }
+    report.coverage.before_side = reason;
+}
+
+/// One line per scope and metric: the highest value and where it stands.
+fn highest_lines(facts: &CodeFacts) -> Vec<String> {
+    highest(facts, &|_| true)
+        .into_iter()
+        .map(|observation| {
+            format!(
+                "{} {}: {} at {}:{} ({})",
+                observation.entity.scope.label(),
+                observation.metric.name,
+                report::display_number(observation.value),
+                observation.entity.path,
+                observation.line,
+                observation.entity.qualified_name
+            )
+        })
+        .collect()
+}
+
+/// Runs the code check.
+pub fn run(
+    root: &ProjectRoot,
+    source: FsSource,
+    discovered: Vec<String>,
+    selection: &CodeSelection,
+    show_highest: bool,
+) -> Result<CodeRun, Failure> {
+    // The configuration is validated before anything is read or measured.
+    let config = load_config(root)?;
+    let features = load_specs(source, discovered);
+    let specs: Vec<&Feature> = features.iter().collect();
+
+    let design_paths = design_paths(selection, &specs)?;
+    let changes = read_changes(root, selection)?;
+    let bundle = read_selected(root, selection, design_paths.as_deref(), changes.as_ref())?;
+    let facts = kiro_code::measure(&bundle);
+    if let Some(first) = facts.problems().first() {
+        return Err(Failure::new(format!("invalid measurement: {first}")));
+    }
+    let selected = selected_paths(&bundle);
+    let (before_side, no_before) = before_side(root, changes, &selected)?;
+    let cross_file = cross_file(root, &selected)?;
 
     let mut report = evaluate(&EvaluateInput {
         facts: &facts,
@@ -348,42 +439,17 @@ pub fn run(
         before_paths: before_side
             .as_ref()
             .map_or(&[][..], |side| side.paths.as_slice()),
-        extensions: &extensions,
-        extension_notes: &extension_notes,
+        extensions: &cross_file.findings,
+        extension_notes: &cross_file.notes,
     });
-    if let Some(reason) = no_before
-        && reason != report.coverage.before_side
-    {
-        // Why there is no before side belongs in the coverage line.
-        if let Some(last) = report.findings.last_mut() {
-            last.finding.message = last
-                .finding
-                .message
-                .replace(&report.coverage.before_side, &reason);
-        }
-        report.coverage.before_side = reason;
+    if let Some(reason) = no_before {
+        explain_missing_before(&mut report, reason);
     }
 
-    let highest_lines = if show_highest {
-        highest(&facts, &|_| true)
-            .into_iter()
-            .map(|observation| {
-                format!(
-                    "{} {}: {} at {}:{} ({})",
-                    observation.entity.scope.label(),
-                    observation.metric.name,
-                    report::display_number(observation.value),
-                    observation.entity.path,
-                    observation.line,
-                    observation.entity.qualified_name
-                )
-            })
-            .collect()
+    let highest = if show_highest {
+        highest_lines(&facts)
     } else {
         Vec::new()
     };
-    Ok(CodeRun {
-        report,
-        highest: highest_lines,
-    })
+    Ok(CodeRun { report, highest })
 }

@@ -296,24 +296,33 @@ fn export_writes_three_decodable_files_with_the_snapshot_values() {
     assert_eq!(written.logs.len(), 1);
     assert_eq!(written.traces.len(), 1);
 
-    // Gauges carry the values the dry run prints.
-    assert_eq!(gauge(&written, "kiro.spec.tasks.total", "demo"), Some(4.0));
-    assert_eq!(gauge(&written, "kiro.spec.tasks.done", "demo"), Some(1.0));
+    assert_gauges_carry_the_snapshot(&written);
+    assert_one_record_per_finding(&written, project);
+    assert_one_trace_with_a_child_per_phase(&written);
+    assert_identity_without_machine_detail(&written, project, telemetry.path());
+}
+
+/// Gauges carry the values the dry run prints.
+fn assert_gauges_carry_the_snapshot(written: &Written) {
+    assert_eq!(gauge(written, "kiro.spec.tasks.total", "demo"), Some(4.0));
+    assert_eq!(gauge(written, "kiro.spec.tasks.done", "demo"), Some(1.0));
     assert_eq!(
-        gauge(&written, "kiro.spec.criteria.total", "demo"),
+        gauge(written, "kiro.spec.criteria.total", "demo"),
         Some(4.0)
     );
     assert_eq!(
-        gauge(&written, "kiro.trace.criteria.untasked", "demo"),
+        gauge(written, "kiro.trace.criteria.untasked", "demo"),
         Some(0.0)
     );
     assert_eq!(
-        gauge(&written, "kiro.spec.tasks.total", "old"),
+        gauge(written, "kiro.spec.tasks.total", "old"),
         None,
         "absent, not zero"
     );
+}
 
-    // One record per finding of the run.
+/// One record per finding of the run.
+fn assert_one_record_per_finding(written: &Written, project: &str) {
     let records = &written.logs[0].resource_logs[0].scope_logs[0].log_records;
     let json = run_cli(&["--project", project, "check", "--all", "--format", "json"]);
     let report: serde_json::Value = serde_json::from_str(&json.stdout).unwrap();
@@ -328,8 +337,10 @@ fn export_writes_three_decodable_files_with_the_snapshot_values() {
             .iter()
             .all(|record| text_of(&record.attributes, "kiro.code").is_some())
     );
+}
 
-    // One trace: a root span and one child per phase.
+/// One trace: a root span and one child per phase.
+fn assert_one_trace_with_a_child_per_phase(written: &Written) {
     let spans = &written.traces[0].resource_spans[0].scope_spans[0].spans;
     let names: Vec<&str> = spans.iter().map(|span| span.name.as_str()).collect();
     assert_eq!(names, ["kiro.gate", "discover", "check"]);
@@ -346,8 +357,14 @@ fn export_writes_three_decodable_files_with_the_snapshot_values() {
         assert!(child.start_time_unix_nano >= root.start_time_unix_nano);
         assert!(child.end_time_unix_nano <= root.end_time_unix_nano);
     }
+}
 
-    // Resource identity on every signal; no machine detail anywhere.
+/// Resource identity on every signal; no machine detail anywhere.
+fn assert_identity_without_machine_detail(
+    written: &Written,
+    project: &str,
+    telemetry: &std::path::Path,
+) {
     let resource = written.metrics[0].resource_metrics[0]
         .resource
         .as_ref()
@@ -363,7 +380,7 @@ fn export_writes_three_decodable_files_with_the_snapshot_values() {
     assert!(text_of(&resource.attributes, "service.version").is_some());
     assert!(!written.raw.contains(project), "no absolute project path");
     assert!(!written.raw.contains(&project.replace('\\', "/")));
-    assert!(!written.raw.contains(telemetry.path().to_str().unwrap()));
+    assert!(!written.raw.contains(telemetry.to_str().unwrap()));
     for variable in ["USERNAME", "USER"] {
         if let Ok(user) = std::env::var(variable)
             && user.len() > 3
@@ -748,7 +765,15 @@ fn a_code_check_writes_its_metric_points_and_findings_with_hint_and_owners() {
         !names.iter().any(|name| name.starts_with("kiro.spec.")),
         "no spec source in this run"
     );
+    assert_breach_record_names_hint_and_owners(&written);
 
+    let spans = &written.traces[0].resource_spans[0].scope_spans[0].spans;
+    let phases: Vec<&str> = spans.iter().map(|span| span.name.as_str()).collect();
+    assert_eq!(phases, ["kiro.gate", "discover", "measure", "render"]);
+}
+
+/// The record of the nesting breach carries its tag, hint, metric and owners.
+fn assert_breach_record_names_hint_and_owners(written: &Written) {
     let records = &written.logs[0].resource_logs[0].scope_logs[0].log_records;
     let breach = records
         .iter()
@@ -785,8 +810,4 @@ fn a_code_check_writes_its_metric_points_and_findings_with_hint_and_owners() {
         text_of(&breach.attributes, "kiro.pre_existing").as_deref(),
         Some("false")
     );
-
-    let spans = &written.traces[0].resource_spans[0].scope_spans[0].spans;
-    let phases: Vec<&str> = spans.iter().map(|span| span.name.as_str()).collect();
-    assert_eq!(phases, ["kiro.gate", "discover", "measure", "render"]);
 }

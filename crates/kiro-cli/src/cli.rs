@@ -556,9 +556,9 @@ mod tests {
         );
     }
 
-    #[test]
-    fn config_translation_defaults_and_overrides() {
-        let base_args = CheckArgs {
+    /// `check --all` with every option left at its default.
+    fn default_check_args() -> CheckArgs {
+        CheckArgs {
             features: vec![],
             all: true,
             report: ReportArgs::default(),
@@ -570,7 +570,12 @@ mod tests {
             max_variables: None,
             max_nodes: None,
             severities: vec![],
-        };
+        }
+    }
+
+    #[test]
+    fn config_translation_defaults_and_overrides() {
+        let base_args = default_check_args();
 
         // All defaults
         let cfg = base_args.config().unwrap();
@@ -594,7 +599,7 @@ mod tests {
                 "EARS_NO_SHALL=info".to_string(),
                 "CONTRADICTION=warning".to_string(),
             ],
-            ..base_args.clone()
+            ..base_args
         };
         let cfg_custom = custom_checks.config().unwrap();
         assert!(cfg_custom.ears);
@@ -612,6 +617,11 @@ mod tests {
             cfg_custom.severity_overrides.get("CONTRADICTION"),
             Some(&Severity::Warning)
         );
+    }
+
+    #[test]
+    fn config_translation_rejects_invalid_values() {
+        let base_args = default_check_args();
 
         // Rejection of zero caps
         let zero_vars = CheckArgs {

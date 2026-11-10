@@ -335,12 +335,8 @@ pub fn telemetry_dir(root: &ProjectRoot, dir: &Path) -> Result<PathBuf, Failure>
             }
             Component::Normal(name) => {
                 resolved.push(name);
-                if real {
-                    match resolved.canonicalize() {
-                        Ok(canonical) => resolved = canonical,
-                        Err(_) => real = false,
-                    }
-                }
+                // Once a component is missing nothing after it is looked up.
+                real = real && make_canonical(&mut resolved);
             }
         }
     }
@@ -351,6 +347,18 @@ pub fn telemetry_dir(root: &ProjectRoot, dir: &Path) -> Result<PathBuf, Failure>
         )));
     }
     Ok(resolved)
+}
+
+/// Replaces `path` by its canonical form when it exists. Returns whether
+/// it did; a path that does not exist is left as it is.
+fn make_canonical(path: &mut PathBuf) -> bool {
+    match path.canonicalize() {
+        Ok(canonical) => {
+            *path = canonical;
+            true
+        }
+        Err(_) => false,
+    }
 }
 
 /// Appends `line` and a newline to `path` in one write, creating the file

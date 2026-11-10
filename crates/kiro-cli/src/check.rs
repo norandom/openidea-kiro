@@ -42,17 +42,21 @@ pub fn select(selection: &Selection, discovered: &[String]) -> Result<Vec<String
     }
 }
 
+/// What one gate run checks and how it is judged.
+pub struct CheckRequest<'a> {
+    pub source: FsSource,
+    /// Every spec found under the project, for cross-spec references.
+    pub discovered: Vec<String>,
+    /// The specs to check, in report order.
+    pub specs: Vec<String>,
+    pub config: &'a CheckConfig,
+    pub fail_on: FailOn,
+}
+
 /// Executes all spec checks across `specs` and produces the consolidated [`GateReport`].
 #[must_use]
-pub fn run(
-    root: &ProjectRoot,
-    source: FsSource,
-    discovered: Vec<String>,
-    specs: Vec<String>,
-    config: &CheckConfig,
-    fail_on: FailOn,
-) -> GateReport {
-    run_with_features(root, source, discovered, specs, config, fail_on).0
+pub fn run(root: &ProjectRoot, request: CheckRequest<'_>) -> GateReport {
+    run_with_features(root, request).0
 }
 
 /// Like [`run`], and also returns the loaded feature of every checked spec
@@ -60,12 +64,15 @@ pub fn run(
 #[must_use]
 pub fn run_with_features(
     _root: &ProjectRoot,
-    source: FsSource,
-    discovered: Vec<String>,
-    specs: Vec<String>,
-    config: &CheckConfig,
-    fail_on: FailOn,
+    request: CheckRequest<'_>,
 ) -> (GateReport, Vec<Feature>) {
+    let CheckRequest {
+        source,
+        discovered,
+        specs,
+        config,
+        fail_on,
+    } = request;
     let mut ws = Workspace::new(source, discovered);
     ws.adopt_roadmap_features();
     let roadmap = ws
@@ -186,12 +193,16 @@ mod tests {
         )
         .unwrap();
 
-        let source = FsSource::new(root.clone(), false);
-        let discovered = vec!["demo".to_string()];
-        let specs = vec!["demo".to_string()];
         let config = CheckConfig::default();
+        let request = CheckRequest {
+            source: FsSource::new(root.clone(), false),
+            discovered: vec!["demo".to_string()],
+            specs: vec!["demo".to_string()],
+            config: &config,
+            fail_on: FailOn::Error,
+        };
 
-        let report = run(&root, source, discovered, specs, &config, FailOn::Error);
+        let report = run(&root, request);
         assert_eq!(report.specs, vec!["demo".to_string()]);
         assert_eq!(report.checked.len(), 1);
         assert_eq!(report.checked[0].spec, "demo");
