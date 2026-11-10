@@ -63,6 +63,16 @@ pub fn judge(
     selected: &dyn Fn(&str) -> bool,
 ) -> Vec<Judgement> {
     let mut out = Vec::new();
+    // Statement counts by routine, looked up once per routine below.
+    let statements_of: std::collections::BTreeMap<&EntityKey, f64> = facts
+        .observations
+        .iter()
+        .filter(|observation| {
+            observation.entity.scope == Scope::Routine
+                && observation.metric.name == metrics::STATEMENTS
+        })
+        .map(|observation| (&observation.entity, observation.value))
+        .collect();
     for observation in &facts.observations {
         if !selected(&observation.entity.path) {
             continue;
@@ -78,7 +88,7 @@ pub fn judge(
         );
         if observation.entity.scope == Scope::Routine
             && observation.metric.name == metrics::CODE_LINES
-            && let Some(statements) = facts.value(&observation.entity, metrics::STATEMENTS)
+            && let Some(statements) = statements_of.get(&observation.entity).copied()
             && statements > 0.0
         {
             judge_value(

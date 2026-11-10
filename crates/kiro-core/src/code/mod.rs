@@ -13,7 +13,7 @@ pub mod facts;
 pub mod limits;
 pub mod report;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 pub use attribution::{
     Attribution, SelectionError, attribute, matches_any, spec_paths, task_paths,
@@ -128,13 +128,28 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
         ..Coverage::default()
     };
 
+    // Ownership and file state are resolved once per selected file.
+    let ownership: BTreeMap<&str, Attribution> = input
+        .selected
+        .iter()
+        .map(|path| (path.as_str(), attribute(path, input.specs)))
+        .collect();
+    let owners_of = |path: &str| ownership.get(path).cloned().unwrap_or_default();
+    let states: BTreeMap<&str, &CoverageCell> = input
+        .facts
+        .coverage
+        .iter()
+        .filter(|cell| cell.metric.is_none())
+        .map(|cell| (cell.path.as_str(), cell))
+        .collect();
+
     // 1. Selected files that do not parse, or that no profile covers.
     for path in input.selected {
-        let owners = attribute(path, input.specs);
+        let owners = owners_of(path);
         if owners.feature.is_none() {
             coverage.unowned = coverage.unowned.saturating_add(1);
         }
-        match input.facts.file_state(path) {
+        match states.get(path.as_str()).copied() {
             Some(cell) if cell.state == Completeness::Failed => {
                 coverage.failed.push(path.clone());
                 let reason = cell.reason.as_deref().unwrap_or("syntax error");
@@ -165,7 +180,7 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
 
     // 2. Limits, with ownership.
     for judgement in judge(input.facts, input.config, &is_selected) {
-        let owners = attribute(&judgement.entity.path, input.specs);
+        let owners = owners_of(&judgement.entity.path);
         let (tag, hint) = limit_hint(
             judgement.entity.scope,
             &judgement.metric,
@@ -246,7 +261,11 @@ pub fn evaluate(input: &EvaluateInput<'_>) -> CodeReport {
         let files = input
             .selected
             .iter()
-            .filter(|path| attribute(path, input.specs).feature == name)
+            .filter(|path| {
+                ownership
+                    .get(path.as_str())
+                    .is_some_and(|owners| owners.feature == name)
+            })
             .count();
         let count = |severity: Severity| {
             findings
