@@ -921,7 +921,12 @@ pub fn profile_name(path: &str) -> Option<&'static str> {
     profile_for(path).map(|profile| profile.name)
 }
 
-/// The statements of one routine, as the `statements` metric counts them.
+/// The statements of one routine, as the `statements` metric counts them:
+/// the same walk and the same test as `measure_routine`, without the
+/// other measures.
 pub(crate) fn statement_count(function: &SgNode<'_>, profile: &Profile) -> usize {
-    measure_routine(function, profile).statements
+    routine_nodes(function, profile)
+        .iter()
+        .filter(|walked| is_statement(walked, profile))
+        .count()
 }
