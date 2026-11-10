@@ -1,0 +1,59 @@
+# Planned acceptance suite registry
+# Task-generation declarations only; the future VerificationRunner owns validation.
+# Entry points and required test identities become runnable only after implementation
+# and independent collection. Empty required_tests never establishes acceptance.
+schema_version = 1
+
+[[suites]]
+id = "e2e_cli_contracts"
+owner = "cli-contracts"
+kind = "journey"
+entrypoint = "crates/kiro-cli/tests/e2e_cli_contracts.rs"
+status = "planned"
+required_tests = []
+required_platforms = ["windows", "linux"]
+
+[[suites]]
+id = "e2e_evidence"
+owner = "verification-evidence"
+kind = "journey"
+entrypoint = "crates/kiro-cli/tests/e2e_evidence.rs"
+status = "planned"
+required_tests = []
+required_platforms = ["windows", "linux"]
+
+[[suites]]
+id = "e2e_code"
+owner = "code-constraints"
+kind = "journey"
+entrypoint = "crates/kiro-cli/tests/e2e_code.rs"
+status = "planned"
+required_tests = []
+required_platforms = ["windows", "linux"]
+
+[[suites]]
+id = "e2e_clones"
+owner = "clone-constraints"
+kind = "journey"
+entrypoint = "crates/kiro-cli/tests/e2e_clones.rs"
+status = "planned"
+required_tests = []
+required_platforms = ["windows", "linux"]
+
+[[suites]]
+id = "e2e_locality"
+owner = "code-locality-data"
+kind = "journey"
+entrypoint = "crates/kiro-cli/tests/e2e_locality.rs"
+status = "planned"
+required_tests = []
+required_platforms = ["windows", "linux"]
+
+[[suites]]
+id = "e2e_telemetry"
+owner = "quality-telemetry"
+kind = "journey"
+entrypoint = "crates/kiro-cli/tests/e2e_telemetry.rs"
+status = "planned"
+required_tests = []
+required_platforms = ["windows", "linux", "macos"]

@@ -79,5 +79,11 @@ mod present;       // findings/graphs -> notification | insert | message
 - All content enters core through `Source`; the plugin's `Source` cannot list, so core APIs take an explicit set of known feature names.
 - Keep the plugin within sandbox limits: no threads, no fs, no network; output via notifications / editor insert (the IDE discards the command's `Ok` message — never make it the only channel), clipped and summarised before the host clips it.
 
+## Bounded code-quality specifications (2026-11-09)
+
+The active delivery specs are `cli-contracts`, `verification-evidence`, `code-constraints`, `clone-constraints` and `code-locality-data`, ordered in the roadmap. Each owns its design components and first accepted deliverable. `code-constraints/split-map.md` preserves all original criterion identities; `history/2026-11-09-monolith` is archival and must not drive implementation or status.
+
+`.kiro/breadth.toml` is the capability plan. Planned entries carry no fabricated executable paths or acceptance evidence. Feature-owned tests stay beside their implementation; reusable process/fixture/evidence support has one owner in verification-evidence. Shared manifest, module, command and skill registrations are serialized integration changes with named owners, not parallel-edit targets. See `code-quality-strategy.md` for the ownership contracts and prototype gates.
+
 ---
 _Document patterns, not file trees. New files following patterns shouldn't require updates_

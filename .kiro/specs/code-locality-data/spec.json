@@ -1,0 +1,26 @@
+{
+  "feature_name": "code-locality-data",
+  "created_at": "2026-11-09T20:27:10Z",
+  "updated_at": "2026-11-10T10:00:00+01:00",
+  "language": "en",
+  "phase": "tasks-generated",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": false
+    }
+  },
+  "ready_for_implementation": false,
+  "topics": [
+    "sdd"
+  ],
+  "notes": "User 2026-11-09 requested producing tasks for the five reviewed specs; this authorizes design approval and task generation. The task-plan gate and task-graph sanity review passed inline under the foreground workflow. Tasks remain unapproved and unchecked; implementation was not requested. Prototype, platform, evidence and policy-approval gates are future deliverables, not completed experiments. The archived monolithic task plan remains superseded. Owner amendments 2026-11-10: scitools-hook compatibility removed, parsing libraries adopted only (no hand-written parser), joint G1 prototype, macOS required; code-constraints gains Requirement 13 (ASCII hook summary, optional JSONL metric log). Requirements and design were patched on owner direction; the task plan was patched, stays unapproved and should be regenerated after G1. Implementation may use the foreground or subagents, Fable 5.2 included."
+}
