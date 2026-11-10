@@ -108,12 +108,22 @@ pub struct CoverageCell {
     pub line: Option<u32>,
 }
 
+/// The normalized body of a routine, for recognizing a move.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Fingerprint {
+    pub entity: EntityKey,
+    /// Hash of the routine's code tokens; layout and comments do not change it.
+    pub hash: String,
+}
+
 /// The observations and coverage of one measurement.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CodeFacts {
     pub schema_version: u32,
     pub observations: Vec<Observation>,
     pub coverage: Vec<CoverageCell>,
+    #[serde(default)]
+    pub fingerprints: Vec<Fingerprint>,
 }
 
 impl Default for CodeFacts {
@@ -122,6 +132,7 @@ impl Default for CodeFacts {
             schema_version: FACTS_SCHEMA_VERSION,
             observations: Vec::new(),
             coverage: Vec::new(),
+            fingerprints: Vec::new(),
         }
     }
 }
@@ -184,6 +195,7 @@ impl CodeFacts {
             (&a.entity, &a.metric, &a.producer).cmp(&(&b.entity, &b.metric, &b.producer))
         });
         self.coverage.sort();
+        self.fingerprints.sort();
     }
 
     /// The value of `metric` for `entity`, when it was measured.

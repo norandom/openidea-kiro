@@ -30,8 +30,8 @@ use ast_grep_core::tree_sitter::StrDoc;
 use ast_grep_core::{AstGrep, Node};
 use ast_grep_language::SupportLang;
 use kiro_core::code::{
-    CodeFacts, Completeness, CoverageCell, EntityKey, MetricId, Observation, ProducerId, Scope,
-    metrics,
+    CodeFacts, Completeness, CoverageCell, EntityKey, Fingerprint, MetricId, Observation,
+    ProducerId, Scope, metrics,
 };
 
 /// Version of the metric definitions above. A change of meaning changes it.
@@ -374,6 +374,8 @@ struct RoutineValues {
     nesting: usize,
     code_lines: usize,
     statements: usize,
+    /// FNV-1a over the code tokens: the routine's normalized body.
+    body_hash: u64,
 }
 
 fn is_statement(node: &SgNode<'_>, profile: &Profile) -> bool {
@@ -413,6 +415,7 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
     let mut cyclomatic: usize = 1;
     let mut statements: usize = 0;
     let mut lines: BTreeSet<usize> = BTreeSet::new();
+    let mut body_hash: u64 = 0xcbf2_9ce4_8422_2325;
     for node in &nodes {
         let kind = node.kind();
         if has(profile.decisions, &kind) {
@@ -442,6 +445,12 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
             let (start, end) = (node.start_pos().line(), node.end_pos().line());
             if !silent.iter().any(|(from, to)| start >= *from && end <= *to) {
                 lines.extend(start..=end);
+                // The fingerprint covers every code token of the routine,
+                // so layout and comments do not change it.
+                for byte in node.text().bytes().chain(std::iter::once(0)) {
+                    body_hash ^= u64::from(byte);
+                    body_hash = body_hash.wrapping_mul(0x0000_0100_0000_01b3);
+                }
             }
         }
     }
@@ -453,6 +462,7 @@ fn measure_routine(function: &SgNode<'_>, profile: &Profile) -> RoutineValues {
         nesting: nesting_depth(function, profile, 0),
         code_lines: lines.len(),
         statements,
+        body_hash,
     }
 }
 
@@ -532,6 +542,7 @@ struct Emitter<'a> {
     producer: ProducerId,
     ordinals: BTreeMap<(Scope, String, String), u32>,
     observations: Vec<Observation>,
+    fingerprints: Vec<Fingerprint>,
 }
 
 impl Emitter<'_> {
@@ -632,6 +643,7 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
         },
         ordinals: BTreeMap::new(),
         observations: Vec::new(),
+        fingerprints: Vec::new(),
     };
 
     // Document order, so ordinals are stable.
@@ -665,6 +677,10 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
             emitter.emit(&entity, metrics::NESTING, count(values.nesting), at);
             emitter.emit(&entity, metrics::CODE_LINES, count(values.code_lines), at);
             emitter.emit(&entity, metrics::STATEMENTS, count(values.statements), at);
+            emitter.fingerprints.push(Fingerprint {
+                entity: entity.clone(),
+                hash: format!("{:016x}", values.body_hash),
+            });
         }
         if has(profile.types, &kind) {
             types = types.saturating_add(1);
@@ -736,6 +752,7 @@ pub fn measure_into(path: &str, text: &str, facts: &mut CodeFacts) {
     }
 
     facts.observations.append(&mut emitter.observations);
+    facts.fingerprints.append(&mut emitter.fingerprints);
     facts.coverage.push(CoverageCell {
         path: path.to_string(),
         metric: None,

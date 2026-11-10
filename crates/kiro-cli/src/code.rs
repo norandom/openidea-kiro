@@ -177,6 +177,8 @@ pub fn run(
         config: &config,
         selected: &selected,
         specs: &specs,
+        before: None,
+        before_paths: &[],
     });
     let highest_lines = if show_highest {
         highest(&facts, &|_| true)

@@ -193,6 +193,7 @@
 //! | CODE_FILE_UNOWNED | info | A selected file with findings is mapped by no spec |
 //! | CODE_COVERAGE | info | What the code gate measured and what it left out |
 //! | CODE_CONFIG_INVALID | error | The code-rules configuration is invalid |
+//! | CODE_RATCHET | warning | A routine metric rose against the before side |
 //!
 //! The table equals the [`CODES`] catalogue, asserted by this doc test:
 //!
@@ -268,6 +269,7 @@
 //!     ("CODE_FILE_UNOWNED", Severity::Info, "A selected file with findings is mapped by no spec"),
 //!     ("CODE_COVERAGE", Severity::Info, "What the code gate measured and what it left out"),
 //!     ("CODE_CONFIG_INVALID", Severity::Error, "The code-rules configuration is invalid"),
+//!     ("CODE_RATCHET", Severity::Warning, "A routine metric rose against the before side"),
 //! ];
 //! assert_eq!(CODES.len(), documented.len(), "no undocumented or stale codes");
 //! for (info, (code, severity, description)) in CODES.iter().zip(documented) {

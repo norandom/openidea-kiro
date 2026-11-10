@@ -233,7 +233,7 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
         &selection,
         args.show_highest,
     )?;
-    let verdict = exit::verdict(fail_on, run.report.base_findings());
+    let verdict = exit::verdict(fail_on, run.report.blocking_findings());
     let output = match settings.format {
         ReportFormat::Text => code_text(&run, fail_on, verdict),
         ReportFormat::Json => kiro_core::code::report::json(&run.report),
