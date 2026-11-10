@@ -338,45 +338,45 @@ fn finding_json(entry: &CodeFinding) -> serde_json::Value {
     })
 }
 
-/// The report as a JSON document with a trailing newline. No timestamps
-/// and no absolute paths; the order is the report's order.
-#[must_use]
-pub fn json(report: &CodeReport) -> String {
-    let findings: Vec<serde_json::Value> = report.findings.iter().map(finding_json).collect();
-    let specs: Vec<serde_json::Value> = report
-        .specs
-        .iter()
-        .map(|summary| {
-            serde_json::json!({
-                "spec": summary.spec,
-                "files": summary.files,
-                "errors": summary.errors,
-                "warnings": summary.warnings,
-                "info": summary.info,
-            })
-        })
-        .collect();
-    let changes: Vec<serde_json::Value> = report
-        .changes
-        .iter()
-        .map(|change| {
-            serde_json::json!({
-                "entity": entity_json(&change.entity),
-                "metric": change.metric,
-                "before": change.before,
-                "after": change.after,
-                "limit": change.limit,
-                "improved": change.improved(),
-            })
-        })
-        .collect();
-    let net = match &report.net {
+fn spec_json(summary: &SpecSummary) -> serde_json::Value {
+    serde_json::json!({
+        "spec": summary.spec,
+        "files": summary.files,
+        "errors": summary.errors,
+        "warnings": summary.warnings,
+        "info": summary.info,
+    })
+}
+
+fn change_json(change: &Change) -> serde_json::Value {
+    serde_json::json!({
+        "entity": entity_json(&change.entity),
+        "metric": change.metric,
+        "before": change.before,
+        "after": change.after,
+        "limit": change.limit,
+        "improved": change.improved(),
+    })
+}
+
+fn net_json(net: &NetDelta) -> serde_json::Value {
+    match net {
         NetDelta::Known {
             statements,
             code_lines,
         } => serde_json::json!({ "statements": statements, "code_lines": code_lines }),
         NetDelta::Unavailable(reason) => serde_json::json!({ "unavailable": reason }),
-    };
+    }
+}
+
+/// The report as a JSON document with a trailing newline. No timestamps
+/// and no absolute paths; the order is the report's order.
+#[must_use]
+pub fn json(report: &CodeReport) -> String {
+    let findings: Vec<serde_json::Value> = report.findings.iter().map(finding_json).collect();
+    let specs: Vec<serde_json::Value> = report.specs.iter().map(spec_json).collect();
+    let changes: Vec<serde_json::Value> = report.changes.iter().map(change_json).collect();
+    let net = net_json(&report.net);
     let (errors, warnings, info) = report.counts();
     let document = serde_json::json!({
         "schema_version": REPORT_SCHEMA_VERSION,

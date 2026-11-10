@@ -35,6 +35,123 @@ fn severity_label(severity: Severity) -> &'static str {
     }
 }
 
+/// Highest value, total and routine count per spec and metric.
+fn measure_points(report: &CodeReport, out: &mut Vec<MetricPoint>) {
+    let mut routines: BTreeMap<Option<&String>, usize> = BTreeMap::new();
+    for measure in &report.measures {
+        let attrs = || {
+            vec![
+                spec_attr(measure.spec.as_ref()),
+                Attr::new("kiro.metric", measure.metric.clone()),
+            ]
+        };
+        out.push(MetricPoint::new(
+            "kiro.code.highest",
+            Unit::Value,
+            measure.highest,
+            attrs(),
+        ));
+        out.push(MetricPoint::new(
+            "kiro.code.total",
+            Unit::Value,
+            measure.total,
+            attrs(),
+        ));
+        let entry = routines.entry(measure.spec.as_ref()).or_insert(0);
+        *entry = (*entry).max(measure.routines);
+    }
+    for (spec, value) in routines {
+        out.push(MetricPoint::new(
+            "kiro.code.routines",
+            Unit::Count,
+            count(value),
+            vec![spec_attr(spec)],
+        ));
+    }
+}
+
+/// Findings that are not pre-existing, by spec, code and severity;
+/// pre-existing ones by spec.
+fn finding_points(report: &CodeReport, out: &mut Vec<MetricPoint>) {
+    let mut breaches: BTreeMap<(Option<&String>, &str, &'static str), usize> = BTreeMap::new();
+    let mut pre_existing: BTreeMap<Option<&String>, usize> = BTreeMap::new();
+    for entry in &report.findings {
+        let spec = entry.owners.feature.as_ref();
+        if entry.pre_existing {
+            *pre_existing.entry(spec).or_insert(0) += 1;
+        } else if entry.metric.is_some() {
+            let key = (
+                spec,
+                entry.finding.code,
+                severity_label(entry.finding.severity),
+            );
+            *breaches.entry(key).or_insert(0) += 1;
+        }
+    }
+    for ((spec, code, severity), value) in breaches {
+        out.push(MetricPoint::new(
+            "kiro.code.breaches",
+            Unit::Count,
+            count(value),
+            vec![
+                spec_attr(spec),
+                Attr::new("kiro.code", code),
+                Attr::new("kiro.severity", severity),
+            ],
+        ));
+    }
+    for (spec, value) in pre_existing {
+        out.push(MetricPoint::new(
+            "kiro.code.pre_existing",
+            Unit::Count,
+            count(value),
+            vec![spec_attr(spec)],
+        ));
+    }
+}
+
+/// Routine metrics that differ from the before side.
+fn change_points(report: &CodeReport, out: &mut Vec<MetricPoint>) {
+    let mut changed: BTreeMap<(&str, &'static str), usize> = BTreeMap::new();
+    for change in &report.changes {
+        let status = if change.improved() {
+            "improved"
+        } else {
+            "worsened"
+        };
+        *changed.entry((change.metric.as_str(), status)).or_insert(0) += 1;
+    }
+    for ((metric, status), value) in changed {
+        out.push(MetricPoint::new(
+            "kiro.code.changed",
+            Unit::Count,
+            count(value),
+            vec![
+                Attr::new("kiro.metric", metric),
+                Attr::new("kiro.status", status),
+            ],
+        ));
+    }
+}
+
+/// What the run measured.
+fn file_points(report: &CodeReport, out: &mut Vec<MetricPoint>) {
+    let files = [
+        ("measured", report.coverage.measured),
+        ("failed", report.coverage.failed.len()),
+        ("unmeasured", report.coverage.unmeasured.len()),
+        ("ignored", report.coverage.ignored.len()),
+    ];
+    for (status, value) in files {
+        out.push(MetricPoint::new(
+            "kiro.code.files",
+            Unit::Count,
+            count(value),
+            vec![Attr::new("kiro.status", status)],
+        ));
+    }
+}
+
 impl MetricProvider for CodeReport {
     fn source(&self) -> &'static str {
         "code"
@@ -42,115 +159,10 @@ impl MetricProvider for CodeReport {
 
     fn points(&self) -> Vec<MetricPoint> {
         let mut out = Vec::new();
-
-        // Highest value, total and routine count per spec and metric.
-        let mut routines: BTreeMap<Option<&String>, usize> = BTreeMap::new();
-        for measure in &self.measures {
-            let attrs = || {
-                vec![
-                    spec_attr(measure.spec.as_ref()),
-                    Attr::new("kiro.metric", measure.metric.clone()),
-                ]
-            };
-            out.push(MetricPoint::new(
-                "kiro.code.highest",
-                Unit::Value,
-                measure.highest,
-                attrs(),
-            ));
-            out.push(MetricPoint::new(
-                "kiro.code.total",
-                Unit::Value,
-                measure.total,
-                attrs(),
-            ));
-            let entry = routines.entry(measure.spec.as_ref()).or_insert(0);
-            *entry = (*entry).max(measure.routines);
-        }
-        for (spec, value) in routines {
-            out.push(MetricPoint::new(
-                "kiro.code.routines",
-                Unit::Count,
-                count(value),
-                vec![spec_attr(spec)],
-            ));
-        }
-
-        // Findings that are not pre-existing, by spec, code and severity;
-        // pre-existing ones by spec.
-        let mut breaches: BTreeMap<(Option<&String>, &str, &'static str), usize> = BTreeMap::new();
-        let mut pre_existing: BTreeMap<Option<&String>, usize> = BTreeMap::new();
-        for entry in &self.findings {
-            let spec = entry.owners.feature.as_ref();
-            if entry.pre_existing {
-                *pre_existing.entry(spec).or_insert(0) += 1;
-            } else if entry.metric.is_some() {
-                let key = (
-                    spec,
-                    entry.finding.code,
-                    severity_label(entry.finding.severity),
-                );
-                *breaches.entry(key).or_insert(0) += 1;
-            }
-        }
-        for ((spec, code, severity), value) in breaches {
-            out.push(MetricPoint::new(
-                "kiro.code.breaches",
-                Unit::Count,
-                count(value),
-                vec![
-                    spec_attr(spec),
-                    Attr::new("kiro.code", code),
-                    Attr::new("kiro.severity", severity),
-                ],
-            ));
-        }
-        for (spec, value) in pre_existing {
-            out.push(MetricPoint::new(
-                "kiro.code.pre_existing",
-                Unit::Count,
-                count(value),
-                vec![spec_attr(spec)],
-            ));
-        }
-
-        // Routine metrics that differ from the before side.
-        let mut changed: BTreeMap<(&str, &'static str), usize> = BTreeMap::new();
-        for change in &self.changes {
-            let status = if change.improved() {
-                "improved"
-            } else {
-                "worsened"
-            };
-            *changed.entry((change.metric.as_str(), status)).or_insert(0) += 1;
-        }
-        for ((metric, status), value) in changed {
-            out.push(MetricPoint::new(
-                "kiro.code.changed",
-                Unit::Count,
-                count(value),
-                vec![
-                    Attr::new("kiro.metric", metric),
-                    Attr::new("kiro.status", status),
-                ],
-            ));
-        }
-
-        // What the run measured.
-        let files = [
-            ("measured", self.coverage.measured),
-            ("failed", self.coverage.failed.len()),
-            ("unmeasured", self.coverage.unmeasured.len()),
-            ("ignored", self.coverage.ignored.len()),
-        ];
-        for (status, value) in files {
-            out.push(MetricPoint::new(
-                "kiro.code.files",
-                Unit::Count,
-                count(value),
-                vec![Attr::new("kiro.status", status)],
-            ));
-        }
+        measure_points(self, &mut out);
+        finding_points(self, &mut out);
+        change_points(self, &mut out);
+        file_points(self, &mut out);
         out
     }
 }

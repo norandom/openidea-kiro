@@ -77,16 +77,21 @@ fn others_text(here: &str, files: &BTreeSet<&str>) -> String {
     }
 }
 
+/// Where a finding stands: the file and the first line of the repetition.
+struct Site<'a> {
+    path: &'a str,
+    line: u32,
+}
+
 fn finding(
     code: &'static str,
     severity: Severity,
-    path: &str,
-    line: u32,
+    site: &Site<'_>,
     message: String,
     hint: String,
 ) -> CodeFinding {
-    let mut base = Finding::new(code, path.to_string(), message).severity(severity);
-    base.line = usize::try_from(line).ok().filter(|line| *line > 0);
+    let mut base = Finding::new(code, site.path.to_string(), message).severity(severity);
+    base.line = usize::try_from(site.line).ok().filter(|line| *line > 0);
     CodeFinding {
         finding: base,
         tag: Tag::Collect,
@@ -103,18 +108,12 @@ fn finding(
     }
 }
 
-/// Scattered definitions: one finding per selected file that repeats a
-/// binding found, with the same initializer, in more than `max_files`
-/// files. When one name carries two or more such values, an information
-/// finding says that they were not merged.
-#[must_use]
-pub fn definition_findings(
-    facts: &LocalityFacts,
-    selected: &dyn Fn(&str) -> bool,
-    max_files: usize,
-) -> Vec<CodeFinding> {
-    // (name, initializer) -> file -> first line.
-    let mut groups: BTreeMap<(&str, &str), BTreeMap<&str, u32>> = BTreeMap::new();
+/// File -> first line of one binding or one subject in that file.
+type Places<'a> = BTreeMap<&'a str, u32>;
+
+/// (name, initializer) -> the files that bind that name to that value.
+fn definition_groups(facts: &LocalityFacts) -> BTreeMap<(&str, &str), Places<'_>> {
+    let mut groups: BTreeMap<(&str, &str), Places<'_>> = BTreeMap::new();
     for binding in &facts.bindings {
         if IGNORED_NAMES.contains(&binding.name.as_str()) {
             continue;
@@ -125,9 +124,91 @@ pub fn definition_findings(
         let line = lines.entry(binding.path.as_str()).or_insert(binding.line);
         *line = (*line).min(binding.line);
     }
+    groups
+}
+
+/// The findings of one scattered (name, initializer) group: one per
+/// selected file.
+fn scattered_definition(
+    name: &str,
+    initializer: &str,
+    files: &Places<'_>,
+    selected: &dyn Fn(&str) -> bool,
+) -> Vec<CodeFinding> {
+    let paths: BTreeSet<&str> = files.keys().copied().collect();
+    let mut out = Vec::new();
+    for (path, line) in files {
+        if !selected(path) {
+            continue;
+        }
+        out.push(finding(
+            codes::CODE_SCATTERED_DEFINITION,
+            Severity::Warning,
+            &Site { path, line: *line },
+            format!(
+                "`{name} = {initializer}` is defined in {} files; also in {}",
+                files.len(),
+                others_text(path, &paths)
+            ),
+            format!(
+                "define `{name}` once in the module that owns it and import it in the other {} files",
+                files.len().saturating_sub(1)
+            ),
+        ));
+    }
+    out
+}
+
+/// One name, several scattered values: reported once per selected file,
+/// never merged.
+fn ambiguous_definition(
+    name: &str,
+    values: &[(&str, &Places<'_>)],
+    selected: &dyn Fn(&str) -> bool,
+    max_files: usize,
+) -> Vec<CodeFinding> {
+    let mut out = Vec::new();
+    if values.len() < 2 {
+        return out;
+    }
+    let mut reported: BTreeSet<&str> = BTreeSet::new();
+    for (_, files) in values {
+        for (path, line) in *files {
+            if selected(path) && reported.insert(path) {
+                out.push(CodeFinding {
+                    tag: Tag::Name,
+                    ..finding(
+                        codes::CODE_DEFINITION_AMBIGUOUS,
+                        Severity::Info,
+                        &Site { path, line: *line },
+                        format!(
+                            "`{name}` is defined with {} different values, each in more than {max_files} files; they were not merged",
+                            values.len()
+                        ),
+                        format!(
+                            "give each meaning of `{name}` its own name before collecting the definitions"
+                        ),
+                    )
+                });
+            }
+        }
+    }
+    out
+}
+
+/// Scattered definitions: one finding per selected file that repeats a
+/// binding found, with the same initializer, in more than `max_files`
+/// files. When one name carries two or more such values, an information
+/// finding says that they were not merged.
+#[must_use]
+pub fn definition_findings(
+    facts: &LocalityFacts,
+    selected: &dyn Fn(&str) -> bool,
+    max_files: usize,
+) -> Vec<CodeFinding> {
+    let groups = definition_groups(facts);
     let mut out = Vec::new();
     // name -> the scattered (initializer, files) groups of that name.
-    type Places<'k> = BTreeMap<&'k str, u32>;
     let mut scattered_values: BTreeMap<&str, Vec<(&str, &Places<'_>)>> = BTreeMap::new();
     for ((name, initializer), files) in &groups {
         if files.len() <= max_files {
@@ -137,58 +218,23 @@ pub fn definition_findings(
             .entry(name)
             .or_default()
             .push((initializer, files));
-        let paths: BTreeSet<&str> = files.keys().copied().collect();
-        for (path, line) in files {
-            if !selected(path) {
-                continue;
-            }
-            out.push(finding(
-                codes::CODE_SCATTERED_DEFINITION,
-                Severity::Warning,
-                path,
-                *line,
-                format!(
-                    "`{name} = {initializer}` is defined in {} files; also in {}",
-                    files.len(),
-                    others_text(path, &paths)
-                ),
-                format!(
-                    "define `{name}` once in the module that owns it and import it in the other {} files",
-                    files.len().saturating_sub(1)
-                ),
-            ));
-        }
+        out.extend(scattered_definition(name, initializer, files, selected));
     }
-    // One name, several scattered values: reported, never merged.
     for (name, values) in scattered_values {
-        if values.len() < 2 {
-            continue;
-        }
-        let mut reported: BTreeSet<&str> = BTreeSet::new();
-        for (_, files) in &values {
-            for (path, line) in *files {
-                if selected(path) && reported.insert(path) {
-                    out.push(CodeFinding {
-                        tag: Tag::Name,
-                        ..finding(
-                            codes::CODE_DEFINITION_AMBIGUOUS,
-                            Severity::Info,
-                            path,
-                            *line,
-                            format!(
-                                "`{name}` is defined with {} different values, each in more than {max_files} files; they were not merged",
-                                values.len()
-                            ),
-                            format!(
-                                "give each meaning of `{name}` its own name before collecting the definitions"
-                            ),
-                        )
-                    });
-                }
-            }
-        }
+        out.extend(ambiguous_definition(name, &values, selected, max_files));
     }
     out
+}
+
+/// The first literals of a subject, with the count of the ones left out.
+fn literals_text(literals: &BTreeSet<&str>) -> String {
+    let values: Vec<&str> = literals.iter().copied().take(4).collect();
+    let more = literals.len().saturating_sub(values.len());
+    if more > 0 {
+        format!("{} and {more} more", values.join(", "))
+    } else {
+        values.join(", ")
+    }
 }
 
 /// Scattered state: one finding per subject per selected file, when the
@@ -226,13 +272,7 @@ pub fn state_findings(
             continue;
         }
         let paths: BTreeSet<&str> = entry.files.keys().copied().collect();
-        let values: Vec<&str> = entry.literals.iter().copied().take(4).collect();
-        let more = entry.literals.len().saturating_sub(values.len());
-        let listed = if more > 0 {
-            format!("{} and {more} more", values.join(", "))
-        } else {
-            values.join(", ")
-        };
+        let listed = literals_text(&entry.literals);
         for (path, line) in &entry.files {
             if !selected(path) {
                 continue;
@@ -240,8 +280,7 @@ pub fn state_findings(
             out.push(finding(
                 codes::CODE_SCATTERED_STATE,
                 Severity::Info,
-                path,
-                *line,
+                &Site { path, line: *line },
                 format!(
                     "`{subject}` is compared with {} literal values ({listed}) in {} files; also in {}",
                     entry.literals.len(),

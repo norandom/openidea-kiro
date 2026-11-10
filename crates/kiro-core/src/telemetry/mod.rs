@@ -66,6 +66,49 @@ fn identity(point: &MetricPoint) -> (&'static str, &[Attr]) {
     (point.name, point.attrs.as_slice())
 }
 
+/// Moves the valid points of `provider` into `points`. Returns the reason
+/// to note in the coverage when any point was dropped.
+fn keep_valid(provider: &dyn MetricProvider, points: &mut Vec<MetricPoint>) -> Option<String> {
+    let mut dropped: Vec<String> = Vec::new();
+    for mut point in provider.points() {
+        point.attrs.sort();
+        if let Some(reason) = rejection(&point) {
+            dropped.push(reason);
+        } else if points.iter().any(|kept| identity(kept) == identity(&point)) {
+            dropped.push(format!("{}: duplicate point", point.name));
+        } else {
+            points.push(point);
+        }
+    }
+    if dropped.is_empty() {
+        return None;
+    }
+    Some(format!(
+        "dropped {} point(s): {}",
+        dropped.len(),
+        dropped.join("; ")
+    ))
+}
+
+/// Marks `source` as present. A source with several providers keeps one
+/// entry, and the reasons of its providers are joined.
+fn cover(coverage: &mut Vec<SourceCoverage>, source: &'static str, reason: Option<String>) {
+    let Some(entry) = coverage.iter_mut().find(|entry| entry.source == source) else {
+        coverage.push(SourceCoverage {
+            source,
+            present: true,
+            reason,
+        });
+        return;
+    };
+    if let Some(reason) = reason {
+        entry.reason = Some(match entry.reason.take() {
+            Some(previous) => format!("{previous}; {reason}"),
+            None => reason,
+        });
+    }
+}
+
 /// Builds the snapshot of one run.
 ///
 /// `expected` names the sources this run should have; one without a
@@ -82,41 +125,8 @@ pub fn snapshot(providers: &[&dyn MetricProvider], expected: &[&'static str]) ->
 
     for provider in providers {
         let source = provider.source();
-        let mut dropped: Vec<String> = Vec::new();
-        for mut point in provider.points() {
-            point.attrs.sort();
-            if let Some(reason) = rejection(&point) {
-                dropped.push(reason);
-            } else if points.iter().any(|kept| identity(kept) == identity(&point)) {
-                dropped.push(format!("{}: duplicate point", point.name));
-            } else {
-                points.push(point);
-            }
-        }
-        let reason = if dropped.is_empty() {
-            None
-        } else {
-            Some(format!(
-                "dropped {} point(s): {}",
-                dropped.len(),
-                dropped.join("; ")
-            ))
-        };
-        match coverage.iter_mut().find(|entry| entry.source == source) {
-            Some(entry) => {
-                if let Some(reason) = reason {
-                    entry.reason = Some(match entry.reason.take() {
-                        Some(previous) => format!("{previous}; {reason}"),
-                        None => reason,
-                    });
-                }
-            }
-            None => coverage.push(SourceCoverage {
-                source,
-                present: true,
-                reason,
-            }),
-        }
+        let reason = keep_valid(*provider, &mut points);
+        cover(&mut coverage, source, reason);
     }
 
     for source in expected {

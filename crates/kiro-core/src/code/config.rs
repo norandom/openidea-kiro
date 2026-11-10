@@ -489,6 +489,15 @@ fn fnv1a(text: &str) -> u64 {
     hash
 }
 
+/// The entry of `metric` in `limits`. The keys hold static names, so a
+/// borrowed name is compared entry by entry.
+fn lookup<'a, V>(limits: &'a BTreeMap<LimitKey, V>, scope: Scope, metric: &str) -> Option<&'a V> {
+    limits
+        .iter()
+        .find(|((limit_scope, name), _)| *limit_scope == scope && *name == metric)
+        .map(|(_, value)| value)
+}
+
 impl CodeConfig {
     /// The limit of `metric` for an entity in `path`: the most specific
     /// matching scope wins (the later one on a tie), then the file, then
@@ -500,46 +509,39 @@ impl CodeConfig {
         metric: &str,
         path: &str,
     ) -> Option<(Limit, LimitSource)> {
-        let mut best: Option<(usize, Limit, &str)> = None;
-        for rule in &self.scopes {
-            let Some(limit) = rule
-                .limits
-                .iter()
-                .find(|((limit_scope, name), _)| *limit_scope == scope && *name == metric)
-                .map(|(_, limit)| *limit)
-            else {
-                continue;
+        let (mut limit, source) =
+            if let Some((limit, rule_path)) = self.scope_limit(scope, metric, path) {
+                (limit, LimitSource::Scope(rule_path.to_string()))
+            } else if let Some(entry) = lookup(&self.file, scope, metric) {
+                (entry.limit, LimitSource::File)
+            } else {
+                (
+                    *lookup(&self.defaults, scope, metric)?,
+                    LimitSource::Default,
+                )
             };
-            for rule_path in &rule.paths {
-                if covers(rule_path, path) {
-                    let depth = specificity(rule_path);
-                    if best.is_none_or(|(current, _, _)| depth >= current) {
-                        best = Some((depth, limit, rule_path.as_str()));
-                    }
-                }
-            }
-        }
-        let (mut limit, source) = if let Some((_, limit, rule_path)) = best {
-            (limit, LimitSource::Scope(rule_path.to_string()))
-        } else if let Some(entry) = self
-            .file
-            .iter()
-            .find(|((limit_scope, name), _)| *limit_scope == scope && *name == metric)
-            .map(|(_, entry)| entry)
-        {
-            (entry.limit, LimitSource::File)
-        } else {
-            let limit = self
-                .defaults
-                .iter()
-                .find(|((limit_scope, name), _)| *limit_scope == scope && *name == metric)
-                .map(|(_, limit)| *limit)?;
-            (limit, LimitSource::Default)
-        };
         if !limit.severity_set && calibrated(scope, metric, path) {
             limit.severity = Severity::Error;
         }
         limit.enabled.then_some((limit, source))
+    }
+
+    /// The scope limit of `metric` for `path` and the rule path it comes
+    /// from: the most specific covering path wins, the later one on a tie.
+    fn scope_limit(&self, scope: Scope, metric: &str, path: &str) -> Option<(Limit, &str)> {
+        let mut best: Option<(usize, Limit, &str)> = None;
+        for rule in &self.scopes {
+            let Some(limit) = lookup(&rule.limits, scope, metric) else {
+                continue;
+            };
+            for rule_path in rule.paths.iter().filter(|rule| covers(rule, path)) {
+                let depth = specificity(rule_path);
+                if best.is_none_or(|(current, _, _)| depth >= current) {
+                    best = Some((depth, *limit, rule_path.as_str()));
+                }
+            }
+        }
+        best.map(|(_, limit, rule_path)| (limit, rule_path))
     }
 
     /// The ignore rule that covers `path`, if any.

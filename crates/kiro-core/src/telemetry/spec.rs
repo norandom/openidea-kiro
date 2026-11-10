@@ -100,31 +100,36 @@ fn status_points(feature: &Feature, out: &mut Vec<MetricPoint>) {
     }
 }
 
+/// The findings of a spec, counted by code and severity.
+fn finding_points(spec: &str, findings: &[Finding], out: &mut Vec<MetricPoint>) {
+    let mut by_code: BTreeMap<(&str, &'static str), usize> = BTreeMap::new();
+    for finding in findings {
+        let key = (finding.code, severity_label(finding.severity));
+        let entry = by_code.entry(key).or_insert(0);
+        *entry = entry.saturating_add(1);
+    }
+    for ((code, severity), value) in by_code {
+        out.push(MetricPoint::new(
+            "kiro.spec.findings",
+            Unit::Count,
+            {
+                #[allow(clippy::cast_precision_loss)]
+                let value = value as f64;
+                value
+            },
+            vec![
+                Attr::new("kiro.spec", spec),
+                Attr::new("kiro.code", code),
+                Attr::new("kiro.severity", severity),
+            ],
+        ));
+    }
+}
+
 fn check_points(input: &SpecInput<'_>, out: &mut Vec<MetricPoint>) {
     let spec = input.feature.name.as_str();
     if let Some(findings) = input.findings {
-        let mut by_code: BTreeMap<(&str, &'static str), usize> = BTreeMap::new();
-        for finding in findings {
-            let key = (finding.code, severity_label(finding.severity));
-            let entry = by_code.entry(key).or_insert(0);
-            *entry = entry.saturating_add(1);
-        }
-        for ((code, severity), value) in by_code {
-            out.push(MetricPoint::new(
-                "kiro.spec.findings",
-                Unit::Count,
-                {
-                    #[allow(clippy::cast_precision_loss)]
-                    let value = value as f64;
-                    value
-                },
-                vec![
-                    Attr::new("kiro.spec", spec),
-                    Attr::new("kiro.code", code),
-                    Attr::new("kiro.severity", severity),
-                ],
-            ));
-        }
+        finding_points(spec, findings, out);
     }
     let Some(report) = input.report else {
         return;
