@@ -451,6 +451,11 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Warning,
         description: "A routine is one of a family of similar routines",
     },
+    CodeInfo {
+        code: "CODE_POSITIONAL_ACCESS",
+        severity: Severity::Warning,
+        description: "Tabular data is addressed by position instead of by name",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -529,6 +534,7 @@ pub mod codes {
     pub const CODE_DEFINITION_AMBIGUOUS: &str = "CODE_DEFINITION_AMBIGUOUS";
     pub const CODE_SCATTERED_STATE: &str = "CODE_SCATTERED_STATE";
     pub const CODE_SIMILAR_FAMILY: &str = "CODE_SIMILAR_FAMILY";
+    pub const CODE_POSITIONAL_ACCESS: &str = "CODE_POSITIONAL_ACCESS";
 }
 
 /// The twenty check finding codes introduced by the constraints engine.
@@ -665,14 +671,15 @@ mod tests {
         codes::CODE_DEFINITION_AMBIGUOUS,
         codes::CODE_SCATTERED_STATE,
         codes::CODE_SIMILAR_FAMILY,
+        codes::CODE_POSITIONAL_ACCESS,
     ];
 
     #[test]
-    fn catalogue_has_74_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 74);
+    fn catalogue_has_75_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 75);
         assert_eq!(CHECK_CODES.len(), 20);
         let all = ALL_CODES;
-        assert_eq!(all.len(), 74);
+        assert_eq!(all.len(), 75);
         for c in all.iter().copied() {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),

@@ -126,14 +126,14 @@ A milestone does not approve later policy changes or declare the whole spec acce
   - _Depends: 4.3_
   - _Requirements: 3.5, 3.6, 4.2_
 
-- [ ] 5.2 Extract supported Python tabular accesses
+- [x] 5.2 Extract supported Python tabular accesses
   - Add pandas, polars and NumPy positional/named/row-record patterns backed by recognized import, annotation or library-method evidence.
   - Keep ordinary list/tuple indexing clear and unknown rows ambiguous; expose computed names/positions as blind spots.
   - Done when every declared Python profile has positive/negative coverage and ambiguous receivers never produce definitive violations.
   - _Boundary: DataPatterns_
   - _Requirements: 3.1, 3.2, 3.5, 3.6, 4.2, 4.3_
 
-- [ ] 5.3 Extract supported Rust tabular accesses
+- [x] 5.3 Extract supported Rust tabular accesses
   - Add polars/ndarray column/axis and named-access patterns with the declared receiver-confidence checks.
   - Retain TS/JS definitions/state support without a shipped tabular claim; keep computed/helper accesses unavailable.
   - Done when Rust profile fixtures pass with unsupported receiver/language coverage explicit.

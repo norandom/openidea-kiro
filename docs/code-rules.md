@@ -196,7 +196,33 @@ Status: first rules of spec `code-locality-data`. Both count across the whole pr
 - A subject whose comparisons all stand in one file is not reported: that state already has an owner.
 - The rule cannot see a state carried in booleans, in a number compared with `<`, in a literal that reaches the comparison through a variable, or in dispatch through a table or polymorphism.
 
-The thresholds (3 files, 2 values) and the ignored names cannot be configured yet. Neither rule is compared with a before side. Positional data access and vocabulary grounding of column names are not built.
+The thresholds (3 files, 2 values) and the ignored names cannot be configured yet. Neither rule is compared with a before side. Vocabulary grounding of column names and scattered schema are not built.
+
+## Data addressed by position
+
+**`CODE_POSITIONAL_ACCESS`** (warning). A column, a field or an axis of tabular data is addressed by an integer literal, for example `frame.iloc[:, 3]`. The code is right only as long as nobody reorders the columns, and a reader cannot tell what column 3 holds. The hint is `name:` select the column by its role name, or give the row a typed record.
+
+Shapes that are reported:
+
+| Language | Shape | Reported as |
+| --- | --- | --- |
+| Python | `x.iloc[rows, 3]`, `x.iat[row, 3]`, `x.iloc[:, [0, 2]]`, `x.columns[3]` | a dataframe column |
+| Python | `x[:, 3]` | an array column |
+| Python | `row[2]`, `record[2]`, and names ending in `_row` or `_record` | a row record field |
+| Rust | `x.select_at_idx(3)` | a dataframe column |
+| Rust | `x.column(3)`, `x[[i, 3]]`, `s![.., 3]` | an array column |
+
+A negative literal such as `-1` counts. Not reported: selection by name (`frame["price"]`, `frame.loc[:, "price"]`), a row by position (`frame.iloc[3]`), a slice (`row[1:3]`), an element of a plain list (`items[0]`), and a single cell of a matrix (`grid[0, 0]`).
+
+What the rule cannot see:
+
+- The type of the receiver. The shape decides: `row[2]` is reported for any variable named `row`, and a dataframe held in a variable with another access style is missed.
+- A position held in a variable or computed (`frame.iloc[:, index]`).
+- An access through a helper function.
+- TypeScript and JavaScript: no shapes are shipped for them.
+- Column names. No vocabulary topic can be named as a data topic yet, so names used in data code are not checked against the vocabulary. The coverage line says this in every run.
+
+On the calibration corpus the rule reports 141 accesses in facdrone, 15 in lesscode, 5 in mmhmem and none in mvibe; they were sampled, not reviewed one by one. The shapes cannot be extended from the configuration yet.
 
 ## Findings
 
@@ -208,6 +234,7 @@ The thresholds (3 files, 2 values) and the ignored names cannot be configured ye
 | `CODE_RATCHET` | error or warning | A routine metric rose against the before side: error above its limit, warning within it |
 | `CODE_DUPLICATE_BLOCK` | warning | A run of at least 12 code lines also stands at another location |
 | `CODE_SIMILAR_FAMILY` | warning | A routine is one of a family of similar routines |
+| `CODE_POSITIONAL_ACCESS` | warning | Tabular data is addressed by position instead of by name |
 | `CODE_SCATTERED_DEFINITION` | warning | The same module-level definition stands in more than 3 files |
 | `CODE_DEFINITION_AMBIGUOUS` | info | One name carries several scattered values; they were not merged |
 | `CODE_SCATTERED_STATE` | info | One subject is compared with literal values across more than 3 files |
@@ -226,5 +253,5 @@ A file belongs to the spec whose design lists it in its File Structure Plan, to 
 - Whether the standard library, the platform or an installed dependency would have replaced a piece of code is never checked.
 - A file that was not measured was not judged. Read the `CODE_COVERAGE` line: it counts selected, measured, failed and unmeasured files.
 - Without a before side nothing is compared: existing breaches and new ones look the same. The coverage line names the before side.
-- A routine rewritten in another shape is not recognized as a copy, and positional data access is not detected yet.
+- A routine rewritten in another shape is not recognized as a copy.
 - A routine within every limit can still be wrong or unclear.

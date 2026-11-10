@@ -8,6 +8,7 @@
 
 use kiro_code::{ChangeSet, SourceBundle};
 use kiro_core::code::clones::{DEFAULT_MIN_LINES, duplicate_blocks, duplicate_findings};
+use kiro_core::code::data::positional_findings;
 use kiro_core::code::families::{FamilyFacts, IGNORED_NAMES, families, family_findings};
 use kiro_core::code::locality::{
     DEFAULT_MAX_FILES, DEFAULT_MIN_STATES, definition_findings, state_findings,
@@ -364,9 +365,15 @@ fn cross_file(root: &ProjectRoot, selected: &[String]) -> Result<CrossFile, Fail
             scan.locality.comparisons.len()
         ),
         similar_routines(&scan.families, &is_selected, &mut findings),
+        format!(
+            "data access: {} files searched, {} positional accesses; column names were not grounded (no data topic is configured)",
+            scan.data.files,
+            scan.data.accesses.len()
+        ),
     ];
     findings.extend(definitions);
     findings.extend(states);
+    findings.extend(positional_findings(&scan.data, &is_selected));
     Ok(CrossFile { findings, notes })
 }
 

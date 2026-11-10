@@ -5,6 +5,7 @@
 use ast_grep_core::AstGrep;
 use ast_grep_core::tree_sitter::StrDoc;
 use kiro_core::code::clones::FileLines;
+use kiro_core::code::data::DataFacts;
 use kiro_core::code::families::{DEFAULT_MIN_STATEMENTS, DEFAULT_THRESHOLD, FamilyFacts};
 use kiro_core::code::locality::LocalityFacts;
 
@@ -22,6 +23,8 @@ pub struct ProjectScan {
     /// Routines of at least `DEFAULT_MIN_STATEMENTS` statements and the
     /// pairs that are at least `DEFAULT_THRESHOLD` similar.
     pub families: FamilyFacts,
+    /// Accesses to tabular data by position.
+    pub data: DataFacts,
 }
 
 /// Scans one file. A file that no profile covers or that does not parse
@@ -52,6 +55,10 @@ fn scan_file(file: &SourceText, out: &mut ProjectScan, shapes: &mut ShapeCollect
     );
     out.locality.files = out.locality.files.saturating_add(1);
     shapes.add_file(&root, profile, comments, &file.path, DEFAULT_MIN_STATEMENTS);
+    if crate::data_access::covers(profile.name) {
+        crate::data_access::extract(&root, profile.name, &file.path, &mut out.data.accesses);
+        out.data.files = out.data.files.saturating_add(1);
+    }
 }
 
 /// Scans every file of the bundle that a profile covers.

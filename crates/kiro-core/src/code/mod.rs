@@ -8,6 +8,7 @@
 pub mod attribution;
 pub mod clones;
 pub mod config;
+pub mod data;
 pub mod evaluate;
 pub mod facts;
 pub mod families;

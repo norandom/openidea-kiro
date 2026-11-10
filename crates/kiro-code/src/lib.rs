@@ -5,6 +5,7 @@
 //! crate writes no lexer and no parser.
 
 pub mod clones;
+pub mod data_access;
 pub mod git;
 pub mod locality;
 pub mod measure;
