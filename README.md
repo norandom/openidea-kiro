@@ -3,7 +3,7 @@
 [![CI](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/norandom/openidea-kiro)](https://github.com/norandom/openidea-kiro/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/1450282526.svg)](https://zenodo.org/badge/latestdoi/1450282526)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24128225.svg)](https://doi.org/10.5281/zenodo.24128225)
 
 A coding agent that follows a specification can still deliver requirements that contradict each other and code that the next task can no longer change. `kiro-cli` is a gate that checks both. It reads the specification and the changed code, reports each problem with the spec and task that own it, and exits with a code a hook or a pipeline can act on.
 
@@ -144,11 +144,17 @@ Cite the software with the metadata in [`CITATION.cff`](CITATION.cff); GitHub sh
   title   = {OpenIDEA Kiro: Specification-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification},
   version = {1.0.0},
   year    = {2026},
+  doi     = {10.5281/zenodo.24128226},
   url     = {https://github.com/norandom/openidea-kiro}
 }
 ```
 
-The DOI badge above resolves to the archived copy of the latest release on Zenodo.
+The software is archived on Zenodo. Two DOIs exist:
+
+| DOI | Refers to |
+| :--- | :--- |
+| [10.5281/zenodo.24128226](https://doi.org/10.5281/zenodo.24128226) | Version 1.0.0. Cite this one when the version matters. |
+| [10.5281/zenodo.24128225](https://doi.org/10.5281/zenodo.24128225) | All versions; it resolves to the latest release. The badge above uses it. |
 
 ## License
 
