@@ -19,23 +19,23 @@ Each level answers one question. A level is useful without the levels above it.
 | 1. Consistent requirements | Can two criteria contradict each other? Does every term have one meaning? | EARS shape, topic-scoped vocabulary, contradiction search on binary decision diagrams with a witness state | Implemented. [Verification strategy](verification.md), [checks](checks.md), [vocabulary](vocabulary.md) |
 | 2. Traceable work | Which criterion, task and design component owns this file? | Join over the design's File Structure Plan and task boundaries; navigation and graphs in the IDE and the CLI | Implemented. [CLI](cli.md) |
 | 3. Executed evidence | Which tests prove this criterion, and did they pass on the current inputs? | Capability ledger `.kiro/breadth.toml`, real-binary journeys, acceptance that refuses missing, skipped or stale runs | Specified, not implemented. Specs `cli-contracts`, `verification-evidence` |
-| 4. Maintainable code | Did this task make the code harder to change? | Routine and file limits, a ratchet against the previous state, duplicate blocks and similar routines, scattered definitions and state, role-named data access, each finding attributed to its spec and task | Specified, not implemented. Specs `code-constraints`, `clone-constraints`, `code-locality-data` |
+| 4. Maintainable code | Did this task make the code harder to change? | Routine and file limits, a ratchet against the previous state, duplicate blocks and similar routines, scattered definitions and state, role-named data access, each finding attributed to its spec and task | Implemented in part: `kiro-cli code check`. [Code rules](code-rules.md). Not built: grounding of column names in the vocabulary, scattered schema, SARIF output, strict mode |
 | 5. Less code | Can existing code be replaced by something the framework already provides, with the same behaviour? | Measured before and after comparison with receipts | Separate project: [lesscode](https://github.com/norandom/lesscode) |
 
 Level 1 is where formal verification works today. Acceptance criteria written in EARS are grounded in a declared vocabulary, turned into boolean guards over finite regions, and checked for joint satisfiability. The result is exact for what it covers and it refuses when a problem is too large.
 
-Levels 3 and 4 are designed and reviewed but not built. The open design questions are recorded in the [design review of 2026-11-10](../.kiro/specs/code-constraints/design-review-2026-11-10.md). No command for these levels exists yet.
+Level 4 runs as `kiro-cli code check`. Its routine limits block in Rust and Python, where they were calibrated on six repositories; in TypeScript and JavaScript they warn. Level 3 is designed and reviewed but not built, and no command for it exists yet. The open design questions are recorded in the [design review of 2026-11-10](../.kiro/specs/code-constraints/design-review-2026-11-10.md).
 
 ## Seeing the levels together
 
-A planned spec, `quality-telemetry`, writes every gate run as OpenTelemetry signal files, keyed by spec, which an OpenTelemetry Collector ships to OpenObserve. Four dashboards are planned: one for a developer (what did my task change), one for an architect (which spec or component is drifting), one for code health over time, and one that puts specification health beside code health per spec. Writing will be off by default, will open no network connection and will never change a gate verdict. It is specified, not implemented.
+The spec `quality-telemetry` writes a gate run as OpenTelemetry signal files, keyed by spec, which an OpenTelemetry Collector ships to OpenObserve. The writer, the metric catalogue and a Collector example exist ([Telemetry](telemetry.md)). Writing is off by default, opens no network connection and never changes a gate verdict. Four dashboards are planned and not built: one for a developer (what did my task change), one for an architect (which spec or component is drifting), one for code health over time, and one that puts specification health beside code health per spec.
 
 ## What each level does not show
 
 - Level 1 compares criteria that share a topic. It does not show that the requirements are the right ones.
 - Level 2 follows the file plan in the design. A file the design does not mention has no owner.
 - Level 3 will show that named tests passed on named inputs. It will not show that the tests are sufficient.
-- Level 4 will measure structure. A routine within every limit can still be wrong or unclear.
+- Level 4 measures structure. A routine within every limit can still be wrong or unclear.
 - Level 5 compares finite recorded behaviour. It is not an equivalence proof.
 
 ## Where the checks sit in the agent workflow
@@ -44,8 +44,10 @@ A planned spec, `quality-telemetry`, writes every gate run as OpenTelemetry sign
 |---|---|
 | Requirements written | `kiro-cli check` on the spec: EARS, terms, contradictions |
 | Tasks generated | Planned capabilities entered in the ledger (level 3, planned) |
-| A task is implemented | Task-scoped code check with hints the agent can act on (level 4, planned) |
-| Implementation validated | Whole-tree code check and acceptance of current evidence (levels 3 and 4, planned) |
+| A task is implemented | `kiro-cli code check --task <spec>:<id>`: the task's files against the limits, with hints the agent can act on |
+| Before a commit | `kiro-cli code check --changed HEAD --local`: the changed files on their own |
+| Before a push and in CI | `kiro-cli code check --changed origin/main`: also the rules that read the whole project |
+| Implementation validated | Acceptance of current evidence (level 3, planned) |
 | Later, on grown code | A lesscode reduction, driven by the findings of level 4 |
 
 ## Two projects, one stack

@@ -59,7 +59,7 @@ jobs:
 
 ## 3. Tagged Releases Workflow
 
-Automated releases trigger whenever a version tag matching `v*` (such as `v0.1.0-alpha.1`) is pushed:
+Automated releases trigger whenever a version tag matching `v*` (such as `v1.0.0`) is pushed:
 
 ```yaml
 name: Release
@@ -82,9 +82,11 @@ The release workflow:
 4. Automatically flags pre-releases if the tag matches `-alpha`, `-beta`, or `-rc`.
 5. Publishes a GitHub Release with attached binaries and generated release notes.
 
+Both macOS binaries are built on the Apple Silicon runner; the Intel one is cross-compiled. How to cut a release is in the [build guide](build.md#releases); how to install one is in the [README](../README.md#install-from-a-release).
+
 ---
 
-## 3. Generic Shell Snippet
+## 4. Generic Shell Snippet
 
 For non-GitHub CI environments (GitLab CI, Jenkins, Cirrus, local git hooks), use the following generic script:
 
@@ -120,7 +122,7 @@ cargo kiro-check
 
 ---
 
-## 4. Machine-Readable JSON Output
+## 5. Machine-Readable JSON Output
 
 In automated workflows, invoke `kiro-cli check` with `--format json` to pipe structured reports to logging systems, metrics collectors, or `jq`.
 

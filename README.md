@@ -1,355 +1,155 @@
 # OpenIDEA Kiro (`openidea-kiro`)
 
 [![CI](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/norandom/openidea-kiro/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/norandom/openidea-kiro)](https://github.com/norandom/openidea-kiro/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/1450282526.svg)](https://zenodo.org/badge/latestdoi/1450282526)
 
-Spec-driven development gives a coding agent requirements, a design and tasks. It does not check that the requirements agree with each other, that "done" was shown by a test run, or that the code stays workable after many tasks. This project adds those checks to the [cc-sdd](https://github.com/gotalab/cc-sdd) workflow in the kiro layout, as a CLI gate for CI and a plugin for the OpenIDEA editor.
+A coding agent that follows a specification can still deliver requirements that contradict each other and code that the next task can no longer change. `kiro-cli` is a gate that checks both. It reads the specification and the changed code, reports each problem with the spec and task that own it, and exits with a code a hook or a pipeline can act on.
 
-Today it verifies the specification itself: acceptance criteria written in EARS are grounded in a declared vocabulary and searched for contradictions with binary decision diagrams, and every file can be traced to the criterion, task and design component that own it. Verification of test evidence and of code maintainability is specified and not yet implemented.
+It works on specifications in the kiro layout of the [cc-sdd](https://github.com/gotalab/cc-sdd) workflow: requirements, design and tasks under `.kiro/specs/`. It does not run agents. It verifies what they were given and what they produced.
 
-## What it verifies
+## What it checks
 
-| Level | Question | Status |
-| :--- | :--- | :--- |
-| 1. Consistent requirements | Can two criteria contradict each other? Does every term have one meaning? | Implemented |
-| 2. Traceable work | Which criterion, task and component own this file? | Implemented |
-| 3. Executed evidence | Which tests prove this criterion, and did they pass on the current inputs? | Specified |
-| 4. Maintainable code | Did this task make the code harder to change? | Specified |
-| 5. Less code | Can existing code be replaced by what the framework already provides? | Separate project: [lesscode](https://github.com/norandom/lesscode) |
+| Level | Question | Command | Status |
+| :--- | :--- | :--- | :--- |
+| 1. Consistent requirements | Can two criteria contradict each other? Does every term have one meaning? | `kiro-cli check` | Implemented |
+| 2. Traceable work | Which criterion, task and component own this file? | `kiro-cli status`, `graph`, `tasks` | Implemented |
+| 3. Executed evidence | Which tests prove this criterion, and did they pass on the current inputs? | none yet | Specified |
+| 4. Maintainable code | Did this change make the code harder to change? | `kiro-cli code check` | Implemented in part |
+| 5. Less code | Can existing code be replaced by what the framework already provides? | separate project | [lesscode](https://github.com/norandom/lesscode) |
 
-The [vision](docs/vision.md) explains each level, what it does not show, and where it sits in the agent workflow.
+Level 4 today: limits on routines, types and files in Rust, Python, TypeScript and JavaScript; a ratchet so that only regression and new breaches block; duplicate blocks; renamed copies of a routine; definitions and state scattered over files; data addressed by position. Not built yet: grounding of column names in the vocabulary, SARIF output, a strict mode. The [vision](docs/vision.md) says what each level shows and what it does not.
 
-### Relationship to lesscode
+![Inputs, program parts and outputs of OpenIDEA Kiro](docs/figures/architecture.svg)
 
-The two projects form one stack and do not repeat each other. This project prevents: it holds new and changed code to agreed limits, per task, and names the owning spec. [lesscode](https://github.com/norandom/lesscode) reduces: it measures whether a rewrite of existing code is a substantial simplification with the same behaviour. A finding from the planned code gate names a candidate; a lesscode receipt shows whether the replacement was worth it.
+*Figure 1. The engine `kiro-core` judges and never reads a file. The command-line gate adds parsing and measurement of source files; the editor plugin runs the same engine as a sandboxed WebAssembly component.*
 
-The code rules of level 4 originate in `scitools-hook`, which is being archived because it depends on a licensed analyzer. The ideas are carried over on open-source parsers for Windows, Linux and macOS.
+## Install from a release
 
----
+Each [release](https://github.com/norandom/openidea-kiro/releases/latest) carries a prebuilt `kiro-cli` for four platforms, the editor plugin, and `SHA256SUMS.txt`. Nothing else is needed at run time.
 
-## Architecture Overview
+| Platform | Asset |
+| :--- | :--- |
+| Linux x86_64 | `kiro-cli-v1.0.0-x86_64-unknown-linux-gnu.tar.gz` |
+| macOS Apple Silicon | `kiro-cli-v1.0.0-aarch64-apple-darwin.tar.gz` |
+| macOS Intel | `kiro-cli-v1.0.0-x86_64-apple-darwin.tar.gz` |
+| Windows x86_64 | `kiro-cli-v1.0.0-x86_64-pc-windows-msvc.zip` |
+| OpenIDEA plugin | `openidea-plugin-kiro-v1.0.0.zip` |
 
-```
-                                      ┌────────────────────────────────────────┐
-                                      │              kiro-core                 │
-                                      │ Pure domain model, parsers, EARS rules │
-                                      │    BDD contradiction search, graph     │
-                                      │        Target: native & WASI           │
-                                      └──────────────────┬─────────────────────┘
-                                                         │
-                                ┌────────────────────────┴────────────────────────┐
-                                │                                                 │
-                                ▼                                                 ▼
-             ┌─────────────────────────────────────┐           ┌─────────────────────────────────────┐
-             │              kiro-cli               │           │         openidea-plugin-kiro        │
-             │   Native CI Quality Gate executable │           │  WebAssembly IDE component (WASIp2) │
-             │  • check (EARS, terms, BDD logic)   │           │  • 25 static palette commands       │
-             │  • status, graph, tasks views       │           │  • Spec ↔ code navigation           │
-             │  • vocab import (AutoOntology/SKOS) │           │  • Live editor buffer insertion     │
-             └─────────────────────────────────────┘           └─────────────────────────────────────┘
-```
-
-The repository is organized into three primary artifacts:
-- **[`kiro-core`](crates/kiro-core/)**: Pure, zero-IO Rust engine for parsing specification markdown, validating EARS criteria, grounding terms in domain vocabularies, and checking for logic contradictions using BDDs.
-- **[`kiro-cli`](crates/kiro-cli/)**: Standalone, native command-line quality gate designed for pre-commit hooks, local developer workflows, and CI/CD pipelines.
-- **[`plugins/kiro`](plugins/kiro/)**: High-performance WebAssembly (`wasm32-wasip2`) component that executes inside OpenIDEA's sandboxed plugin runtime.
-
----
-
-## Prerequisites
-
-- **Rust toolchain**: Stable 1.85+ (`rustup default stable`)
-- **WebAssembly target** (for IDE plugin):
-  ```bash
-  rustup target add wasm32-wasip2
-  ```
-- **OpenIDEA editor**: (Optional, for running the IDE plugin)
-
----
-
-## Installation
-
-### 1. Install the CLI (`kiro-cli`)
-
-Install `kiro-cli` directly into your Cargo binary path:
+**Linux and macOS**
 
 ```bash
-cargo install --path crates/kiro-cli
+VERSION=v1.0.0
+TARGET=x86_64-unknown-linux-gnu        # or aarch64-apple-darwin, x86_64-apple-darwin
+BASE=https://github.com/norandom/openidea-kiro/releases/download/$VERSION
+
+curl -fsSLO "$BASE/kiro-cli-$VERSION-$TARGET.tar.gz"
+curl -fsSLO "$BASE/SHA256SUMS.txt"
+sha256sum --check --ignore-missing SHA256SUMS.txt    # macOS: shasum -a 256 --check --ignore-missing SHA256SUMS.txt
+
+tar -xzf "kiro-cli-$VERSION-$TARGET.tar.gz"
+install -m 755 kiro-cli "$HOME/.local/bin/kiro-cli"  # any directory on your PATH
+kiro-cli --version
 ```
 
-Verify the installation:
-
-```bash
-kiro-cli --help
-```
-
-### 2. Install the OpenIDEA IDE Plugin
-
-#### Step A: Build the WebAssembly Component
-
-From the repository root:
-
-- **Windows (PowerShell)**:
-  ```powershell
-  cd plugins\kiro
-  .\build.ps1
-  ```
-- **macOS / Linux**:
-  ```bash
-  cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2
-  mkdir -p plugins/kiro/dist
-  cp plugins/kiro/target/wasm32-wasip2/release/openidea_plugin_kiro.wasm plugins/kiro/dist/plugin.wasm
-  ```
-
-#### Step B: Install in OpenIDEA
-
-##### Option 1: PowerShell Workspace Install (Windows)
-Copy the plugin folder into your project's `.openidea\plugins` directory using standard PowerShell:
+**Windows (PowerShell)**
 
 ```powershell
-# Create plugin directory and copy files
-New-Item -ItemType Directory -Force -Path .openidea\plugins\kiro
-Copy-Item -Recurse -Force plugins\kiro\* .openidea\plugins\kiro\
+$Version = 'v1.0.0'
+$Asset   = "kiro-cli-$Version-x86_64-pc-windows-msvc.zip"
+$Base    = "https://github.com/norandom/openidea-kiro/releases/download/$Version"
+
+Invoke-WebRequest "$Base/$Asset" -OutFile $Asset
+Invoke-WebRequest "$Base/SHA256SUMS.txt" -OutFile SHA256SUMS.txt
+$Expected = (Select-String -Path SHA256SUMS.txt -Pattern ([regex]::Escape($Asset))).Line.Split(' ')[0]
+if ((Get-FileHash $Asset -Algorithm SHA256).Hash -ne $Expected) { throw 'checksum mismatch' }
+
+$Bin = "$env:LOCALAPPDATA\Programs\kiro-cli"         # add this directory to your PATH once
+New-Item -ItemType Directory -Force -Path $Bin | Out-Null
+Expand-Archive $Asset -DestinationPath $Bin -Force
+& "$Bin\kiro-cli.exe" --version
 ```
 
-For macOS / Linux:
-```bash
-mkdir -p .openidea/plugins/kiro
-cp -R plugins/kiro/* .openidea/plugins/kiro/
-```
+**OpenIDEA plugin.** Download `openidea-plugin-kiro-v1.0.0.zip`. In OpenIDEA open *Settings › Plugins*, choose *Install Plugin from Disk...*, select the zip, and run *Reload Plugins*. The commands are listed in the [plugin guide](plugins/kiro/README.md).
 
-##### Option 2: GUI Install from Disk
-In OpenIDEA:
-1. Open **Settings › Plugins** (or press `Ctrl+Alt+S` on Windows / `⌘,` on macOS).
-2. Click the gear icon / menu and select **Install Plugin from Disk...**.
-3. Select the `plugins/kiro` directory (or a zip containing `plugin.toml` and `dist/plugin.wasm`).
-4. Ensure the project is trusted when prompted.
-5. In Search Everywhere (`Ctrl+Shift+A` or `Double Shift`), run **Reload Plugins**.
+The binaries are not signed. To build from source instead, see the [build guide](docs/build.md).
 
----
+## First run
 
-## How to Use `kiro-cli`
-
-### 1. Run Specification Quality Checks
-
-Validate EARS syntax, vocabulary adherence, and logical contradictions across all specifications in your project:
+Run these in a project that has a `.kiro/` directory.
 
 ```bash
-kiro-cli check --all
+kiro-cli check --all                      # requirements: shape, terms, contradictions
+kiro-cli status my-feature                # phase, approvals and task progress of one spec
+kiro-cli code check --task my-feature:2.1 # the files one task owns, against the limits
+kiro-cli code check --changed origin/main # what a branch changed, compared with main
 ```
 
-To fail your CI pipeline on any error:
+A finding names the place, the rule, the owner and one edit that resolves it:
 
-```bash
-kiro-cli check --all --fail-on error
-```
-
-Check a specific specification feature:
-
-```bash
-kiro-cli check --feature cli-gate
-```
-
-Output machine-readable JSON for automated scripts or `jq`:
-
-```bash
-kiro-cli check --all --format json
-```
-
-### 2. Inspect Specification Status & Graphs
-
-View the current lifecycle state, approvals, and metrics of a spec:
-
-```bash
-kiro-cli status cli-gate
-```
-
-Render requirements dependency graphs or task completion flows as Mermaid diagrams or Markdown tables:
-
-```bash
-# Mermaid diagram
-kiro-cli graph cli-gate
-
-# Markdown table
-kiro-cli graph cli-gate --table
-
-# Task dependency table
-kiro-cli tasks cli-gate --table
-```
-
-### 3. Manage Domain Vocabularies
-
-Validate `.kiro/vocabulary.toml`:
-
-```bash
-kiro-cli vocab validate
-```
-
-Import external taxonomies directly from Auto Ontology JSON exports or SKOS RDF Turtle files:
-
-```bash
-# Import from Auto Ontology JSON
-kiro-cli vocab import terms.json --format auto-ontology-json --topic sdd --merge
-
-# Import from W3C SKOS RDF Turtle
-kiro-cli vocab import ontology.ttl --format skos-turtle --topic ops
-```
-
-### 4. Use the Cargo Gate Alias
-
-This repository includes a configured Cargo shortcut:
-
-```bash
-cargo kiro-check
-```
-
----
-
-## How to Use the OpenIDEA Plugin
-
-Once loaded in OpenIDEA, Kiro exposes actions via the command palette (**`Ctrl+Shift+A`** on Windows/Linux or **`Cmd+Shift+A`** on macOS).
-
-### Key Commands
-
-| Action Title | Command ID | What It Does |
-| :--- | :--- | :--- |
-| **`Kiro: Spec Context`** | `nav.context` | Identifies which spec, component, and tasks own the active file. |
-| **`Kiro: Check Spec`** | `check.spec` | Runs EARS, vocabulary, and contradiction checks on the active spec. |
-| **`Kiro: Spec Status`** | `viz.status` | Shows lifecycle phase, approvals, and task progress. |
-| **`Kiro: Spec Graph`** | `viz.graph` | Displays the requirement-to-file traceability graph. |
-| **`Kiro: Task Graph`** | `viz.tasks` | Visualizes task dependencies and execution readiness. |
-| **`Kiro: List Vocabulary Terms`** | `vocab.list` | Browses all domain terms in scope for the active spec. |
-| **`Kiro: Vocabulary Term`** | `vocab.term` | Looks up definitions, kinds, parent terms, and replacements. |
-
-> **Tip**: All visualization and check commands support editor insertion variants (e.g., `viz.graph.insert`, `check.spec.insert`) to embed formatted diagrams and reports directly into your markdown notes.
-
----
-
-## Spec-Driven Development (SDD) Workflow
-
-Projects using Kiro store specifications under `.kiro/`:
-
-```
-.kiro/
-├── steering/                   # Project policies, roadmap, architecture
-│   ├── roadmap.md
-│   └── tech.md
-├── vocabulary.toml             # Domain vocabulary definitions & topics
-└── specs/                      # Feature specifications
-    └── my-feature/
-        ├── spec.json           # Lifecycle phase, approvals, domain topics
-        ├── requirements.md     # EARS-compliant requirements & acceptance criteria
-        ├── design.md           # Architecture, component interfaces, file structure
-        └── tasks.md            # Work breakdown structure and dependencies
-```
-
-### 3-Phase Approval Lifecycle
-1. **Requirements**: EARS ubiquitous, event-driven, or state-driven criteria.
-2. **Design**: Architecture boundaries, component interfaces, and File Structure Plans.
-3. **Tasks**: Fine-grained implementation items mapped to design components.
-4. **Implementation**: Code changes verified against the specification gate.
-
----
-
-## Formal Verification Strategy: Ontologies & BDDs
-
-Traditional software specifications force teams to choose between **accessible natural language** (which silently accumulates synonym drift and logical contradictions) and **classical formal methods** (such as TLA+ or SMT solvers like Z3/CVC5, which require heavyweight C++ runtimes and suffer from undecidable timeouts).
-
-Kiro provides mathematical rigor directly within your Markdown files by combining **Domain Ontologies** with **Reduced Ordered Binary Decision Diagrams (ROBDDs)**:
-
-```
-Natural Language Criteria ──▶ Ontology Grounding ──▶ Region Finitization ──▶ Canonical BDD
-  "depth > 1000 and safe"    (enum / int facets)     (one-hot variables)     O(1) Sat Check
-```
-
-### Why BDDs Instead of SMT Solvers?
-
-| Criterion | SMT Solvers (Z3, CVC5) | Kiro BDD Engine (`biodivine-lib-bdd`) |
-| :--- | :--- | :--- |
-| **Canonicity** | Non-canonical (formulas have no unique representation). | **Strictly canonical** (identical boolean functions share the exact same node). |
-| **Satisfiability Check** | NP-complete to Undecidable; requires DPLL(T) solver loop. | **$O(1)$ constant time** (pointer comparison against the False sink $\bot$). |
-| **Counterexample Witness** | Heuristic existential search over uninterpreted models. | **$O(\|V\|)$ linear time** path traversal from root to the True sink $\top$. |
-| **Runtime & Dependencies** | Massive C++ dependencies (>500k LOC, >25 MB binary). | **Pure, safe Rust** with zero native dependencies. |
-| **WebAssembly Sandbox** | Incompatible or bloated for WASI environments. | Runs seamlessly inside OpenIDEA's `wasm32-wasip2` sandbox in **< 5 ms**. |
-| **Resource Safety** | Solvers may time out or hang unpredictably. | Enforces strict bounds (`max_variables = 512`, `max_nodes = 100,000`). |
-
-### How Vocabulary Grounding Makes BDDs Possible
-
-BDDs operate strictly on finite boolean variables, whereas real software specifications express business rules over domain entities, enum states, and numerical thresholds. 
-
-Kiro bridges this gap through two techniques:
-1. **Ontology Topic Scoping (`.kiro/vocabulary.toml`)**: Terms are declared with explicit kinds (`entity`, `bool`, `enum`, `int`) and scoped by topic in `spec.json`. This prevents semantic collision across independent features.
-2. **Dynamic Region Finitization (`finitize.rs`)**: Rather than bit-blasting integers, Kiro collects all cut-points across the criteria and partitions the integer domain into contiguous one-hot regions (e.g., `depth < 500`, `depth = 500`, `depth in 501..1000`, `depth > 1000`).
-
-When criteria prescribe conflicting effects (e.g., Criterion 3.1 commands `armed = true` while Criterion 3.2 commands `armed = false`), the BDD engine calculates their joint guard conjunction. If satisfiable, it emits a `CONTRADICTION` error with an **exact counterexample witness state**:
 ```text
 .kiro/specs/safety-brake/requirements.md:14: ERROR CONTRADICTION criteria 3.1 and 3.2 can both apply (effect armed: true vs false); witness: depth >= 1001, mode = safe
+
+src/demo.rs:1: WARNING CODE_SIMILAR_FAMILY routine `load_users` is one of 2 similar routines (weakest similarity 1.00); also `read_orders` at src/ui.rs:1
+    delete: keep one routine in the module that owns it and call it from the other 1 places [spec demo, component Core, tasks 1.1, 2]
 ```
 
-If problem size exceeds configured limits, Kiro safely degrades by emitting `SEARCH_REFUSED` rather than hanging or guessing.
+Exit codes: 0 for no finding at the threshold, 1 for a finding, 2 for a usage or read failure. Every command and option is in the [CLI reference](docs/cli.md).
 
-The full method, with the encoding and its limits, is in [Formal Verification Strategy](docs/verification.md).
+## In a hook and in CI
 
----
+Checks of a file on its own are fast. Rules that look for copies read the whole project. Run each where its cost fits.
 
-## Documentation Index
+| Stage | Command |
+| :--- | :--- |
+| pre-commit | `kiro-cli code check --changed HEAD --local --summary` |
+| pre-push | `kiro-cli code check --changed origin/main --summary` |
+| CI | `kiro-cli check --all` and `kiro-cli code check --changed origin/main` |
 
-The [documentation index](docs/README.md) is ordered by what you want to do. In short:
+On a repository of 1,875 Python files a one-file check takes about 12 seconds with the whole-project rules and 0.3 seconds with `--local`. The gate installs no hook. See [Code rules](docs/code-rules.md#in-a-hook-and-in-ci) and [CI integration](docs/ci.md).
+
+## How contradictions are found
+
+Acceptance criteria are written in EARS. Each term is declared once in `.kiro/vocabulary.toml` with a kind: entity, boolean, enumeration or integer. The gate turns every criterion into a boolean guard over finite regions of those terms and builds a reduced ordered binary decision diagram. Two criteria that prescribe opposite effects contradict each other exactly when the conjunction of their guards is satisfiable, and the diagram then yields a witness state.
+
+The search is exact for what it covers and bounded: when a problem exceeds 512 variables or 100,000 nodes the gate reports `SEARCH_REFUSED` and does not guess. The encoding and its limits are in [Verification strategy](docs/verification.md).
+
+## With lesscode
+
+The two projects form one stack and do not repeat each other. This project prevents: it holds new and changed code to agreed limits, per task, and names the owning spec. [lesscode](https://github.com/norandom/lesscode) reduces: it measures whether a rewrite of existing code is a substantial simplification with the same behaviour. A finding here names a candidate; a lesscode receipt shows whether the replacement was worth it.
+
+The code rules originate in `scitools-hook`, an earlier project that depended on a licensed analyzer. Its ideas are carried over on open-source parsers for Windows, Linux and macOS.
+
+## Documentation
+
+The [documentation index](docs/README.md) lists every page by what you want to do.
 
 | You want to | Read |
 | :--- | :--- |
-| Know what is verified, what is planned and what is not shown | [Vision](docs/vision.md) |
+| Know what is verified and what is not shown | [Vision](docs/vision.md) |
 | Look up a command, option or exit code | [CLI reference](docs/cli.md) |
-| Run the gate in CI and read the JSON report | [CI integration](docs/ci.md) |
-| Understand a finding code | [Constraint checks](docs/checks.md) |
-| Declare terms and topics or import a vocabulary | [Vocabulary guide](docs/vocabulary.md) |
-| See how contradictions are found | [Verification strategy](docs/verification.md) |
-| Read the open risks of the planned code-quality work | [Design review, 2026-11-10](.kiro/specs/code-constraints/design-review-2026-11-10.md) |
-
----
-
-## Contributing & Development
-
-Run the full quality gate locally:
-
-```bash
-# Code formatting check
-cargo fmt --check
-
-# Workspace clippy with warnings denied
-cargo clippy --workspace --all-targets -- -D warnings
-
-# Run all native unit, integration, and doc tests
-cargo test --workspace
-
-# Build WebAssembly components
-cargo build -p kiro-core --target wasm32-wasip2
-cargo build --manifest-path plugins/kiro/Cargo.toml --release --target wasm32-wasip2
-
-# Run self-tree specification check
-cargo kiro-check
-```
-
----
+| Understand a finding on a specification | [Constraint checks](docs/checks.md) |
+| Understand a finding on code, or change a limit | [Code rules](docs/code-rules.md) |
+| Run the gate in CI | [CI integration](docs/ci.md) |
+| Build from source or contribute | [Build guide](docs/build.md) |
 
 ## Citation
 
-If you use OpenIDEA Kiro in your research or engineering workflows, please cite it using the metadata in [`CITATION.cff`](CITATION.cff):
+Cite the software with the metadata in [`CITATION.cff`](CITATION.cff); GitHub shows it under *Cite this repository*.
 
 ```bibtex
 @software{openidea_kiro_2026,
-  author = {M. Ciepluch},
-  title = {OpenIDEA Kiro: Spec-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification},
-  version = {0.1.0-alpha},
-  year = {2026},
-  url = {https://github.com/norandom/openidea-kiro},
-  doi = {10.5281/zenodo.1450282526}
+  author  = {Ciepluch, M.},
+  title   = {OpenIDEA Kiro: Specification-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification},
+  version = {1.0.0},
+  year    = {2026},
+  url     = {https://github.com/norandom/openidea-kiro}
 }
 ```
 
----
+The DOI badge above resolves to the archived copy of the latest release on Zenodo.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE)
