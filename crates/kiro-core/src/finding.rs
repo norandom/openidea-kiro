@@ -386,6 +386,76 @@ pub const CODES: &[CodeInfo] = &[
         severity: Severity::Warning,
         description: "Imported term collides with an existing id or label; existing kept",
     },
+    CodeInfo {
+        code: "CODE_ROUTINE_LIMIT",
+        severity: Severity::Warning,
+        description: "A routine metric is above its limit",
+    },
+    CodeInfo {
+        code: "CODE_TYPE_LIMIT",
+        severity: Severity::Warning,
+        description: "A type holds more methods or fields than its limit",
+    },
+    CodeInfo {
+        code: "CODE_FILE_LIMIT",
+        severity: Severity::Warning,
+        description: "A file metric is above its limit",
+    },
+    CodeInfo {
+        code: "CODE_PARSE_FAILED",
+        severity: Severity::Error,
+        description: "A selected source file does not parse; no rule was judged on it",
+    },
+    CodeInfo {
+        code: "CODE_FILE_UNOWNED",
+        severity: Severity::Info,
+        description: "A selected file with findings is mapped by no spec",
+    },
+    CodeInfo {
+        code: "CODE_COVERAGE",
+        severity: Severity::Info,
+        description: "What the code gate measured and what it left out",
+    },
+    CodeInfo {
+        code: "CODE_CONFIG_INVALID",
+        severity: Severity::Error,
+        description: "The code-rules configuration is invalid",
+    },
+    CodeInfo {
+        code: "CODE_RATCHET",
+        severity: Severity::Warning,
+        description: "A routine metric rose against the before side",
+    },
+    CodeInfo {
+        code: "CODE_DUPLICATE_BLOCK",
+        severity: Severity::Warning,
+        description: "A run of code lines also stands at another location",
+    },
+    CodeInfo {
+        code: "CODE_SCATTERED_DEFINITION",
+        severity: Severity::Warning,
+        description: "The same module-level definition stands in more files than allowed",
+    },
+    CodeInfo {
+        code: "CODE_DEFINITION_AMBIGUOUS",
+        severity: Severity::Info,
+        description: "One name carries several scattered values; they were not merged",
+    },
+    CodeInfo {
+        code: "CODE_SCATTERED_STATE",
+        severity: Severity::Info,
+        description: "One subject is compared with literal values across more files than allowed",
+    },
+    CodeInfo {
+        code: "CODE_SIMILAR_FAMILY",
+        severity: Severity::Warning,
+        description: "A routine is one of a family of similar routines",
+    },
+    CodeInfo {
+        code: "CODE_POSITIONAL_ACCESS",
+        severity: Severity::Warning,
+        description: "Tabular data is addressed by position instead of by name",
+    },
 ];
 
 /// String constants for every catalogue code, so callers never hand-write one.
@@ -451,6 +521,20 @@ pub mod codes {
     pub const IMPORT_TERM_SKIPPED: &str = "IMPORT_TERM_SKIPPED";
     pub const IMPORT_DUPLICATE_ID: &str = "IMPORT_DUPLICATE_ID";
     pub const IMPORT_MERGE_CONFLICT: &str = "IMPORT_MERGE_CONFLICT";
+    pub const CODE_ROUTINE_LIMIT: &str = "CODE_ROUTINE_LIMIT";
+    pub const CODE_TYPE_LIMIT: &str = "CODE_TYPE_LIMIT";
+    pub const CODE_FILE_LIMIT: &str = "CODE_FILE_LIMIT";
+    pub const CODE_PARSE_FAILED: &str = "CODE_PARSE_FAILED";
+    pub const CODE_FILE_UNOWNED: &str = "CODE_FILE_UNOWNED";
+    pub const CODE_COVERAGE: &str = "CODE_COVERAGE";
+    pub const CODE_CONFIG_INVALID: &str = "CODE_CONFIG_INVALID";
+    pub const CODE_RATCHET: &str = "CODE_RATCHET";
+    pub const CODE_DUPLICATE_BLOCK: &str = "CODE_DUPLICATE_BLOCK";
+    pub const CODE_SCATTERED_DEFINITION: &str = "CODE_SCATTERED_DEFINITION";
+    pub const CODE_DEFINITION_AMBIGUOUS: &str = "CODE_DEFINITION_AMBIGUOUS";
+    pub const CODE_SCATTERED_STATE: &str = "CODE_SCATTERED_STATE";
+    pub const CODE_SIMILAR_FAMILY: &str = "CODE_SIMILAR_FAMILY";
+    pub const CODE_POSITIONAL_ACCESS: &str = "CODE_POSITIONAL_ACCESS";
 }
 
 /// The twenty check finding codes introduced by the constraints engine.
@@ -510,75 +594,93 @@ mod tests {
         assert!(Severity::Warning < Severity::Info);
     }
 
+    /// Every constant of `codes`, written out by hand so that a constant
+    /// missing from the catalogue fails the test below.
+    const ALL_CODES: &[&str] = &[
+        codes::SPEC_DOC_MISSING,
+        codes::SPEC_JSON_INVALID,
+        codes::SPEC_PHASE_UNKNOWN,
+        codes::SPEC_PHASE_MISSING,
+        codes::SPEC_SUPERSEDED_DANGLING,
+        codes::SPEC_SUPERSEDED_CYCLE,
+        codes::MD_FENCE_UNCLOSED,
+        codes::REQ_NO_CRITERIA,
+        codes::REQ_DUPLICATE_ID,
+        codes::REQ_NON_NUMERIC_ID,
+        codes::TASK_HIERARCHY,
+        codes::TASK_REQ_REF_INVALID,
+        codes::TASK_DUPLICATE_ID,
+        codes::TASK_BOUNDARY_UNKNOWN,
+        codes::TASK_REQ_UNKNOWN,
+        codes::TASK_DEPENDS_UNKNOWN,
+        codes::DESIGN_COMPONENT_NO_FILES,
+        codes::DESIGN_FILE_UNASSIGNED,
+        codes::DESIGN_NO_FILE_PLAN,
+        codes::ROADMAP_DEP_UNKNOWN,
+        codes::ROADMAP_NO_SPECS_SECTION,
+        codes::VOCAB_MISSING,
+        codes::VOCAB_INVALID,
+        codes::VOCAB_SCHEMA_UNSUPPORTED,
+        codes::TERM_NO_DEFINITION,
+        codes::TERM_KIND_INVALID,
+        codes::TERM_DUPLICATE_LABEL,
+        codes::TERM_BROADER_UNKNOWN,
+        codes::TERM_BROADER_CROSS_TOPIC,
+        codes::TERM_BROADER_CYCLE,
+        codes::TERM_DEPRECATED_NO_REPLACEMENT,
+        codes::TERM_REPLACED_BY_UNKNOWN,
+        codes::TERM_REPLACED_BY_CROSS_TOPIC,
+        codes::TOPIC_EMPTY,
+        codes::TOPICS_UNDECLARED,
+        codes::TOPIC_UNKNOWN,
+        codes::VOCAB_LABEL_CROSS_TOPIC,
+        codes::EARS_NO_SHALL,
+        codes::EARS_MULTI_SHALL,
+        codes::EARS_MODAL,
+        codes::EARS_NO_TRIGGER,
+        codes::EARS_UNPARSED,
+        codes::EARS_PATTERN,
+        codes::TERM_UNDECLARED,
+        codes::TERM_TOPIC_MISMATCH,
+        codes::TERM_AMBIGUOUS,
+        codes::TERM_DEPRECATED,
+        codes::TERM_SUGGESTED,
+        codes::CHECK_UNSCOPED,
+        codes::GUARD_UNPARSED,
+        codes::GUARD_TERM_UNDECLARED,
+        codes::GUARD_KIND_MISMATCH,
+        codes::GUARD_UNSATISFIABLE,
+        codes::CONFLICT_REF_UNKNOWN,
+        codes::CONTRADICTION,
+        codes::SEARCH_REFUSED,
+        codes::CHECK_COVERAGE,
+        codes::IMPORT_INPUT_INVALID,
+        codes::IMPORT_TERM_SKIPPED,
+        codes::IMPORT_DUPLICATE_ID,
+        codes::IMPORT_MERGE_CONFLICT,
+        codes::CODE_ROUTINE_LIMIT,
+        codes::CODE_TYPE_LIMIT,
+        codes::CODE_FILE_LIMIT,
+        codes::CODE_PARSE_FAILED,
+        codes::CODE_FILE_UNOWNED,
+        codes::CODE_COVERAGE,
+        codes::CODE_CONFIG_INVALID,
+        codes::CODE_RATCHET,
+        codes::CODE_DUPLICATE_BLOCK,
+        codes::CODE_SCATTERED_DEFINITION,
+        codes::CODE_DEFINITION_AMBIGUOUS,
+        codes::CODE_SCATTERED_STATE,
+        codes::CODE_SIMILAR_FAMILY,
+        codes::CODE_POSITIONAL_ACCESS,
+    ];
+
     #[test]
-    fn catalogue_has_61_entries_and_every_codes_constant() {
-        assert_eq!(CODES.len(), 61);
+    fn catalogue_has_75_entries_and_every_codes_constant() {
+        assert_eq!(CODES.len(), 75);
         assert_eq!(CHECK_CODES.len(), 20);
-        let all = [
-            codes::SPEC_DOC_MISSING,
-            codes::SPEC_JSON_INVALID,
-            codes::SPEC_PHASE_UNKNOWN,
-            codes::SPEC_PHASE_MISSING,
-            codes::SPEC_SUPERSEDED_DANGLING,
-            codes::SPEC_SUPERSEDED_CYCLE,
-            codes::MD_FENCE_UNCLOSED,
-            codes::REQ_NO_CRITERIA,
-            codes::REQ_DUPLICATE_ID,
-            codes::REQ_NON_NUMERIC_ID,
-            codes::TASK_HIERARCHY,
-            codes::TASK_REQ_REF_INVALID,
-            codes::TASK_DUPLICATE_ID,
-            codes::TASK_BOUNDARY_UNKNOWN,
-            codes::TASK_REQ_UNKNOWN,
-            codes::TASK_DEPENDS_UNKNOWN,
-            codes::DESIGN_COMPONENT_NO_FILES,
-            codes::DESIGN_FILE_UNASSIGNED,
-            codes::DESIGN_NO_FILE_PLAN,
-            codes::ROADMAP_DEP_UNKNOWN,
-            codes::ROADMAP_NO_SPECS_SECTION,
-            codes::VOCAB_MISSING,
-            codes::VOCAB_INVALID,
-            codes::VOCAB_SCHEMA_UNSUPPORTED,
-            codes::TERM_NO_DEFINITION,
-            codes::TERM_KIND_INVALID,
-            codes::TERM_DUPLICATE_LABEL,
-            codes::TERM_BROADER_UNKNOWN,
-            codes::TERM_BROADER_CROSS_TOPIC,
-            codes::TERM_BROADER_CYCLE,
-            codes::TERM_DEPRECATED_NO_REPLACEMENT,
-            codes::TERM_REPLACED_BY_UNKNOWN,
-            codes::TERM_REPLACED_BY_CROSS_TOPIC,
-            codes::TOPIC_EMPTY,
-            codes::TOPICS_UNDECLARED,
-            codes::TOPIC_UNKNOWN,
-            codes::VOCAB_LABEL_CROSS_TOPIC,
-            codes::EARS_NO_SHALL,
-            codes::EARS_MULTI_SHALL,
-            codes::EARS_MODAL,
-            codes::EARS_NO_TRIGGER,
-            codes::EARS_UNPARSED,
-            codes::EARS_PATTERN,
-            codes::TERM_UNDECLARED,
-            codes::TERM_TOPIC_MISMATCH,
-            codes::TERM_AMBIGUOUS,
-            codes::TERM_DEPRECATED,
-            codes::TERM_SUGGESTED,
-            codes::CHECK_UNSCOPED,
-            codes::GUARD_UNPARSED,
-            codes::GUARD_TERM_UNDECLARED,
-            codes::GUARD_KIND_MISMATCH,
-            codes::GUARD_UNSATISFIABLE,
-            codes::CONFLICT_REF_UNKNOWN,
-            codes::CONTRADICTION,
-            codes::SEARCH_REFUSED,
-            codes::CHECK_COVERAGE,
-            codes::IMPORT_INPUT_INVALID,
-            codes::IMPORT_TERM_SKIPPED,
-            codes::IMPORT_DUPLICATE_ID,
-            codes::IMPORT_MERGE_CONFLICT,
-        ];
-        assert_eq!(all.len(), 61);
-        for c in all {
+        let all = ALL_CODES;
+        assert_eq!(all.len(), 75);
+        for c in all.iter().copied() {
             assert_eq!(
                 CODES.iter().filter(|e| e.code == c).count(),
                 1,

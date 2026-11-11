@@ -1,0 +1,173 @@
+{
+  "coverage": [
+    {
+      "present": false,
+      "reason": "no report of this source in the run",
+      "source": "code"
+    },
+    {
+      "present": true,
+      "reason": null,
+      "source": "spec"
+    }
+  ],
+  "points": [
+    {
+      "attributes": {
+        "kiro.document": "design",
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.approved",
+      "unit": "value",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.document": "design",
+        "kiro.spec": "old"
+      },
+      "name": "kiro.spec.approved",
+      "unit": "value",
+      "value": 0.0
+    },
+    {
+      "attributes": {
+        "kiro.document": "requirements",
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.approved",
+      "unit": "value",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.document": "requirements",
+        "kiro.spec": "old"
+      },
+      "name": "kiro.spec.approved",
+      "unit": "value",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.document": "tasks",
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.approved",
+      "unit": "value",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.document": "tasks",
+        "kiro.spec": "old"
+      },
+      "name": "kiro.spec.approved",
+      "unit": "value",
+      "value": 0.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.criteria.checked",
+      "unit": "count",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.criteria.total",
+      "unit": "count",
+      "value": 4.0
+    },
+    {
+      "attributes": {
+        "kiro.code": "CHECK_UNSCOPED",
+        "kiro.severity": "warning",
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.findings",
+      "unit": "count",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.code": "VOCAB_MISSING",
+        "kiro.severity": "info",
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.findings",
+      "unit": "count",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.phase": "superseded",
+        "kiro.spec": "old"
+      },
+      "name": "kiro.spec.phase",
+      "unit": "value",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.phase": "tasks-generated",
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.phase",
+      "unit": "value",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.tasks.done",
+      "unit": "count",
+      "value": 1.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.spec.tasks.total",
+      "unit": "count",
+      "value": 4.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.trace.components.unmapped",
+      "unit": "count",
+      "value": 0.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.trace.criteria.untasked",
+      "unit": "count",
+      "value": 0.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.trace.files.multi_owned",
+      "unit": "count",
+      "value": 0.0
+    },
+    {
+      "attributes": {
+        "kiro.spec": "demo"
+      },
+      "name": "kiro.trace.tasks.unknown_boundary",
+      "unit": "count",
+      "value": 0.0
+    }
+  ],
+  "schema_version": 1
+}

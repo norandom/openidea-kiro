@@ -291,6 +291,107 @@ pub fn display_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
 
+/// Reads an optional project file: `None` when it does not exist, a
+/// failure when it exists and cannot be read as UTF-8 text.
+pub fn read_optional(path: &Path) -> Result<Option<String>, Failure> {
+    match std::fs::read_to_string(path) {
+        Ok(text) => Ok(Some(text)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(Failure::new(format!(
+            "failed to read `{}`: {error}",
+            display_path(path)
+        ))),
+    }
+}
+
+/// Resolves a telemetry directory and refuses one inside the project.
+///
+/// A relative path is taken from the current directory. The directory need
+/// not exist yet. The path is resolved component by component: as long as
+/// the part walked so far exists it is made canonical, so a symbolic link
+/// is followed; from the first missing component on, names are appended and
+/// `..` removes the last one. The comparison with the project root is
+/// therefore not fooled by `..`, by a link, or by a `..` that passes through
+/// a directory that does not exist (which Windows resolves lexically and
+/// other systems do not resolve at all).
+pub fn telemetry_dir(root: &ProjectRoot, dir: &Path) -> Result<PathBuf, Failure> {
+    use std::path::Component;
+    let absolute = if dir.is_absolute() {
+        dir.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map_err(|e| Failure::new(format!("failed to read the current directory: {e}")))?
+            .join(dir)
+    };
+    let mut resolved = PathBuf::new();
+    // True while `resolved` names something that exists and is canonical.
+    let mut real = true;
+    for component in absolute.components() {
+        match component {
+            Component::Prefix(_) | Component::RootDir => resolved.push(component.as_os_str()),
+            Component::CurDir => {}
+            Component::ParentDir => {
+                resolved.pop();
+            }
+            Component::Normal(name) => {
+                resolved.push(name);
+                // Once a component is missing nothing after it is looked up.
+                real = real && make_canonical(&mut resolved);
+            }
+        }
+    }
+    if resolved.starts_with(root.path()) {
+        return Err(Failure::new(format!(
+            "telemetry directory `{}` is inside the project; choose a directory outside the repository",
+            display_path(dir)
+        )));
+    }
+    Ok(resolved)
+}
+
+/// Replaces `path` by its canonical form when it exists. Returns whether
+/// it did; a path that does not exist is left as it is.
+fn make_canonical(path: &mut PathBuf) -> bool {
+    match path.canonicalize() {
+        Ok(canonical) => {
+            *path = canonical;
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+/// Appends `line` and a newline to `path` in one write, creating the file
+/// and its directory when missing. One write per line keeps concurrent
+/// runs from interleaving within a line.
+pub fn append_line(path: &Path, line: &str) -> Result<(), Failure> {
+    use std::io::Write as _;
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        std::fs::create_dir_all(parent).map_err(|e| {
+            Failure::new(format!(
+                "failed to create telemetry directory `{}`: {e}",
+                display_path(parent)
+            ))
+        })?;
+    }
+    let mut record = String::with_capacity(line.len().saturating_add(1));
+    record.push_str(line);
+    record.push('\n');
+    std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .and_then(|mut file| file.write_all(record.as_bytes()))
+        .map_err(|e| {
+            Failure::new(format!(
+                "failed to write telemetry file `{}`: {e}",
+                display_path(path)
+            ))
+        })
+}
+
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 mod tests {

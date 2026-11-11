@@ -44,9 +44,11 @@ fn docs_cli_options_match_help() {
     let mut all_help = String::new();
     all_help.push_str(&run_cli(&["--help"]).stdout);
     all_help.push_str(&run_cli(&["check", "--help"]).stdout);
+    all_help.push_str(&run_cli(&["code", "check", "--help"]).stdout);
     all_help.push_str(&run_cli(&["status", "--help"]).stdout);
     all_help.push_str(&run_cli(&["graph", "--help"]).stdout);
     all_help.push_str(&run_cli(&["tasks", "--help"]).stdout);
+    all_help.push_str(&run_cli(&["telemetry", "export", "--help"]).stdout);
     all_help.push_str(&run_cli(&["vocab", "validate", "--help"]).stdout);
     all_help.push_str(&run_cli(&["vocab", "import", "--help"]).stdout);
 

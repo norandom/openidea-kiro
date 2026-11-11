@@ -1,0 +1,65 @@
+exit=0
+--- stdout
+{
+  "schema_version": "1",
+  "specs": [
+    "clean"
+  ],
+  "checked": [
+    {
+      "spec": "clean",
+      "topics": [
+        "ops"
+      ],
+      "vocabulary": "loaded",
+      "checks": {
+        "contradictions": {
+          "status": "ran",
+          "findings": 0
+        },
+        "ears": {
+          "status": "ran",
+          "findings": 0
+        },
+        "terms": {
+          "status": "ran",
+          "findings": 0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "info": 3
+  },
+  "fail_on": "error",
+  "verdict": "pass",
+  "findings": [
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "clean",
+      "file": ".kiro/specs/clean/design.md",
+      "line": null,
+      "message": "document '.kiro/specs/clean/design.md' is missing"
+    },
+    {
+      "severity": "info",
+      "code": "CHECK_COVERAGE",
+      "feature": "clean",
+      "file": ".kiro/specs/clean/requirements.md",
+      "line": null,
+      "message": "6 criteria, 7 annotated, 3 pairs considered, 0 contradictions, 0 refused"
+    },
+    {
+      "severity": "info",
+      "code": "SPEC_DOC_MISSING",
+      "feature": "clean",
+      "file": ".kiro/specs/clean/tasks.md",
+      "line": null,
+      "message": "document '.kiro/specs/clean/tasks.md' is missing"
+    }
+  ]
+}
+--- stderr

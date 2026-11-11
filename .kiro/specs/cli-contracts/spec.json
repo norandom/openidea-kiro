@@ -1,0 +1,26 @@
+{
+  "feature_name": "cli-contracts",
+  "created_at": "2026-11-09T20:27:10Z",
+  "updated_at": "2026-11-09T21:18:00Z",
+  "language": "en",
+  "phase": "tasks-generated",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": true
+    }
+  },
+  "ready_for_implementation": true,
+  "topics": [
+    "sdd"
+  ],
+  "notes": "User 2026-11-09 requested producing tasks for the five reviewed specs; this authorizes design approval and task generation. The task-plan gate and task-graph sanity review passed inline under the foreground workflow. Tasks remain unapproved and unchecked; implementation was not requested. Prototype, platform, evidence and policy-approval gates are future deliverables, not completed experiments. The archived monolithic task plan remains superseded. Owner 2026-11-10: asked whether to approve this task plan so quality-telemetry is not blocked, the owner answered proceed; recorded as task approval."
+}

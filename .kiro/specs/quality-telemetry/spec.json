@@ -1,0 +1,26 @@
+{
+  "feature_name": "quality-telemetry",
+  "created_at": "2026-11-10T19:00:00+01:00",
+  "updated_at": "2026-11-10T20:30:00+01:00",
+  "language": "en",
+  "phase": "tasks-generated",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": true
+    }
+  },
+  "ready_for_implementation": true,
+  "topics": [
+    "sdd"
+  ],
+  "notes": "Owner 2026-11-10 asked for this spec: gate metrics exported with OpenTelemetry to OpenObserve instead of a metric log file in the repository, with developer, architect, code-health and side-by-side dashboards. Requirements, design and tasks were generated in one pass for review; all three were approved by the owner on 2026-11-10. Owner decision 2026-11-10 after the T0 prototype: OTLP JSON files in a directory outside the repository, shipped by an OpenTelemetry Collector, instead of an in-process exporter; requirements 3 and 6, the design and the tasks were revised on that decision. code-constraints Requirement 13 was amended to hand metric points to this spec's provider contract."
+}

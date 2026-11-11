@@ -1,0 +1,291 @@
+# Capability plan seeded by the authorized design split, 2026-11-09.
+# Planned checks are not executable tests. Empty test/evidence arrays are intentional.
+schema_version = 1
+
+[[capabilities]]
+id = "code-constraints-r1"
+requirements = ["code-constraints:1.1","code-constraints:1.2","code-constraints:1.3","code-constraints:1.4","code-constraints:1.5","code-constraints:1.6","code-constraints:1.7"]
+planned_checks = ["Measurement Sources: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r2"
+requirements = ["code-constraints:2.1","code-constraints:2.2","code-constraints:2.3","code-constraints:2.4","code-constraints:2.5","code-constraints:2.6"]
+planned_checks = ["Configuration, Defaults and Reasons: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r3"
+requirements = ["code-constraints:3.1","code-constraints:3.2","code-constraints:3.3","code-constraints:3.4","code-constraints:3.5","code-constraints:3.6"]
+planned_checks = ["Routine Complexity and Size Limits: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r4"
+requirements = ["code-constraints:4.1","code-constraints:4.2","code-constraints:4.3","code-constraints:4.4","code-constraints:4.5"]
+planned_checks = ["Container Limits: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r5"
+requirements = ["code-constraints:5.1","code-constraints:5.2","code-constraints:5.3","code-constraints:5.4","code-constraints:5.5","code-constraints:5.6","code-constraints:5.7","code-constraints:5.8","code-constraints:5.9"]
+planned_checks = ["Ratchet, Baseline and Net Growth: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r6"
+requirements = ["code-constraints:6.1","code-constraints:6.2","code-constraints:6.3","code-constraints:6.4","code-constraints:6.5","code-constraints:6.6"]
+planned_checks = ["Spec Ownership and Task Selection: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r7"
+requirements = ["code-constraints:7.1","code-constraints:7.2","code-constraints:7.3","code-constraints:7.4","code-constraints:7.5","code-constraints:7.6"]
+planned_checks = ["Trust Signals and Degradation: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r8"
+requirements = ["code-constraints:8.1","code-constraints:8.2","code-constraints:8.3","code-constraints:8.4","code-constraints:8.5","code-constraints:8.6"]
+planned_checks = ["Agent Feedback Contract: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r9"
+requirements = ["code-constraints:9.1","code-constraints:9.2","code-constraints:9.3","code-constraints:9.4","code-constraints:9.5","code-constraints:9.6"]
+planned_checks = ["Command Line, Exit Codes, Determinism and Performance: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r10"
+requirements = ["code-constraints:10.1","code-constraints:10.2","code-constraints:10.3","code-constraints:10.4","code-constraints:10.5"]
+planned_checks = ["Self-Application, Fixtures, Documentation and Tests: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r11"
+requirements = ["code-constraints:11.1","code-constraints:11.2","code-constraints:11.3","code-constraints:11.4","code-constraints:11.5","code-constraints:11.6","code-constraints:11.7"]
+planned_checks = ["Comparable Facts and Safe Ratchet Decisions: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r12"
+requirements = ["code-constraints:12.1","code-constraints:12.2","code-constraints:12.3","code-constraints:12.4","code-constraints:12.5"]
+planned_checks = ["Prototype and Incremental Delivery Gates: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "cli-contracts-r1"
+requirements = ["cli-contracts:1.1","cli-contracts:1.2","cli-contracts:1.3","cli-contracts:1.4","cli-contracts:1.5","cli-contracts:1.6","cli-contracts:1.7"]
+planned_checks = ["Shared Parameters and Output Contract: implement and exercise the requirement-specific checks and real-binary deliverable in cli-contracts/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "cli-contracts-r2"
+requirements = ["cli-contracts:2.1","cli-contracts:2.2","cli-contracts:2.3","cli-contracts:2.4"]
+planned_checks = ["Compatibility and Executable Conformance: implement and exercise the requirement-specific checks and real-binary deliverable in cli-contracts/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "verification-evidence-r1"
+requirements = ["verification-evidence:1.1","verification-evidence:1.2","verification-evidence:1.3","verification-evidence:1.4","verification-evidence:1.5","verification-evidence:1.6","verification-evidence:1.7","verification-evidence:1.8","verification-evidence:1.9"]
+planned_checks = ["Capability Ledger: implement and exercise the requirement-specific checks and real-binary deliverable in verification-evidence/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "verification-evidence-r2"
+requirements = ["verification-evidence:2.1","verification-evidence:2.2","verification-evidence:2.3","verification-evidence:2.4","verification-evidence:2.5","verification-evidence:2.6"]
+planned_checks = ["Real-Binary Acceptance Workflow: implement and exercise the requirement-specific checks and real-binary deliverable in verification-evidence/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "verification-evidence-r3"
+requirements = ["verification-evidence:3.1","verification-evidence:3.2","verification-evidence:3.3","verification-evidence:3.4","verification-evidence:3.5","verification-evidence:3.6","verification-evidence:3.7","verification-evidence:3.8"]
+planned_checks = ["Current Execution Evidence: implement and exercise the requirement-specific checks and real-binary deliverable in verification-evidence/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "verification-evidence-r4"
+requirements = ["verification-evidence:4.1","verification-evidence:4.2","verification-evidence:4.3","verification-evidence:4.4"]
+planned_checks = ["Early Harness and Portable Gates: implement and exercise the requirement-specific checks and real-binary deliverable in verification-evidence/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "clone-constraints-r1"
+requirements = ["clone-constraints:1.1","clone-constraints:1.2","clone-constraints:1.3","clone-constraints:1.4","clone-constraints:1.5","clone-constraints:1.6","clone-constraints:1.7"]
+planned_checks = ["Duplicate Blocks and Similar-Routine Families: implement and exercise the requirement-specific checks and real-binary deliverable in clone-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "clone-constraints-r2"
+requirements = ["clone-constraints:2.1","clone-constraints:2.2","clone-constraints:2.3","clone-constraints:2.4"]
+planned_checks = ["Clone Sources and Comparable Semantics: implement and exercise the requirement-specific checks and real-binary deliverable in clone-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "clone-constraints-r3"
+requirements = ["clone-constraints:3.1","clone-constraints:3.2","clone-constraints:3.3","clone-constraints:3.4"]
+planned_checks = ["Reuse Prototype and Incremental Acceptance: implement and exercise the requirement-specific checks and real-binary deliverable in clone-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-locality-data-r1"
+requirements = ["code-locality-data:1.1","code-locality-data:1.2","code-locality-data:1.3","code-locality-data:1.4","code-locality-data:1.5","code-locality-data:1.6"]
+planned_checks = ["Scattered Definitions: implement and exercise the requirement-specific checks and real-binary deliverable in code-locality-data/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-locality-data-r2"
+requirements = ["code-locality-data:2.1","code-locality-data:2.2","code-locality-data:2.3","code-locality-data:2.4","code-locality-data:2.5"]
+planned_checks = ["Scattered State: implement and exercise the requirement-specific checks and real-binary deliverable in code-locality-data/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-locality-data-r3"
+requirements = ["code-locality-data:3.1","code-locality-data:3.2","code-locality-data:3.3","code-locality-data:3.4","code-locality-data:3.5","code-locality-data:3.6"]
+planned_checks = ["Role-Named Data Access: implement and exercise the requirement-specific checks and real-binary deliverable in code-locality-data/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-locality-data-r4"
+requirements = ["code-locality-data:4.1","code-locality-data:4.2","code-locality-data:4.3","code-locality-data:4.4"]
+planned_checks = ["Noise Control and Independent Acceptance: implement and exercise the requirement-specific checks and real-binary deliverable in code-locality-data/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "code-constraints-r13"
+requirements = ["code-constraints:13.1","code-constraints:13.2","code-constraints:13.3","code-constraints:13.4","code-constraints:13.5","code-constraints:13.6"]
+planned_checks = ["Hook Summary and Metric Points: implement and exercise the requirement-specific checks and real-binary deliverable in code-constraints/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "quality-telemetry-r1"
+requirements = ["quality-telemetry:1.1","quality-telemetry:1.2","quality-telemetry:1.3","quality-telemetry:1.4","quality-telemetry:1.5","quality-telemetry:1.6"]
+planned_checks = ["Metric Snapshot: implement and exercise the requirement-specific checks and real-binary deliverable in quality-telemetry/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "quality-telemetry-r2"
+requirements = ["quality-telemetry:2.1","quality-telemetry:2.2","quality-telemetry:2.3","quality-telemetry:2.4","quality-telemetry:2.5"]
+planned_checks = ["Specification and Traceability Metrics: implement and exercise the requirement-specific checks and real-binary deliverable in quality-telemetry/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "quality-telemetry-r3"
+requirements = ["quality-telemetry:3.1","quality-telemetry:3.2","quality-telemetry:3.3","quality-telemetry:3.4","quality-telemetry:3.5","quality-telemetry:3.6","quality-telemetry:3.7","quality-telemetry:3.8"]
+planned_checks = ["Export: implement and exercise the requirement-specific checks and real-binary deliverable in quality-telemetry/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "quality-telemetry-r4"
+requirements = ["quality-telemetry:4.1","quality-telemetry:4.2","quality-telemetry:4.3","quality-telemetry:4.4"]
+planned_checks = ["Signals: implement and exercise the requirement-specific checks and real-binary deliverable in quality-telemetry/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "quality-telemetry-r5"
+requirements = ["quality-telemetry:5.1","quality-telemetry:5.2","quality-telemetry:5.3","quality-telemetry:5.4"]
+planned_checks = ["Dashboards: implement and exercise the requirement-specific checks and real-binary deliverable in quality-telemetry/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []
+
+[[capabilities]]
+id = "quality-telemetry-r6"
+requirements = ["quality-telemetry:6.1","quality-telemetry:6.2","quality-telemetry:6.3","quality-telemetry:6.4","quality-telemetry:6.5","quality-telemetry:6.6"]
+planned_checks = ["Prototype, Packaging and Acceptance: implement and exercise the requirement-specific checks and real-binary deliverable in quality-telemetry/design.md; current execution evidence is required for acceptance."]
+test_paths = []
+e2e_paths = []
+status = "planned"
+evidence = []

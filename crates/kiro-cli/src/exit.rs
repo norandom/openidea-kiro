@@ -1,116 +1,17 @@
-//! Exit model, process exit codes, and failure representation (task 1.1).
+//! Exit model, process exit codes, and failure representation.
+//!
+//! The definitions live in the shared `kiro-cli-common` library (spec
+//! `cli-contracts`); this module re-exports them so existing paths keep
+//! working.
 
-use std::process::ExitCode;
-
-use kiro_core::finding::{Finding, Severity};
-
-/// Process exit verdict for command execution.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Exit {
-    /// Success / clean execution (exit code 0).
-    Clean,
-    /// Execution completed with findings meeting the `--fail-on` threshold (exit code 1).
-    Findings,
-    /// Unrecoverable CLI, I/O, or usage failure (exit code 2).
-    Failure,
-}
-
-impl Exit {
-    /// Returns the integer exit code value (0, 1, or 2).
-    #[must_use]
-    pub fn code(self) -> u8 {
-        match self {
-            Exit::Clean => 0,
-            Exit::Findings => 1,
-            Exit::Failure => 2,
-        }
-    }
-}
-
-impl From<Exit> for ExitCode {
-    fn from(exit: Exit) -> Self {
-        ExitCode::from(exit.code())
-    }
-}
-
-/// A single-line error reason printed to stderr by main; always produces exit code 2.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Failure(pub String);
-
-impl Failure {
-    /// Constructs a new `Failure`, flattening any newlines into `"; "` and trimming parts.
-    pub fn new(msg: impl Into<String>) -> Self {
-        let msg = msg.into();
-        let parts: Vec<&str> = msg
-            .lines()
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .collect();
-        let joined = parts.join("; ");
-        Self(joined)
-    }
-}
-
-impl std::fmt::Display for Failure {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl std::error::Error for Failure {}
-
-/// Finding severity threshold required to trigger non-zero exit (`Exit::Findings`).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum, serde::Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum FailOn {
-    /// Fails only on `Severity::Error`.
-    Error,
-    /// Fails on `Severity::Error` or `Severity::Warning`.
-    Warning,
-}
-
-/// Determines whether a finding's severity meets the `--fail-on` threshold.
-///
-/// Error always meets; Warning meets when `fail_on == FailOn::Warning`; Info never meets.
-#[must_use]
-pub fn meets(fail_on: FailOn, severity: Severity) -> bool {
-    match (fail_on, severity) {
-        (_, Severity::Error) => true,
-        (FailOn::Warning, Severity::Warning) => true,
-        (FailOn::Error, Severity::Warning) => false,
-        (_, Severity::Info) => false,
-    }
-}
-
-/// Computes the process exit verdict over an iterator of findings.
-///
-/// Returns `Exit::Findings` if any finding meets `fail_on`, otherwise `Exit::Clean`.
-pub fn verdict<'a>(fail_on: FailOn, findings: impl IntoIterator<Item = &'a Finding>) -> Exit {
-    if findings.into_iter().any(|f| meets(fail_on, f.severity)) {
-        Exit::Findings
-    } else {
-        Exit::Clean
-    }
-}
-
-/// Parses a severity name (case-insensitive) into `Severity`.
-#[must_use]
-pub fn parse_severity(s: &str) -> Option<Severity> {
-    if s.eq_ignore_ascii_case("error") {
-        Some(Severity::Error)
-    } else if s.eq_ignore_ascii_case("warning") {
-        Some(Severity::Warning)
-    } else if s.eq_ignore_ascii_case("info") {
-        Some(Severity::Info)
-    } else {
-        None
-    }
-}
+pub use kiro_cli_common::{Exit, FailOn, Failure, meets, parse_severity, verdict};
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 mod tests {
     use super::*;
+    use kiro_core::finding::{Finding, Severity};
+    use std::process::ExitCode;
 
     #[test]
     fn meets_truth_table() {

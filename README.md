@@ -4,7 +4,27 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/1450282526.svg)](https://zenodo.org/badge/latestdoi/1450282526)
 
-**Kiro** is a Spec-Driven Development (SDD) tooling ecosystem and OpenIDEA IDE plugin. It brings formal requirement constraints, domain vocabulary grounding, structural specification visualization, bidirectional code ↔ spec navigation, and automated CI quality gates to modern software development.
+Spec-driven development gives a coding agent requirements, a design and tasks. It does not check that the requirements agree with each other, that "done" was shown by a test run, or that the code stays workable after many tasks. This project adds those checks to the [cc-sdd](https://github.com/gotalab/cc-sdd) workflow in the kiro layout, as a CLI gate for CI and a plugin for the OpenIDEA editor.
+
+Today it verifies the specification itself: acceptance criteria written in EARS are grounded in a declared vocabulary and searched for contradictions with binary decision diagrams, and every file can be traced to the criterion, task and design component that own it. Verification of test evidence and of code maintainability is specified and not yet implemented.
+
+## What it verifies
+
+| Level | Question | Status |
+| :--- | :--- | :--- |
+| 1. Consistent requirements | Can two criteria contradict each other? Does every term have one meaning? | Implemented |
+| 2. Traceable work | Which criterion, task and component own this file? | Implemented |
+| 3. Executed evidence | Which tests prove this criterion, and did they pass on the current inputs? | Specified |
+| 4. Maintainable code | Did this task make the code harder to change? | Specified |
+| 5. Less code | Can existing code be replaced by what the framework already provides? | Separate project: [lesscode](https://github.com/norandom/lesscode) |
+
+The [vision](docs/vision.md) explains each level, what it does not show, and where it sits in the agent workflow.
+
+### Relationship to lesscode
+
+The two projects form one stack and do not repeat each other. This project prevents: it holds new and changed code to agreed limits, per task, and names the owning spec. [lesscode](https://github.com/norandom/lesscode) reduces: it measures whether a rewrite of existing code is a substantial simplification with the same behaviour. A finding from the planned code gate names a candidate; a lesscode receipt shows whether the replacement was worth it.
+
+The code rules of level 4 originate in `scitools-hook`, which is being archived because it depends on a licensed analyzer. The ideas are carried over on open-source parsers for Windows, Linux and macOS.
 
 ---
 
@@ -269,17 +289,23 @@ When criteria prescribe conflicting effects (e.g., Criterion 3.1 commands `armed
 
 If problem size exceeds configured limits, Kiro safely degrades by emitting `SEARCH_REFUSED` rather than hanging or guessing.
 
-> 📖 **Deep Dive**: For full proofs, mathematical formulas, and algorithmic workflows, read the complete guide: **[Formal Verification Strategy: Domain Ontologies, Finitization, and BDDs](docs/verification.md)**.
+The full method, with the encoding and its limits, is in [Formal Verification Strategy](docs/verification.md).
 
 ---
 
 ## Documentation Index
 
-- **[CLI Command Reference](docs/cli.md)**: Detailed syntax, options, and exit codes for `kiro-cli`.
-- **[CI/CD Integration Guide](docs/ci.md)**: GitHub Actions workflows, shell scripts, and JSON reporting.
-- **[Formal Verification Strategy](docs/verification.md)**: Mathematical foundations, SMT vs. BDD trade-offs, domain ontologies, and finitization algorithms.
-- **[Vocabulary Guide](docs/vocabulary.md)**: Schema rules, topic scoping, and Auto Ontology / SKOS import pipelines.
-- **[Constraint Checks Reference](docs/checks.md)**: EARS pattern rules, term resolution, and BDD contradiction search.
+The [documentation index](docs/README.md) is ordered by what you want to do. In short:
+
+| You want to | Read |
+| :--- | :--- |
+| Know what is verified, what is planned and what is not shown | [Vision](docs/vision.md) |
+| Look up a command, option or exit code | [CLI reference](docs/cli.md) |
+| Run the gate in CI and read the JSON report | [CI integration](docs/ci.md) |
+| Understand a finding code | [Constraint checks](docs/checks.md) |
+| Declare terms and topics or import a vocabulary | [Vocabulary guide](docs/vocabulary.md) |
+| See how contradictions are found | [Verification strategy](docs/verification.md) |
+| Read the open risks of the planned code-quality work | [Design review, 2026-11-10](.kiro/specs/code-constraints/design-review-2026-11-10.md) |
 
 ---
 

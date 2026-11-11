@@ -1,0 +1,14 @@
+exit=0
+--- stdout
+Vocabulary: .kiro/vocabulary.toml — loaded (1 topics, 5 terms)
+
+Spec: clean (topics: ops) — vocabulary: loaded
+EARS: 6 criteria checked, 0 findings
+Terms: 10 declared — 10 resolved, 0 deprecated, 0 mismatched, 0 undeclared, 0 ambiguous; 0 suggested
+Contradictions: 4 guarded criteria, 3 pairs considered, 0 found, 0 refused (caps: 512 variables, 100000 nodes)
+.kiro/specs/clean/design.md: INFO SPEC_DOC_MISSING document '.kiro/specs/clean/design.md' is missing
+.kiro/specs/clean/requirements.md: INFO CHECK_COVERAGE 6 criteria, 7 annotated, 3 pairs considered, 0 contradictions, 0 refused
+.kiro/specs/clean/tasks.md: INFO SPEC_DOC_MISSING document '.kiro/specs/clean/tasks.md' is missing
+
+Checked 1 specs: 0 errors, 0 warnings, 3 info — fail-on error: pass
+--- stderr

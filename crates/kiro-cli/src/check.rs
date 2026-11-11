@@ -2,7 +2,7 @@
 
 use kiro_core::checks::{CheckConfig, run_checks};
 use kiro_core::finding::sort_findings;
-use kiro_core::source::Workspace;
+use kiro_core::source::{Feature, Workspace};
 use kiro_core::vocab::load as vocab_load;
 
 use crate::cli::Selection;
@@ -42,16 +42,37 @@ pub fn select(selection: &Selection, discovered: &[String]) -> Result<Vec<String
     }
 }
 
+/// What one gate run checks and how it is judged.
+pub struct CheckRequest<'a> {
+    pub source: FsSource,
+    /// Every spec found under the project, for cross-spec references.
+    pub discovered: Vec<String>,
+    /// The specs to check, in report order.
+    pub specs: Vec<String>,
+    pub config: &'a CheckConfig,
+    pub fail_on: FailOn,
+}
+
 /// Executes all spec checks across `specs` and produces the consolidated [`GateReport`].
 #[must_use]
-pub fn run(
+pub fn run(root: &ProjectRoot, request: CheckRequest<'_>) -> GateReport {
+    run_with_features(root, request).0
+}
+
+/// Like [`run`], and also returns the loaded feature of every checked spec
+/// in the same order, for consumers that read the documents themselves.
+#[must_use]
+pub fn run_with_features(
     _root: &ProjectRoot,
-    source: FsSource,
-    discovered: Vec<String>,
-    specs: Vec<String>,
-    config: &CheckConfig,
-    fail_on: FailOn,
-) -> GateReport {
+    request: CheckRequest<'_>,
+) -> (GateReport, Vec<Feature>) {
+    let CheckRequest {
+        source,
+        discovered,
+        specs,
+        config,
+        fail_on,
+    } = request;
     let mut ws = Workspace::new(source, discovered);
     ws.adopt_roadmap_features();
     let roadmap = ws
@@ -61,6 +82,7 @@ pub fn run(
     let vocabulary = vocab_load(&mut ws);
 
     let mut checked = Vec::with_capacity(specs.len());
+    let mut features: Vec<Feature> = Vec::with_capacity(specs.len());
     for spec in &specs {
         let report = run_checks(&mut ws, spec, config);
         let structural = ws
@@ -76,6 +98,7 @@ pub fn run(
         }
         sort_findings(&mut findings);
 
+        features.push(ws.load(spec).clone());
         checked.push(SpecResult {
             spec: spec.clone(),
             report,
@@ -93,7 +116,7 @@ pub fn run(
     let counts = Counts::from_findings(all_findings.iter().copied());
     let exit = verdict(fail_on, all_findings);
 
-    GateReport {
+    let report = GateReport {
         specs,
         vocabulary,
         roadmap,
@@ -101,7 +124,8 @@ pub fn run(
         fail_on,
         counts,
         exit,
-    }
+    };
+    (report, features)
 }
 
 #[cfg(test)]
@@ -169,12 +193,16 @@ mod tests {
         )
         .unwrap();
 
-        let source = FsSource::new(root.clone(), false);
-        let discovered = vec!["demo".to_string()];
-        let specs = vec!["demo".to_string()];
         let config = CheckConfig::default();
+        let request = CheckRequest {
+            source: FsSource::new(root.clone(), false),
+            discovered: vec!["demo".to_string()],
+            specs: vec!["demo".to_string()],
+            config: &config,
+            fail_on: FailOn::Error,
+        };
 
-        let report = run(&root, source, discovered, specs, &config, FailOn::Error);
+        let report = run(&root, request);
         assert_eq!(report.specs, vec!["demo".to_string()]);
         assert_eq!(report.checked.len(), 1);
         assert_eq!(report.checked[0].spec, "demo");

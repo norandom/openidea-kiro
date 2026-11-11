@@ -84,17 +84,51 @@ pub fn setup_tree(fixture: &Path) -> (TempDir, PathBuf) {
     (temp, path)
 }
 
+/// Environment variables the shared CLI groups read. Tests remove them so a
+/// developer's own settings cannot change a result.
+const SHARED_ENV: &[&str] = &[
+    "KIRO_PROJECT",
+    "KIRO_FORMAT",
+    "KIRO_FAIL_ON",
+    "NO_COLOR",
+    "CLICOLOR_FORCE",
+    "KIRO_TELEMETRY_DIR",
+    "KIRO_RUN_KIND",
+    "OTEL_SERVICE_NAME",
+    "OTEL_RESOURCE_ATTRIBUTES",
+];
+
+fn command() -> Command {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_kiro-cli"));
+    for name in SHARED_ENV {
+        command.env_remove(name);
+    }
+    command
+}
+
 /// Runs the compiled `kiro-cli` binary with the given arguments.
 pub fn run_cli(args: &[&str]) -> Output {
-    let bin = env!("CARGO_BIN_EXE_kiro-cli");
-    let out = Command::new(bin).args(args).output().unwrap();
+    let out = command().args(args).output().unwrap();
     Output::from_process(out)
 }
 
 /// Runs the compiled `kiro-cli` binary in `current_dir` with the given arguments.
 pub fn run_cli_in(current_dir: &Path, args: &[&str]) -> Output {
-    let bin = env!("CARGO_BIN_EXE_kiro-cli");
-    let out = Command::new(bin)
+    let out = command()
+        .current_dir(current_dir)
+        .args(args)
+        .output()
+        .unwrap();
+    Output::from_process(out)
+}
+
+/// Runs the binary in `current_dir` with the given environment variables set.
+pub fn run_cli_env(current_dir: &Path, env: &[(&str, &str)], args: &[&str]) -> Output {
+    let mut command = command();
+    for (name, value) in env {
+        command.env(name, value);
+    }
+    let out = command
         .current_dir(current_dir)
         .args(args)
         .output()

@@ -1,0 +1,22 @@
+exit=0
+--- stdout
+Spec: demo
+Phase: tasks-generated
+Ready for implementation: yes
+
+| Document | Generated | Approved |
+| --- | --- | --- |
+| requirements | yes | yes |
+| design | yes | yes |
+| tasks | yes | yes |
+
+Tasks: 1/4 done (25%); parallel 1; optional 1
+| Major | Done | Description |
+| --- | --- | --- |
+| 1 | 1/2 | Foundation |
+| 2 | 0/1 | Optional hardening |
+
+Requirements: 2 (4 criteria)
+Design: 2 components, 2 files (0 unassigned)
+Findings: 0 errors, 0 warnings, 0 info
+--- stderr

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/kiro-core", "crates/kiro-cli"]
+members = ["crates/kiro-core", "crates/kiro-cli", "crates/kiro-cli-common", "crates/kiro-code"]
 exclude = ["plugins/kiro"]
 
 [workspace.package]

@@ -1,0 +1,4 @@
+exit=2
+--- stdout
+--- stderr
+spec `nope` was not found; discovered: clean
