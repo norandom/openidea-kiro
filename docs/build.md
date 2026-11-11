@@ -89,8 +89,8 @@ cargo run -p kiro-cli -- code check --changed origin/main     # the code gate on
 A tag that matches `v*` starts the release workflow. It builds `kiro-cli` for Linux x86_64, macOS on Apple Silicon and Intel, and Windows x86_64, builds the plugin, writes `SHA256SUMS.txt`, and publishes a GitHub release with generated notes. A tag with `-alpha`, `-beta`, `-rc` or `-pre` is published as a pre-release.
 
 ```bash
-git tag -a v1.0.0 -m "OpenIDEA Kiro 1.0.0"
-git push origin v1.0.0
+git tag -a v1.1.0 -m "OpenIDEA Kiro 1.1.0"
+git push origin v1.1.0
 ```
 
-Before tagging, set the same version in the four crate manifests, `plugins/kiro/Cargo.toml`, `plugins/kiro/plugin.toml` and `CITATION.cff`. Zenodo archives each published release and assigns a new version DOI; the DOI for all versions, 10.5281/zenodo.24128225, stays the same. After a release, set the new version DOI in `CITATION.cff` (`doi` and the first identifier) and in the BibTeX entry of the README.
+Before tagging, set the same version in the four crate manifests, `plugins/kiro/Cargo.toml`, `plugins/kiro/plugin.toml` and `CITATION.cff`. Also set the version in the asset names and the BibTeX entry of the README. Zenodo archives each published release and assigns a new version DOI afterwards, so a release cannot name its own. `CITATION.cff` and the README therefore cite the DOI for all versions, 10.5281/zenodo.24128225, which needs no change per release.
