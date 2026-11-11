@@ -7,6 +7,14 @@ title: "OpenIDEA Kiro: Specification-Driven Software Engineering with Domain Ont
 version: 1.0.0
 date-released: "2026-11-11"
 license: MIT
+doi: "10.5281/zenodo.24128226"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.24128226"
+    description: "Archived snapshot of version 1.0.0"
+  - type: doi
+    value: "10.5281/zenodo.24128225"
+    description: "All versions; resolves to the latest release"
 url: "https://github.com/norandom/openidea-kiro"
 repository-code: "https://github.com/norandom/openidea-kiro"
 keywords:

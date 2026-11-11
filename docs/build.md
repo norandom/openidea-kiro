@@ -93,4 +93,4 @@ git tag -a v1.0.0 -m "OpenIDEA Kiro 1.0.0"
 git push origin v1.0.0
 ```
 
-Before tagging, set the same version in the four crate manifests, `plugins/kiro/Cargo.toml`, `plugins/kiro/plugin.toml` and `CITATION.cff`. Zenodo archives each published release and assigns its DOI.
+Before tagging, set the same version in the four crate manifests, `plugins/kiro/Cargo.toml`, `plugins/kiro/plugin.toml` and `CITATION.cff`. Zenodo archives each published release and assigns a new version DOI; the DOI for all versions, 10.5281/zenodo.24128225, stays the same. After a release, set the new version DOI in `CITATION.cff` (`doi` and the first identifier) and in the BibTeX entry of the README.
