@@ -195,6 +195,8 @@ pub struct CodeRun {
     pub report: CodeReport,
     /// One line per scope and metric, when `--show-highest` was given.
     pub highest: Vec<String>,
+    /// The rules that read the whole project did not run (`--local`).
+    pub local: bool,
 }
 
 /// Whether a measurement profile covers the path.
@@ -355,13 +357,22 @@ fn highest_lines(facts: &CodeFacts) -> Vec<String> {
         .collect()
 }
 
+/// What a run does beyond judging the selection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct RunOptions {
+    /// Also collect the highest value of every metric.
+    pub show_highest: bool,
+    /// Leave out the rules that read the whole project.
+    pub local: bool,
+}
+
 /// Runs the code check.
 pub fn run(
     root: &ProjectRoot,
     source: FsSource,
     discovered: Vec<String>,
     selection: &CodeSelection,
-    show_highest: bool,
+    options: RunOptions,
 ) -> Result<CodeRun, Failure> {
     // The configuration is validated before anything is read or measured.
     let config = load_config(root)?;
@@ -377,7 +388,11 @@ pub fn run(
     }
     let selected = selected_paths(&bundle);
     let (before_side, no_before) = before_side(root, changes, &selected)?;
-    let cross_file = crate::cross::judge(root, &selected, config.rules())?;
+    let cross_file = if options.local {
+        crate::cross::not_run()
+    } else {
+        crate::cross::judge(root, &selected, config.rules())?
+    };
 
     let mut report = evaluate(&EvaluateInput {
         facts: &facts,
@@ -399,10 +414,14 @@ pub fn run(
         explain_missing_before(&mut report, reason);
     }
 
-    let highest = if show_highest {
+    let highest = if options.show_highest {
         highest_lines(&facts)
     } else {
         Vec::new()
     };
-    Ok(CodeRun { report, highest })
+    Ok(CodeRun {
+        report,
+        highest,
+        local: options.local,
+    })
 }

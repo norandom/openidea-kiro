@@ -54,6 +54,7 @@ Validate specifications against structural constraints, EARS requirements syntax
 - `--format <text|json>`: Report output format: `text` (human-readable) or `json` (machine-readable). (Default: `text`).
 - `--output <PATH>`: Write the report to this file instead of standard output; nothing of the report is then printed. `-` means standard output. A file that cannot be written is a failure (exit code 2).
 - `--fail-on <error|warning>`: Severity threshold that triggers exit code 1. (Default: `error`).
+- `--local`: Judge the selected files on their own. The rules that read the whole project (duplicate blocks, similar routines, scattered definitions and state, positional data access) do not run, and the coverage line says so. For a fast pre-commit hook; see [Code rules](code-rules.md#in-a-hook-and-in-ci).
 - `--telemetry-dir <DIR>`: Also append the telemetry of this run to files in this directory, which must lie outside the project. Falls back to `KIRO_TELEMETRY_DIR`. The report and the exit code are unaffected.
 - `--checks <ears,terms,contradictions>`: Comma-delimited list of check kinds to run. (Default: all enabled).
 - `--patterns`: Report recognized EARS statement patterns (`ubiquitous`, `event-driven`, etc.) as info findings.

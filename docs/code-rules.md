@@ -1,6 +1,6 @@
 # Code rules
 
-Status: in progress (spec `code-constraints`). `kiro-cli code check` measures routines, types and files, judges them against configurable limits and against a before side (a Git revision or a committed baseline), and attributes every finding to its spec. Duplicate detection and the locality rules are not implemented yet; this page says so wherever it matters.
+Status: in progress (spec `code-constraints`). `kiro-cli code check` measures routines, types and files, judges them against configurable limits and against a before side (a Git revision or a committed baseline), and attributes every finding to its spec. Duplicate blocks, similar routines, scattered definitions and state, and positional data access are judged in the same run. What is not built yet is said where it matters.
 
 The rules exist because a code base written task by task degrades in ways no single task review catches: routines grow, files collect unrelated responsibilities. The gate reports each breach with the spec, component and tasks that own the file and with one edit that resolves it.
 
@@ -162,13 +162,31 @@ The baseline is the measurement of the whole tree: sorted, without timestamps, b
 
 The coverage line ends with the net growth over the changed files, deleted files included, for example `net: -4 statements, +2 lines`. When a side is incomplete it says `unavailable` and why; a missing side is never counted as zero.
 
-### In a hook
+### In a hook and in CI
 
-`--summary` prints at most 25 lines of plain ASCII in a fixed order: verdict, before side, finding counts, what worsened and what improved with before and after values, and the net growth. The exit code is the same as without it.
+The checks have two costs, and each belongs at its own stage:
+
+| Stage | Command | What runs | Cost |
+| --- | --- | --- | --- |
+| pre-commit | `kiro-cli code check --changed HEAD --local --summary` | Limits and the ratchet of the changed files | Reads the changed files only |
+| pre-push (optional) | `kiro-cli code check --changed origin/main --summary` | The same, and the rules that read the whole project | Parses every source file of the project |
+| CI | `kiro-cli code check --changed origin/main` | The same as pre-push, with the full report | The same; this is the stage that must not be skipped |
+
+- **`--local`** leaves out the rules that read the whole project: duplicate blocks, similar routines, scattered definitions and state, positional data access. The limits, the ratchet and the attribution are unchanged. The coverage line then ends with `rules across files: not run (--local)`, and the first line of the summary says `local: rules across files not run`. A local pass is therefore no statement about copies.
+- **Why the split.** A copy or a scattered definition counts wherever the original stands, so those rules parse the whole project whatever was selected. Measured on a repository of 1,875 Python files: a one-file check takes about 12 seconds with them and 0.3 seconds with `--local`.
+- **CI** needs the history of the revision it compares with: fetch the base branch (in GitHub Actions `fetch-depth: 0` on the checkout). A missing revision is a failure, never a pass.
+- `--summary` prints at most 25 lines of plain ASCII in a fixed order: verdict, before side, finding counts, what worsened and what improved with before and after values, and the net growth. The exit code is the same as without it.
 
 ```bash
-# pre-push: compare with the upstream branch
-kiro-cli code check --changed origin/main --summary
+#!/bin/sh
+# .git/hooks/pre-commit (Windows, Linux and macOS: Git runs hooks with sh)
+exec kiro-cli code check --changed HEAD --local --summary
+```
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-push
+exec kiro-cli code check --changed origin/main --summary
 ```
 
 The gate installs no hook. Call it from the hook mechanism you already use.

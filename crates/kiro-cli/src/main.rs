@@ -251,7 +251,10 @@ fn run_code_check(session: &Session, args: &CodeCheckArgs) -> Result<Exit, Failu
         session.source(&root),
         discovered,
         &selection,
-        args.show_highest,
+        code::RunOptions {
+            show_highest: args.show_highest,
+            local: args.local,
+        },
     )?;
     timer.phase("measure");
     let verdict = exit::verdict(fail_on, run.report.blocking_findings());
@@ -288,12 +291,18 @@ fn code_summary(run: &code::CodeRun, fail_on: FailOn, verdict: Exit) -> String {
         FailOn::Error => "error",
         FailOn::Warning => "warning",
     };
+    // The summary has no coverage line: a local run says so in the verdict.
+    let word = if run.local {
+        format!("{word}, local: rules across files not run")
+    } else {
+        word.to_string()
+    };
     let result = if verdict == Exit::Clean {
         "PASS"
     } else {
         "FAIL"
     };
-    kiro_core::code::report::summary(&run.report, result, word, blocking)
+    kiro_core::code::report::summary(&run.report, result, &word, blocking)
 }
 
 /// Measures the whole tree and writes the baseline the ratchet compares

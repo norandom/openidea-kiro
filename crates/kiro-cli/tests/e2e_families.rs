@@ -271,3 +271,35 @@ fn a_rule_set_to_error_blocks_at_the_default_threshold() {
         shown.stdout
     );
 }
+
+#[test]
+fn a_local_check_leaves_the_rules_across_files_out_and_says_so() {
+    let (_temp, root) = copies_with_rule("");
+    let mut local = CORE_TASK.to_vec();
+    local.push("--local");
+    let out = run_cli_in(&root, &local);
+    // The copy stands in two files: only the whole-project rules see it.
+    assert_eq!(out.code, 0, "{}", out.stdout);
+    assert!(!out.stdout.contains("CODE_SIMILAR_FAMILY"));
+    assert!(
+        out.stdout.contains(
+            "rules across files: not run (--local); run the check without --local before a push or in CI"
+        ),
+        "{}",
+        out.stdout
+    );
+    assert!(!out.stdout.contains("similar routines:"));
+    // The coverage line of the files themselves is still there.
+    assert!(out.stdout.contains("files selected: "), "{}", out.stdout);
+
+    // The hook summary has no coverage line, so its first line says it.
+    local.push("--summary");
+    let summary = run_cli_in(&root, &local);
+    assert!(
+        summary.stdout.starts_with(
+            "kiro code check: PASS (fail-on warning, local: rules across files not run)\n"
+        ),
+        "{}",
+        summary.stdout
+    );
+}

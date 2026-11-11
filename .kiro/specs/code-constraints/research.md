@@ -559,3 +559,33 @@ Percentiles (p95 / p99 / maximum): Python cyclomatic 12 / 21 / 62, code_lines 37
 3. TypeScript and JavaScript, `lines_per_statement`, and the type and file limits stay warnings.
 
 **Consequence measured on this repository:** without a before side `code check --all` reports 231 errors. Against `main` (`code check --changed main`) the branch `feat/code-quality-port` has 56 blocking findings: routines written for this port that are above the limits, and one regression.
+
+### Addendum: check stages, GridDash, and the second round of owner decisions (2026-11-11)
+
+**Where the checks run.** The owner asked how hooks stay fast on a large repository: move to CI, or keep light checks in a hook and heavy ones in CI. The established pattern is the second one. Linters that judge a file on its own (ruff, ESLint, clippy on a changed crate) run in the editor and in pre-commit; analyses that need the whole program (type checkers, CodeQL, SonarQube, copy-paste detectors such as jscpd) run before a push or in CI, where the result is binding. This gate has the same two kinds of rules:
+
+| Kind | Rules | Input |
+|---|---|---|
+| Local | limits, ratchet, attribution | the selected files and their before side |
+| Whole project | duplicate blocks, similar routines, scattered definitions and state, positional data access | every source file |
+
+Decision: `code check --local` runs the first kind only and says so in the coverage line and in the first line of the hook summary. Pre-commit uses `--local`; pre-push (optional) and CI run everything against `origin/main`. Measured with the release binary on facdrone (1,875 files): one file, full 11.5 s and 13.0 s, local 0.28 s and 0.28 s.
+
+Not chosen: a content-keyed fact cache outside the repository. It would keep the whole-project rules in every hook, but it adds state that can go stale and a second code path to verify. It stays a candidate if the pre-push stage proves too slow; the measured cost there is one parse of the project (about 26 s on facdrone, 3 to 4 s here).
+
+**CI of this repository.** The Dagger function `check` takes `base`; the workflow passes `origin/main` and checks out the full history. On a push to `main` the comparison is empty and passes; on a pull request it judges the files the branch changed. The command was run in a `rust:latest` container on a clone of this repository; the Dagger function and the workflow were not run (nothing was pushed).
+
+**GridDash (`../GridDash`), named by the owner as the second TypeScript repository.** It holds no TypeScript: 301 measured files, 300 Python and one JavaScript file of 34 routines. It is therefore a fourth Python population, not a TypeScript one. The full table is `D:\BuildArtifacts\openidea-kiro\calibration\griddash.md`.
+
+| Population | Routines | cyclomatic > 10 | nesting > 3 | code_lines > 60 | statements > 40 | parameters > 5 |
+|---|---|---|---|---|---|---|
+| GridDash, Python | 3382 | 2.9% | 0.8% | 1.9% | 0.4% | 1.9% |
+
+Percentiles (p95 / p99 / maximum): cyclomatic 9 / 14 / 30, nesting 2 / 3 / 7, code_lines 45 / 75 / 154, statements 22 / 31 / 76, parameters 4 / 6 / 11. Every routine limit lies above the 95th percentile, which supports the blocking decision for Python. TypeScript still rests on mvibe (846 routines) and lesscode (173 routines) and stays a warning.
+
+**Owner decisions, 2026-11-11:**
+
+1. Light checks in the hook, heavy checks in CI (above).
+2. `code check --changed origin/main` goes into this repository's CI.
+3. The duplication found in this repository (`status_line` twice, 50 duplicate blocks) is backlog, recorded in the clone-constraints task plan.
+4. Scattered state stays at information. Reducing existing scatter is the work of `../lesscode`; this gate reports it and blocks nothing.

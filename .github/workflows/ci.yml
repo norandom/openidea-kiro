@@ -18,10 +18,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # The code gate compares with origin/main.
+          fetch-depth: 0
 
       - name: Run Dagger Quality Gate
         uses: dagger/dagger-for-github@v7
         with:
           version: "latest"
           verb: call
-          args: check --source=.
+          args: check --source=. --base=origin/main

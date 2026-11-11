@@ -12,6 +12,10 @@ Each executable subtask targets 1-3 hours of focused implementation or validatio
 
 A task completes only with its observable result and fresh scoped verification. Do not mark a capability Passed from task completion, file existence or unit tests alone. Keep `.kiro/breadth.toml` planned until implementation supplies real selectors and current acceptance; required missing/skipped/empty/stale evidence cannot pass. Planned journey entrypoints are declared in [the suite registry](../../verification-suites.toml), with no claimed executable test identities yet.
 
+## Backlog (owner, 2026-11-11)
+
+Removing the duplication the rules found in this repository is deferred: `status_line` exists twice with similarity 1.00 (`crates/kiro-cli/src/report.rs` and `plugins/kiro/src/check.rs`), 18 similar-routine families and 50 duplicate blocks were reported on 2026-11-11. The findings are warnings and block nothing. No task is planned for them until the port is complete; reducing existing code is the work of `../lesscode`.
+
 ## Milestone gates
 
 | Milestone | Complete through task | Observable deliverable |

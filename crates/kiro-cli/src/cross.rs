@@ -135,6 +135,18 @@ impl Judge<'_> {
     }
 }
 
+/// A local check: no rule that reads the whole project ran, and the
+/// coverage line says so.
+pub fn not_run() -> CrossFile {
+    CrossFile {
+        findings: Vec::new(),
+        notes: vec![
+            "rules across files: not run (--local); run the check without --local before a push or in CI"
+                .to_string(),
+        ],
+    }
+}
+
 /// Judges the rules that count across files for the selected files.
 pub fn judge(
     root: &ProjectRoot,

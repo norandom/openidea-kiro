@@ -276,6 +276,10 @@ pub struct CodeCheckArgs {
     #[arg(long)]
     pub summary: bool,
 
+    /// Judge the selected files on their own: the rules that read the whole project do not run (for a fast pre-commit hook)
+    #[arg(long)]
+    pub local: bool,
+
     /// Telemetry output of this run.
     #[command(flatten)]
     pub telemetry: TelemetryArgs,

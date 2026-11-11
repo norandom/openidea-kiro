@@ -96,3 +96,9 @@ It depends only on cli-contracts. Its first deliverable exports today's specific
 - Dashboards (quality-telemetry 5.2 to 5.4, 6.2) go to the backlog. The telemetry writer, Collector example and catalogue are done; analyzers contribute metric points through the provider contract as they ship.
 - The port is the three analyzer specs: code-constraints, then clone-constraints and code-locality-data. Work starts with the joint G1 prototype for the parse layer, then the analyzer task plans are regenerated from its result.
 - Prerequisites relaxed to keep the port unblocked: code-constraints starts on cli-contracts C1 (done) and the existing real-binary test helper. The remaining cli-contracts migrations and verification-evidence follow the port instead of preceding it; journeys written for the port are registered with the evidence runner when it exists. The breadth ledger stays planned meanwhile.
+
+## Owner decisions, 2026-11-11
+
+- The routine limits block in Rust and Python; TypeScript, JavaScript and the type and file limits stay warnings. The calibration corpus is this repository, mmhmem, facdrone, mvibe, lesscode and GridDash; no C++ profile is built.
+- Checks run in two stages. A pre-commit hook judges the changed files on their own (`code check --changed HEAD --local`); the rules that read the whole project run before a push and in CI (`code check --changed origin/main`), where the result is binding.
+- Scattered state stays at information. This project prevents; reducing existing duplication and scatter is the work of `../lesscode`. The duplication the rules found in this repository is backlog.
