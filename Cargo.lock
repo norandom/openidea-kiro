@@ -607,7 +607,7 @@ dependencies = [
 
 [[package]]
 name = "kiro-cli"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "clap",
  "kiro-cli-common",
@@ -624,7 +624,7 @@ dependencies = [
 
 [[package]]
 name = "kiro-cli-common"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "clap",
  "kiro-core",
@@ -634,7 +634,7 @@ dependencies = [
 
 [[package]]
 name = "kiro-code"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "ast-grep-core",
  "ast-grep-language",
@@ -647,7 +647,7 @@ dependencies = [
 
 [[package]]
 name = "kiro-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "biodivine-lib-bdd",
  "insta",

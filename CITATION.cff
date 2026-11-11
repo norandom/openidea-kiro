@@ -4,17 +4,17 @@ type: software
 authors:
   - name: "M. Ciepluch"
 title: "OpenIDEA Kiro: Specification-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification"
-version: 1.0.0
+version: 1.1.0
 date-released: "2026-11-11"
 license: MIT
-doi: "10.5281/zenodo.24128226"
+doi: "10.5281/zenodo.24128225"
 identifiers:
-  - type: doi
-    value: "10.5281/zenodo.24128226"
-    description: "Archived snapshot of version 1.0.0"
   - type: doi
     value: "10.5281/zenodo.24128225"
     description: "All versions; resolves to the latest release"
+  - type: doi
+    value: "10.5281/zenodo.24128226"
+    description: "Archived snapshot of version 1.0.0"
 url: "https://github.com/norandom/openidea-kiro"
 repository-code: "https://github.com/norandom/openidea-kiro"
 keywords:

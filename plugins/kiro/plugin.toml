@@ -1,6 +1,6 @@
 id = "kiro"
 name = "Kiro"
-version = "1.0.0"
+version = "1.1.0"
 description = "Spec-driven development in OpenIDEA: discovery, navigation, visualization, vocabulary and quality checks."
 authors = ["The OpenIDEA Authors"]
 openidea-api = "0.1"

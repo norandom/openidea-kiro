@@ -31,16 +31,16 @@ Each [release](https://github.com/norandom/openidea-kiro/releases/latest) carrie
 
 | Platform | Asset |
 | :--- | :--- |
-| Linux x86_64 | `kiro-cli-v1.0.0-x86_64-unknown-linux-gnu.tar.gz` |
-| macOS Apple Silicon | `kiro-cli-v1.0.0-aarch64-apple-darwin.tar.gz` |
-| macOS Intel | `kiro-cli-v1.0.0-x86_64-apple-darwin.tar.gz` |
-| Windows x86_64 | `kiro-cli-v1.0.0-x86_64-pc-windows-msvc.zip` |
-| OpenIDEA plugin | `openidea-plugin-kiro-v1.0.0.zip` |
+| Linux x86_64 | `kiro-cli-v1.1.0-x86_64-unknown-linux-gnu.tar.gz` |
+| macOS Apple Silicon | `kiro-cli-v1.1.0-aarch64-apple-darwin.tar.gz` |
+| macOS Intel | `kiro-cli-v1.1.0-x86_64-apple-darwin.tar.gz` |
+| Windows x86_64 | `kiro-cli-v1.1.0-x86_64-pc-windows-msvc.zip` |
+| OpenIDEA plugin | `openidea-plugin-kiro-v1.1.0.zip` |
 
 **Linux and macOS**
 
 ```bash
-VERSION=v1.0.0
+VERSION=v1.1.0
 TARGET=x86_64-unknown-linux-gnu        # or aarch64-apple-darwin, x86_64-apple-darwin
 BASE=https://github.com/norandom/openidea-kiro/releases/download/$VERSION
 
@@ -56,7 +56,7 @@ kiro-cli --version
 **Windows (PowerShell)**
 
 ```powershell
-$Version = 'v1.0.0'
+$Version = 'v1.1.0'
 $Asset   = "kiro-cli-$Version-x86_64-pc-windows-msvc.zip"
 $Base    = "https://github.com/norandom/openidea-kiro/releases/download/$Version"
 
@@ -71,7 +71,7 @@ Expand-Archive $Asset -DestinationPath $Bin -Force
 & "$Bin\kiro-cli.exe" --version
 ```
 
-**OpenIDEA plugin.** Download `openidea-plugin-kiro-v1.0.0.zip`. In OpenIDEA open *Settings › Plugins*, choose *Install Plugin from Disk...*, select the zip, and run *Reload Plugins*. The commands are listed in the [plugin guide](plugins/kiro/README.md).
+**OpenIDEA plugin.** Download `openidea-plugin-kiro-v1.1.0.zip`. In OpenIDEA open *Settings › Plugins*, choose *Install Plugin from Disk...*, select the zip, and run *Reload Plugins*. The commands are listed in the [plugin guide](plugins/kiro/README.md).
 
 The binaries are not signed. To build from source instead, see the [build guide](docs/build.md).
 
@@ -142,19 +142,14 @@ Cite the software with the metadata in [`CITATION.cff`](CITATION.cff); GitHub sh
 @software{openidea_kiro_2026,
   author  = {Ciepluch, M.},
   title   = {OpenIDEA Kiro: Specification-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification},
-  version = {1.0.0},
+  version = {1.1.0},
   year    = {2026},
-  doi     = {10.5281/zenodo.24128226},
+  doi     = {10.5281/zenodo.24128225},
   url     = {https://github.com/norandom/openidea-kiro}
 }
 ```
 
-The software is archived on Zenodo. Two DOIs exist:
-
-| DOI | Refers to |
-| :--- | :--- |
-| [10.5281/zenodo.24128226](https://doi.org/10.5281/zenodo.24128226) | Version 1.0.0. Cite this one when the version matters. |
-| [10.5281/zenodo.24128225](https://doi.org/10.5281/zenodo.24128225) | All versions; it resolves to the latest release. The badge above uses it. |
+Every release is archived on Zenodo. The DOI [10.5281/zenodo.24128225](https://doi.org/10.5281/zenodo.24128225) stands for all versions and resolves to the latest one; the badge, `CITATION.cff` and the entry above use it. Each release also has its own DOI, listed under *Versions* on the Zenodo record. Use that one when the exact version matters. A release cannot name its own DOI, because Zenodo assigns it after the release is published.
 
 ## License
 

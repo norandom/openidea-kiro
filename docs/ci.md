@@ -59,7 +59,7 @@ jobs:
 
 ## 3. Tagged Releases Workflow
 
-Automated releases trigger whenever a version tag matching `v*` (such as `v1.0.0`) is pushed:
+Automated releases trigger whenever a version tag matching `v*` (such as `v1.1.0`) is pushed:
 
 ```yaml
 name: Release
