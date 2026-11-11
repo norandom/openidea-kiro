@@ -29,8 +29,8 @@ fn manifest_contains_valid_fields_and_matches_registry_static_list() {
     );
     assert_eq!(
         parsed.get("version").and_then(Value::as_str),
-        Some("0.1.0"),
-        "manifest version must be '0.1.0'"
+        Some("1.0.0"),
+        "manifest version must be '1.0.0'"
     );
     assert_eq!(
         parsed.get("openidea-api").and_then(Value::as_str),

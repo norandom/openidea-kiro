@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 446" width="840" height="446" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">Architecture of OpenIDEA Kiro</title>
+  <desc id="desc">Specifications, vocabulary, source files and a Git revision enter the native command-line gate. Inside it, kiro-code parses and measures source files and hands facts to kiro-core, the pure engine that judges. The gate writes a findings report with an exit code and, optionally, telemetry files. The same engine runs inside the editor plugin as a WebAssembly component.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/>
+    </marker>
+  </defs>
+  <rect width="840" height="446" fill="#ffffff"/>
+
+  <!-- column heads -->
+  <g font-size="11" fill="#555555" letter-spacing="1">
+    <text x="115" y="22" text-anchor="middle">INPUT</text>
+    <text x="420" y="22" text-anchor="middle">PROGRAM</text>
+    <text x="725" y="22" text-anchor="middle">OUTPUT</text>
+  </g>
+
+  <!-- inputs -->
+  <g fill="#ffffff" stroke="#1a1a1a" stroke-width="1">
+    <rect x="20" y="66" width="190" height="44"/>
+    <rect x="20" y="122" width="190" height="44"/>
+    <rect x="20" y="190" width="190" height="38"/>
+    <rect x="20" y="236" width="190" height="38"/>
+    <rect x="20" y="353" width="190" height="44"/>
+  </g>
+  <g fill="#1a1a1a" font-size="12">
+    <text x="30" y="84" font-weight="bold">Specifications</text>
+    <text x="30" y="100" font-size="11">requirements, design, tasks</text>
+    <text x="30" y="140" font-weight="bold">Vocabulary</text>
+    <text x="30" y="156" font-size="11">terms, kinds, topics</text>
+    <text x="30" y="207" font-weight="bold">Source files</text>
+    <text x="30" y="221" font-size="10.5">Rust, Python, TypeScript, JavaScript</text>
+    <text x="30" y="253" font-weight="bold">Git revision</text>
+    <text x="30" y="267" font-size="11">the state to compare with</text>
+    <text x="30" y="371" font-weight="bold">Editor host</text>
+    <text x="30" y="387" font-size="11">active file, file reads</text>
+  </g>
+
+  <!-- kiro-cli frame -->
+  <rect x="270" y="34" width="300" height="258" fill="#f4f4f4" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="282" y="54" font-size="12" font-weight="bold" fill="#1a1a1a">kiro-cli</text>
+  <text x="558" y="54" font-size="11" fill="#555555" text-anchor="end">native: Windows, Linux, macOS</text>
+
+  <rect x="290" y="66" width="260" height="100" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <g fill="#1a1a1a" font-size="11">
+    <text x="302" y="85" font-size="12" font-weight="bold">kiro-core</text>
+    <text x="538" y="85" fill="#555555" text-anchor="end">pure, no file access</text>
+    <text x="302" y="105">criteria shape and vocabulary grounding</text>
+    <text x="302" y="120">contradiction search on decision diagrams</text>
+    <text x="302" y="135">ownership of files by criterion and task</text>
+    <text x="302" y="150">limits, ratchet and rules across files</text>
+  </g>
+
+  <rect x="290" y="190" width="260" height="84" fill="#ffffff" stroke="#1a1a1a" stroke-width="1"/>
+  <g fill="#1a1a1a" font-size="11">
+    <text x="302" y="209" font-size="12" font-weight="bold">kiro-code</text>
+    <text x="538" y="209" fill="#555555" text-anchor="end">syntax trees</text>
+    <text x="302" y="229">parses with tree-sitter grammars</text>
+    <text x="302" y="244">measures routines, types and files</text>
+    <text x="302" y="259">collects lines, shapes and definitions</text>
+  </g>
+
+  <!-- plugin frame -->
+  <rect x="270" y="318" width="300" height="100" fill="#f4f4f4" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="282" y="338" font-size="12" font-weight="bold" fill="#1a1a1a">openidea-plugin-kiro</text>
+  <text x="558" y="338" font-size="11" fill="#555555" text-anchor="end">WebAssembly, sandboxed</text>
+  <rect x="290" y="350" width="260" height="50" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <g fill="#1a1a1a" font-size="11">
+    <text x="302" y="369" font-size="12" font-weight="bold">kiro-core</text>
+    <text x="538" y="369" fill="#555555" text-anchor="end">the same engine</text>
+    <text x="302" y="387">specification checks and navigation</text>
+  </g>
+
+  <!-- outputs -->
+  <g fill="#ffffff" stroke="#1a1a1a" stroke-width="1">
+    <rect x="630" y="66" width="190" height="100"/>
+    <rect x="630" y="353" width="190" height="44"/>
+  </g>
+  <rect x="630" y="200" width="190" height="64" fill="#ffffff" stroke="#1a1a1a" stroke-width="1" stroke-dasharray="5 3"/>
+  <g fill="#1a1a1a" font-size="11">
+    <text x="640" y="85" font-size="12" font-weight="bold">Findings report</text>
+    <text x="640" y="105">file, line, code, message</text>
+    <text x="640" y="120">owning spec and task</text>
+    <text x="640" y="135">one resolving edit per finding</text>
+    <text x="640" y="150">text or JSON; exit code 0, 1, 2</text>
+    <text x="640" y="219" font-size="12" font-weight="bold">Telemetry (optional)</text>
+    <text x="640" y="237">OpenTelemetry JSON files</text>
+    <text x="640" y="252">outside the repository</text>
+    <text x="640" y="371" font-size="12" font-weight="bold">Editor</text>
+    <text x="640" y="387">notifications, graphs, navigation</text>
+  </g>
+
+  <!-- flows -->
+  <g stroke="#1a1a1a" stroke-width="1" fill="none" marker-end="url(#arrow)">
+    <line x1="210" y1="88" x2="289" y2="88"/>
+    <line x1="210" y1="144" x2="289" y2="144"/>
+    <line x1="210" y1="209" x2="289" y2="209"/>
+    <line x1="210" y1="255" x2="289" y2="255"/>
+    <line x1="210" y1="375" x2="289" y2="375"/>
+    <line x1="420" y1="190" x2="420" y2="167"/>
+    <line x1="550" y1="116" x2="629" y2="116"/>
+    <line x1="550" y1="375" x2="629" y2="375"/>
+  </g>
+  <line x1="570" y1="232" x2="629" y2="232" stroke="#1a1a1a" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+  <text x="428" y="182" font-size="11" fill="#555555">measured facts</text>
+</svg>

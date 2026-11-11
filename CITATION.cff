@@ -3,31 +3,39 @@ message: "If you use this software, please cite it as below."
 type: software
 authors:
   - name: "M. Ciepluch"
-title: "OpenIDEA Kiro: Spec-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification"
-version: 0.1.0-alpha
-date-released: "2026-11-08"
+title: "OpenIDEA Kiro: Specification-Driven Software Engineering with Domain Ontology Grounding and Bounded Binary Decision Diagram Verification"
+version: 1.0.0
+date-released: "2026-11-11"
 license: MIT
 url: "https://github.com/norandom/openidea-kiro"
 repository-code: "https://github.com/norandom/openidea-kiro"
 keywords:
-  - "spec-driven development"
+  - "specification-driven development"
   - "formal verification"
   - "binary decision diagrams"
   - "bdd"
   - "domain ontologies"
   - "requirements engineering"
   - "ears"
+  - "code quality gate"
+  - "clone detection"
+  - "coding agents"
   - "webassembly"
   - "openidea"
   - "rust"
 abstract: >-
-  OpenIDEA Kiro is a Spec-Driven Development (SDD) tooling ecosystem and OpenIDEA
-  IDE plugin that introduces formal requirement constraints, domain ontology
-  grounding, and sub-millisecond logical contradiction detection to software
-  engineering lifecycles. By pairing Easy Approach to Requirements Syntax (EARS)
-  with project-level ontologies and Reduced Ordered Binary Decision Diagrams
-  (ROBDDs) via biodivine-lib-bdd, Kiro finitizes discrete domain states and
-  continuous integer thresholds into canonical decision diagrams. This provides
-  O(1) satisfiability verification, exact minimal counterexample witness extraction,
-  and guaranteed resource bounds within a zero-dependency WebAssembly (wasm32-wasip2)
-  plugin runtime and native CI quality gate.
+  OpenIDEA Kiro is a verification gate for Specification-Driven Development with
+  coding agents, delivered as a command-line tool for hooks and continuous
+  integration and as a plugin for the OpenIDEA editor. It checks the specification:
+  acceptance criteria written in the Easy Approach to Requirements Syntax (EARS)
+  are grounded in a project vocabulary with topic scopes, turned into boolean
+  guards over finite regions, and searched for contradictions with Reduced
+  Ordered Binary Decision Diagrams (ROBDDs) via biodivine-lib-bdd. A contradiction
+  is reported with a witness state, and the search refuses a problem beyond its
+  resource bounds instead of guessing. It also checks the code that agents
+  produce: limits on routines, types and files in Rust, Python, TypeScript and
+  JavaScript, a ratchet that blocks only regression and new breaches, duplicate
+  blocks, renamed copies of routines, definitions and state scattered over files,
+  and data addressed by position. Every finding names the specification, design
+  component and task that own the file and one edit that resolves it. The engine
+  is a pure Rust crate that also runs as a WebAssembly (wasm32-wasip2) component.
